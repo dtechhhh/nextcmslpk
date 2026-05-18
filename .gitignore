@@ -78,6 +78,11 @@ web_modules/
 .next
 out
 
+# Project runtime
+.env.local
+node_modules
+prisma/*.db
+
 # Nuxt.js build / generate output
 .nuxt
 dist
