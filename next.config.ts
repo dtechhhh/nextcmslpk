@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
+import { env } from "./src/lib/env";
 
-const r2PublicUrl = process.env.R2_PUBLIC_URL ?? "https://media.yourdomain.com";
+const r2PublicUrl = env.R2_PUBLIC_URL;
 
 function getR2PublicHostname() {
   try {
