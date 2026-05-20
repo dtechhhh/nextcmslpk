@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
-import { prisma } from "@/server/db/client";
+import { canAccessTenantDashboardAccount } from "@/server/services/dashboard-account";
 
 export default async function ChangePasswordPage() {
   const session = await auth();
@@ -11,16 +11,9 @@ export default async function ChangePasswordPage() {
     redirect("/dashboard/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.userId },
-    select: {
-      id: true,
-      isActive: true,
-      role: true,
-    },
-  });
+  const canAccessAccount = await canAccessTenantDashboardAccount(session.user.userId);
 
-  if (!user?.isActive || user.role !== "TENANT_ADMIN") {
+  if (!canAccessAccount) {
     redirect("/dashboard/login");
   }
 
