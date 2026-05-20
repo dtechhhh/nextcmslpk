@@ -1,7 +1,6 @@
 import "dotenv/config";
-import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, PublishStatus, UserRole } from "../src/generated/prisma/client";
+import { PrismaClient, PublishStatus } from "../src/generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -354,33 +353,6 @@ async function seedGlobalConfigs(tenantId: string, variantKey: VariantKey, varia
   }
 }
 
-async function seedSuperAdmin() {
-  console.log("Seeding super admin user...");
-
-  const passwordHash = await bcrypt.hash("TempPassword123!", 12);
-
-  await prisma.user.upsert({
-    where: {
-      username: "superadmin",
-    },
-    update: {
-      tenantId: null,
-      passwordHash,
-      role: UserRole.SUPER_ADMIN,
-      mustChangePassword: true,
-      isActive: true,
-    },
-    create: {
-      username: "superadmin",
-      passwordHash,
-      role: UserRole.SUPER_ADMIN,
-      mustChangePassword: true,
-    },
-  });
-
-  console.log("  - superadmin");
-}
-
 async function main() {
   console.log("Starting database seed...");
 
@@ -393,8 +365,6 @@ async function main() {
     await seedContentPages(tenant.id, variantKey, variant.id);
     await seedGlobalConfigs(tenant.id, variantKey, variant.id);
   }
-
-  await seedSuperAdmin();
 
   console.log("Database seed completed.");
 }

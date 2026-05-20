@@ -1,3 +1,5 @@
+import { IdleTracker } from "@/components/auth/idle-tracker";
+
 export default function DashboardLayout({
   children,
 }: Readonly<{
@@ -5,6 +7,7 @@ export default function DashboardLayout({
 }>) {
   return (
     <section className="min-h-full bg-background text-foreground">
+      <IdleTracker callbackUrl="/dashboard/login" />
       {children}
     </section>
   );
