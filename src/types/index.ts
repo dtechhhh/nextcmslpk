@@ -22,11 +22,11 @@ export interface SessionUser {
 export interface ThemeRegistry {
   key: string;
   name: string;
-  indonesia: Record<string, ComponentType<any>>;
-  japan: Record<string, ComponentType<any>>;
+  indonesia: Record<string, ComponentType<Record<string, unknown>>>;
+  japan: Record<string, ComponentType<Record<string, unknown>>>;
   layouts: {
-    indonesia: ComponentType<any>;
-    japan: ComponentType<any>;
+    indonesia: ComponentType<Record<string, unknown>>;
+    japan: ComponentType<Record<string, unknown>>;
   };
 }
 
