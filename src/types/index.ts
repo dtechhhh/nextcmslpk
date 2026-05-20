@@ -17,6 +17,7 @@ export interface SessionUser {
   username: string
   role: "SUPER_ADMIN" | "TENANT_ADMIN"
   tenantId: string | null
+  securityStamp?: string
 }
 
 export interface ThemeRegistry {

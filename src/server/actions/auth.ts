@@ -20,10 +20,16 @@ import {
 } from "@/server/services/auth";
 import {
   getClientIp,
+  limitLoginAttempt,
+  limitPasswordAttempt,
+  limitSetupAttempt,
   limitTOTPVerifyAttempt,
 } from "@/server/services/rate-limit";
 
 const GENERIC_LOGIN_ERROR = "Username atau password salah";
+const LOGIN_RATE_LIMIT_ERROR = "Terlalu banyak percobaan login. Coba lagi nanti.";
+const SETUP_RATE_LIMIT_ERROR = "Terlalu banyak percobaan setup. Coba lagi nanti.";
+const PASSWORD_RATE_LIMIT_ERROR = "Terlalu banyak percobaan ubah password. Coba lagi nanti.";
 const TOTP_RATE_LIMIT_ERROR = "Terlalu banyak percobaan TOTP. Coba lagi nanti.";
 const PASSWORD_MIN_LENGTH = 12;
 const SETUP_TOKEN_TTL_MS = 10 * 60 * 1000;
@@ -80,6 +86,12 @@ export async function checkLoginCredentialsAction(input: unknown) {
 
   try {
     const { username, password, scope } = parsed.data;
+    const rateLimit = await limitServerActionLoginAttempt(username);
+
+    if (!rateLimit.success) {
+      return { ok: false, error: LOGIN_RATE_LIMIT_ERROR };
+    }
+
     const expectedRole = scope === "super-admin" ? "SUPER_ADMIN" : "TENANT_ADMIN";
     const user = await prisma.user.findUnique({
       where: { username },
@@ -130,6 +142,13 @@ export async function startSuperAdminSetupAction(input: unknown) {
   }
 
   try {
+    const requestHeaders = await getRequestHeaders();
+    const setupRateLimit = await limitSetupAttempt(getClientIp(requestHeaders));
+
+    if (!setupRateLimit.success) {
+      return { ok: false, error: SETUP_RATE_LIMIT_ERROR };
+    }
+
     const superAdminCount = await prisma.user.count({
       where: { role: "SUPER_ADMIN" },
     });
@@ -257,6 +276,12 @@ export async function changePasswordAction(input: unknown) {
       return { ok: false, error: "Sesi tidak valid.", redirectTo: "/dashboard/login" };
     }
 
+    const rateLimit = await limitPasswordAttempt(session.user.userId);
+
+    if (!rateLimit.success) {
+      return { ok: false, error: PASSWORD_RATE_LIMIT_ERROR };
+    }
+
     const currentPasswordValid = await verifyPassword(
       parsed.data.currentPassword,
       user.passwordHash,
@@ -379,6 +404,15 @@ export async function verifyTOTPSetupAction(input: unknown) {
   } catch {
     return { ok: false, error: "Kode TOTP tidak valid." };
   }
+}
+
+async function limitServerActionLoginAttempt(username: string) {
+  const requestHeaders = await getRequestHeaders();
+
+  return limitLoginAttempt({
+    ipAddress: getClientIp(requestHeaders),
+    username,
+  });
 }
 
 async function limitServerActionTOTPAttempt(username: string) {
