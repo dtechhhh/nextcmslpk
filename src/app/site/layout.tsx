@@ -1,11 +1,11 @@
-export default function SiteLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+import { headers } from "next/headers";
+
+export default async function SiteLayout() {
+  const host = (await headers()).get("host") ?? "";
+
   return (
-    <section className="min-h-full bg-background text-foreground">
-      {children}
+    <section className="flex min-h-full items-center justify-center bg-background px-6 text-foreground">
+      <p className="text-lg font-medium">Public Site — {host}</p>
     </section>
   );
 }
