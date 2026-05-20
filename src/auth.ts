@@ -11,6 +11,7 @@ import {
 } from "@/server/services/auth";
 import {
   getClientIp,
+  limitLoginAttempt,
   limitTOTPVerifyAttempt,
 } from "@/server/services/rate-limit";
 
@@ -40,6 +41,14 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
         const { username, password, totpCode, scope } = parsed.data;
         const expectedRole = scope === "super-admin" ? "SUPER_ADMIN" : "TENANT_ADMIN";
+        const loginRateLimit = await limitLoginAttempt({
+          ipAddress: getClientIp(request.headers),
+          username,
+        });
+
+        if (!loginRateLimit.success) {
+          return null;
+        }
 
         const user = await prisma.user.findUnique({
           where: { username },

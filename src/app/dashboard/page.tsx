@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { prisma } from "@/server/db/client";
+import { getTenantDashboardLandingState } from "@/server/services/dashboard-account";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -10,25 +10,17 @@ export default async function DashboardPage() {
     redirect("/dashboard/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.userId },
-    select: {
-      mustChangePassword: true,
-      totpSecret: true,
-      totpVerified: true,
-      role: true,
-    },
-  });
+  const dashboardState = await getTenantDashboardLandingState(session.user.userId);
 
-  if (!user || user.role !== "TENANT_ADMIN") {
+  if (!dashboardState) {
     redirect("/dashboard/login");
   }
 
-  if (user.mustChangePassword) {
+  if (dashboardState.mustChangePassword) {
     redirect("/dashboard/account/change-password");
   }
 
-  if (!user.totpVerified || !user.totpSecret) {
+  if (dashboardState.needsTOTPSetup) {
     redirect("/dashboard/account/totp-setup");
   }
 

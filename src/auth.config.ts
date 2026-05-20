@@ -71,6 +71,10 @@ export const authConfig = {
         session.user.username = token.username;
         session.user.role = role;
         session.user.tenantId = tenantId;
+
+        if (typeof token.securityStamp === "string") {
+          session.user.securityStamp = token.securityStamp;
+        }
       }
 
       return session;
