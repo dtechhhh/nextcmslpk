@@ -53,6 +53,15 @@ const tenantSlugSchema = z.object({
   excludeTenantId: z.string().cuid().optional(),
 });
 
+const variantActionSchema = z.object({
+  tenantId: z.string().cuid(),
+  variantId: z.string().cuid(),
+});
+
+const changeVariantThemeSchema = variantActionSchema.extend({
+  themeKey: z.literal("starter"),
+});
+
 const variantSeeds = [
   {
     key: "indonesia",
@@ -467,6 +476,7 @@ export async function updateTenant(input: unknown): Promise<TenantActionResult> 
     revalidatePath("/super-admin");
     revalidatePath("/super-admin/tenants");
     revalidatePath(`/super-admin/tenants/${parsed.data.id}`);
+    revalidatePath("/site");
 
     return {
       ok: true,
@@ -482,6 +492,169 @@ export async function suspendTenant(input: unknown): Promise<TenantActionResult>
 
 export async function activateTenant(input: unknown): Promise<TenantActionResult> {
   return setTenantStatus(input, "ACTIVE", "tenant.activate");
+}
+
+export async function toggleVariantStatus(
+  input: unknown,
+): Promise<TenantActionResult<{ status: "ACTIVE" | "DISABLED" }>> {
+  try {
+    const session = await requireSuperAdminSession();
+    const parsed = variantActionSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError(toFieldErrors(parsed.error));
+    }
+
+    const ipAddress = await getRequestIpAddress();
+
+    const updated = await prisma.$transaction(
+      async (tx) => {
+        const variant = await tx.variant.findFirst({
+          where: {
+            id: parsed.data.variantId,
+            tenantId: parsed.data.tenantId,
+          },
+          select: {
+            id: true,
+            key: true,
+            status: true,
+          },
+        });
+
+        if (!variant) {
+          throw new AppError("NOT_FOUND", "Variant tidak ditemukan.", 404);
+        }
+
+        const nextStatus = variant.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+
+        const result = await tx.variant.update({
+          where: {
+            id: variant.id,
+          },
+          data: {
+            status: nextStatus,
+          },
+          select: {
+            id: true,
+            key: true,
+            status: true,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            tenantId: parsed.data.tenantId,
+            userId: session.userId,
+            action: nextStatus === "ACTIVE" ? "variant.activate" : "variant.disable",
+            targetType: "Variant",
+            targetId: result.id,
+            metadata: {
+              key: result.key,
+              oldStatus: variant.status,
+              newStatus: result.status,
+            },
+            ipAddress,
+          },
+        });
+
+        return result;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
+
+    revalidatePath("/super-admin");
+    revalidatePath("/super-admin/tenants");
+    revalidatePath(`/super-admin/tenants/${parsed.data.tenantId}`);
+    revalidatePath("/site");
+
+    return {
+      ok: true,
+      status: updated.status,
+    };
+  } catch (error) {
+    return toActionError(error, "Status variant gagal diubah.");
+  }
+}
+
+export async function changeVariantTheme(
+  input: unknown,
+): Promise<TenantActionResult> {
+  try {
+    const session = await requireSuperAdminSession();
+    const parsed = changeVariantThemeSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError(toFieldErrors(parsed.error));
+    }
+
+    const ipAddress = await getRequestIpAddress();
+
+    await prisma.$transaction(
+      async (tx) => {
+        const variant = await tx.variant.findFirst({
+          where: {
+            id: parsed.data.variantId,
+            tenantId: parsed.data.tenantId,
+          },
+          select: {
+            id: true,
+            key: true,
+            themeKey: true,
+          },
+        });
+
+        if (!variant) {
+          throw new AppError("NOT_FOUND", "Variant tidak ditemukan.", 404);
+        }
+
+        const updated = await tx.variant.update({
+          where: {
+            id: variant.id,
+          },
+          data: {
+            themeKey: parsed.data.themeKey,
+          },
+          select: {
+            id: true,
+            key: true,
+            themeKey: true,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            tenantId: parsed.data.tenantId,
+            userId: session.userId,
+            action: "variant.changeTheme",
+            targetType: "Variant",
+            targetId: updated.id,
+            metadata: {
+              key: updated.key,
+              oldThemeKey: variant.themeKey,
+              newThemeKey: updated.themeKey,
+            },
+            ipAddress,
+          },
+        });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
+
+    revalidatePath("/super-admin");
+    revalidatePath("/super-admin/tenants");
+    revalidatePath(`/super-admin/tenants/${parsed.data.tenantId}`);
+    revalidatePath("/site");
+
+    return {
+      ok: true,
+    };
+  } catch (error) {
+    return toActionError(error, "Theme variant gagal diubah.");
+  }
 }
 
 async function setTenantStatus(
