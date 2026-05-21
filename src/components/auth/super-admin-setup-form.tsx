@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useTransition } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { Loader2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,6 @@ import {
 } from "@/server/actions/auth";
 
 export function SuperAdminSetupForm() {
-  const router = useRouter();
   const [setupSecret, setSetupSecret] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -82,8 +81,7 @@ export function SuperAdminSetupForm() {
         return;
       }
 
-      router.replace(result.redirectTo ?? "/super-admin/login");
-      router.refresh();
+      window.location.replace(result.redirectTo ?? "/super-admin/login");
     });
   }
 
@@ -121,8 +119,14 @@ export function SuperAdminSetupForm() {
                 />
               </Field>
               {error ? <FieldError>{error}</FieldError> : null}
+              {isPending ? (
+                <FieldDescription role="status" aria-live="polite">
+                  Memverifikasi kode TOTP...
+                </FieldDescription>
+              ) : null}
               <Button type="submit" className="w-full" disabled={isPending}>
-                Selesaikan setup
+                {isPending ? <Loader2Icon className="animate-spin" /> : null}
+                {isPending ? "Memverifikasi..." : "Selesaikan setup"}
               </Button>
             </FieldGroup>
           </form>
@@ -175,8 +179,14 @@ export function SuperAdminSetupForm() {
               <FieldDescription>Minimal 12 karakter.</FieldDescription>
             </Field>
             {error ? <FieldError>{error}</FieldError> : null}
+            {isPending ? (
+              <FieldDescription role="status" aria-live="polite">
+                Membuat QR TOTP...
+              </FieldDescription>
+            ) : null}
             <Button type="submit" className="w-full" disabled={isPending}>
-              Generate TOTP
+              {isPending ? <Loader2Icon className="animate-spin" /> : null}
+              {isPending ? "Membuat QR..." : "Generate TOTP"}
             </Button>
           </FieldGroup>
         </form>

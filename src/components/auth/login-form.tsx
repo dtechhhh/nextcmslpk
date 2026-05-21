@@ -1,8 +1,8 @@
 "use client";
 
 import { FormEvent, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Loader2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +39,6 @@ export function LoginForm({
   scope,
   redirectTo,
 }: LoginFormProps) {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [totpCode, setTotpCode] = useState("");
@@ -85,13 +84,14 @@ export function LoginForm({
           return;
         }
 
-        router.replace(redirectTo);
-        router.refresh();
+        window.location.replace(redirectTo);
       } catch {
         setError(GENERIC_LOGIN_ERROR);
       }
     });
   }
+
+  const submitLabel = getSubmitLabel({ isPending, requiresTotp });
 
   return (
     <Card className="w-full max-w-md rounded-lg">
@@ -146,12 +146,32 @@ export function LoginForm({
               </Field>
             ) : null}
             {error ? <FieldError>{error}</FieldError> : null}
+            {isPending ? (
+              <FieldDescription role="status" aria-live="polite">
+                {requiresTotp ? "Memverifikasi kode TOTP..." : "Memeriksa kredensial..."}
+              </FieldDescription>
+            ) : null}
             <Button type="submit" className="w-full" disabled={isPending}>
-              {requiresTotp ? "Verifikasi" : "Masuk"}
+              {isPending ? <Loader2Icon className="animate-spin" /> : null}
+              {submitLabel}
             </Button>
           </FieldGroup>
         </form>
       </CardContent>
     </Card>
   );
+}
+
+function getSubmitLabel({
+  isPending,
+  requiresTotp,
+}: {
+  isPending: boolean;
+  requiresTotp: boolean;
+}) {
+  if (isPending) {
+    return requiresTotp ? "Memverifikasi..." : "Memeriksa...";
+  }
+
+  return requiresTotp ? "Verifikasi" : "Masuk";
 }
