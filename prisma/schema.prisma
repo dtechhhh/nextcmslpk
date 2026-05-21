@@ -42,6 +42,11 @@ enum MediaType {
   DOCUMENT
 }
 
+enum MediaStatus {
+  UPLOADING
+  ACTIVE
+}
+
 // ─── TENANT ────────────────────────────────────────
 
 model Tenant {
@@ -283,6 +288,7 @@ model MediaAsset {
   mimeType     String    @map("mime_type")
   fileSize     Int       @map("file_size")
   mediaType    MediaType @map("media_type")
+  status       MediaStatus @default(UPLOADING)
   storagePath  String    @map("storage_path")
   altText      String?   @map("alt_text")
   width        Int?
@@ -294,6 +300,7 @@ model MediaAsset {
   contentItemsHeroes ContentItem[] @relation("ContentItemHero")
 
   @@index([tenantId])
+  @@index([tenantId, status])
   @@map("media_assets")
 }
 
