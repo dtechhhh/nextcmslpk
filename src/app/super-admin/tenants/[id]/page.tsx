@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 
+import { TenantAdminTab } from "@/components/super-admin/tenant-admin-tab";
+import { TenantAuditLogTab } from "@/components/super-admin/tenant-audit-log-tab";
+import { TenantDomainsTab } from "@/components/super-admin/tenant-domains-tab";
 import { TenantGeneralForm } from "@/components/super-admin/tenant-general-form";
+import { TenantVariantsTab } from "@/components/super-admin/tenant-variants-tab";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -10,13 +14,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { prisma } from "@/server/db/client";
 import { requireSuperAdminPage } from "@/server/services/super-admin";
 
@@ -59,42 +61,52 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
           label: true,
           themeKey: true,
           status: true,
-          _count: {
+          domains: {
+            orderBy: {
+              host: "asc",
+            },
             select: {
-              domains: true,
-              contentCollections: true,
-              optionSets: true,
-              contentPages: true,
-              globalConfigs: true,
+              id: true,
+              host: true,
+              status: true,
+              isPrimary: true,
+              verifiedAt: true,
             },
           },
+        },
+      },
+      users: {
+        where: {
+          role: "TENANT_ADMIN",
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          username: true,
+          isActive: true,
+          totpVerified: true,
+          mustChangePassword: true,
         },
       },
       auditLogs: {
         orderBy: {
           createdAt: "desc",
         },
-        take: 10,
+        take: 50,
         select: {
           id: true,
           action: true,
           targetType: true,
           targetId: true,
+          metadata: true,
           createdAt: true,
           user: {
             select: {
               username: true,
             },
           },
-        },
-      },
-      _count: {
-        select: {
-          mediaAssets: true,
-          contentPages: true,
-          contentCollections: true,
-          optionSets: true,
-          globalConfigs: true,
         },
       },
     },
@@ -105,8 +117,15 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
   }
 
   const domainCount = tenant.variants.reduce(
-    (total, variant) => total + variant._count.domains,
+    (total, variant) => total + variant.domains.length,
     0,
+  );
+  const domains = tenant.variants.flatMap((variant) =>
+    variant.domains.map((domain) => ({
+      ...domain,
+      variantKey: variant.key,
+      verifiedAt: domain.verifiedAt?.toISOString() ?? null,
+    })),
   );
 
   return (
@@ -121,158 +140,120 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle>General</CardTitle>
-            <CardDescription>
-              Created {dateTimeFormatter.format(tenant.createdAt)}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TenantGeneralForm
-              tenant={{
-                id: tenant.id,
-                name: tenant.name,
-                slug: tenant.slug,
-                status: tenant.status,
-                domainCount,
-              }}
-            />
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="general" className="gap-4">
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="variants">Variants</TabsTrigger>
+          <TabsTrigger value="domains">Domains</TabsTrigger>
+          <TabsTrigger value="tenant-admin">Tenant Admin</TabsTrigger>
+          <TabsTrigger value="audit-log">Audit Log</TabsTrigger>
+        </TabsList>
 
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle>Seed Summary</CardTitle>
-            <CardDescription>
-              Updated {dateTimeFormatter.format(tenant.updatedAt)}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              <SeedStat label="Variants" value={tenant.variants.length} />
-              <SeedStat label="Collections" value={tenant._count.contentCollections} />
-              <SeedStat label="Option Sets" value={tenant._count.optionSets} />
-              <SeedStat label="Pages" value={tenant._count.contentPages} />
-              <SeedStat label="Global Configs" value={tenant._count.globalConfigs} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="general">
+          <Card className="rounded-lg">
+            <CardHeader>
+              <CardTitle>General</CardTitle>
+              <CardDescription>Created and updated timestamps</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+              <TenantGeneralForm
+                tenant={{
+                  id: tenant.id,
+                  name: tenant.name,
+                  slug: tenant.slug,
+                  status: tenant.status,
+                  domainCount,
+                }}
+              />
+              <div className="grid content-start gap-3 text-sm">
+                <MetaRow
+                  label="Created at"
+                  value={dateTimeFormatter.format(tenant.createdAt)}
+                />
+                <MetaRow
+                  label="Updated at"
+                  value={dateTimeFormatter.format(tenant.updatedAt)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <Card className="rounded-lg">
-        <CardHeader>
-          <CardTitle>Variants</CardTitle>
-          <CardDescription>Starter variants created for this tenant</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Key</TableHead>
-                <TableHead>Label</TableHead>
-                <TableHead>Theme</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Collections</TableHead>
-                <TableHead className="text-right">Options</TableHead>
-                <TableHead className="text-right">Pages</TableHead>
-                <TableHead className="text-right">Domains</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tenant.variants.map((variant) => (
-                <TableRow key={variant.id}>
-                  <TableCell className="font-medium">{variant.key}</TableCell>
-                  <TableCell>{variant.label}</TableCell>
-                  <TableCell>{variant.themeKey}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        variant.status === "ACTIVE" ? "secondary" : "outline"
-                      }
-                    >
-                      {variant.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {variant._count.contentCollections}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {variant._count.optionSets}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {variant._count.contentPages}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {variant._count.domains}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        <TabsContent value="variants">
+          <Card className="rounded-lg">
+            <CardHeader>
+              <CardTitle>Variants</CardTitle>
+              <CardDescription>Theme starter tersedia untuk MVP.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TenantVariantsTab tenantId={tenant.id} variants={tenant.variants} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <Card className="rounded-lg">
-        <CardHeader>
-          <CardTitle>Audit Log</CardTitle>
-          <CardDescription>Last 10 tenant-scoped entries</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Action</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead className="text-right">Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tenant.auditLogs.length > 0 ? (
-                tenant.auditLogs.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>
-                      <Badge variant="outline">{entry.action}</Badge>
-                    </TableCell>
-                    <TableCell>{entry.user.username}</TableCell>
-                    <TableCell>
-                      {entry.targetType}
-                      {entry.targetId ? (
-                        <span className="ml-1 text-muted-foreground">
-                          {entry.targetId.slice(0, 8)}
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {dateTimeFormatter.format(entry.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="h-24 text-center text-muted-foreground"
-                  >
-                    No tenant audit entries yet.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        <TabsContent value="domains">
+          <Card className="rounded-lg">
+            <CardHeader>
+              <CardTitle>Domains</CardTitle>
+              <CardDescription>PENDING ke ACTIVE ke DISABLED.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TenantDomainsTab
+                tenantId={tenant.id}
+                variants={tenant.variants.map((variant) => ({
+                  id: variant.id,
+                  key: variant.key,
+                  label: variant.label,
+                }))}
+                domains={domains}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tenant-admin">
+          <Card className="rounded-lg">
+            <CardHeader>
+              <CardTitle>Tenant Admin</CardTitle>
+              <CardDescription>Max 1 admin per tenant di MVP.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TenantAdminTab tenantId={tenant.id} admins={tenant.users} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="audit-log">
+          <Card className="rounded-lg">
+            <CardHeader>
+              <CardTitle>Audit Log</CardTitle>
+              <CardDescription>Last 50 entries untuk tenant ini.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TenantAuditLogTab
+                entries={tenant.auditLogs.map((entry) => ({
+                  id: entry.id,
+                  action: entry.action,
+                  targetType: entry.targetType,
+                  targetId: entry.targetId,
+                  metadata: entry.metadata,
+                  createdAt: entry.createdAt.toISOString(),
+                  username: entry.user.username,
+                }))}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }
 
-function SeedStat({ label, value }: { label: string; value: number }) {
+function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border p-3">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-semibold">{value.toLocaleString("id-ID")}</p>
+      <p className="text-muted-foreground">{label}</p>
+      <p className="mt-1 font-medium">{value}</p>
     </div>
   );
 }

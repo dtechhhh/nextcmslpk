@@ -114,7 +114,8 @@ export function TenantGeneralForm({ tenant }: TenantGeneralFormProps) {
     });
   }
 
-  const isSlugLocked = tenant.domainCount > 0 && slug !== tenant.slug;
+  const isSlugImmutable = tenant.domainCount > 0;
+  const hasLockedSlugChange = isSlugImmutable && slug !== tenant.slug;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -148,24 +149,24 @@ export function TenantGeneralForm({ tenant }: TenantGeneralFormProps) {
             id="tenant-slug"
             value={slug}
             onChange={(event) => setSlug(generateSlug(event.target.value))}
-            disabled={isPending}
-            aria-invalid={isSlugLocked || undefined}
+            disabled={isPending || isSlugImmutable}
+            aria-invalid={hasLockedSlugChange || undefined}
             required
           />
-          {tenant.domainCount > 0 ? (
+          {isSlugImmutable ? (
             <FieldDescription>
               Slug terkunci setelah tenant memiliki domain.
             </FieldDescription>
           ) : null}
         </Field>
 
-        {isSlugLocked ? (
+        {hasLockedSlugChange ? (
           <FieldError>Slug tidak bisa diubah setelah domain ditambahkan.</FieldError>
         ) : null}
         {error ? <FieldError>{error}</FieldError> : null}
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={isPending || isSlugLocked}>
+          <Button type="submit" disabled={isPending || hasLockedSlugChange}>
             {isPending ? <Loader2Icon className="animate-spin" /> : null}
             Save Changes
           </Button>
