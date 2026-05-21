@@ -2,12 +2,18 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { LoginForm } from "@/components/auth/login-form";
+import { verifySecurityStamp } from "@/server/services/security-stamp";
 
 export default async function DashboardLoginPage() {
   const session = await auth();
 
   if (session?.user?.role === "TENANT_ADMIN") {
-    redirect("/dashboard");
+    try {
+      await verifySecurityStamp(session);
+      redirect("/dashboard");
+    } catch {
+      // Keep the user on the login form when the existing JWT was invalidated.
+    }
   }
 
   return (
