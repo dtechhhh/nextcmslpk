@@ -1,14 +1,47 @@
-import { IdleTracker } from "@/components/auth/idle-tracker";
+import { headers } from "next/headers";
 
-export default function SuperAdminLayout({
+import { IdleTracker } from "@/components/auth/idle-tracker";
+import { SuperAdminShell } from "@/components/super-admin/super-admin-shell";
+import { requireSuperAdminPage } from "@/server/services/super-admin";
+
+const PUBLIC_SUPER_ADMIN_ROUTES = new Set([
+  "/super-admin/login",
+  "/super-admin/setup",
+]);
+
+export default async function SuperAdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = await getCurrentPathname();
+
+  if (PUBLIC_SUPER_ADMIN_ROUTES.has(pathname)) {
+    return (
+      <section className="min-h-full bg-background text-foreground">
+        <IdleTracker callbackUrl="/super-admin/login" />
+        {children}
+      </section>
+    );
+  }
+
+  const user = await requireSuperAdminPage();
+
   return (
     <section className="min-h-full bg-background text-foreground">
       <IdleTracker callbackUrl="/super-admin/login" />
-      {children}
+      <SuperAdminShell username={user.username}>{children}</SuperAdminShell>
     </section>
+  );
+}
+
+async function getCurrentPathname() {
+  const requestHeaders = await headers();
+
+  return (
+    requestHeaders.get("x-pathname") ||
+    requestHeaders.get("next-url") ||
+    requestHeaders.get("x-invoke-path") ||
+    ""
   );
 }
