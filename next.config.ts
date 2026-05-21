@@ -12,6 +12,12 @@ function getR2PublicHostname() {
 }
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "admin.lpk.local",
+    "dashboard.lpk.local",
+    "hit-indonesia.lpk.local",
+    "hit-japan.lpk.local",
+  ],
   images: {
     remotePatterns: [
       {
