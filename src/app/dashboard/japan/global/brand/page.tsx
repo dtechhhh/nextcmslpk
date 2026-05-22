@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { GlobalConfigEditorPage } from "@/components/dashboard/global-config-editor-page";
 
 export default function JapanBrandPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Global"
-      title="Brand & Header config"
-    />
-  );
+  return <GlobalConfigEditorPage definitionKey="japan.brand_header" />;
 }
 
