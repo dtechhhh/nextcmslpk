@@ -1,7 +1,4 @@
-import Link from "next/link";
-
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { SuperAdminAccountSecurityForms } from "@/components/super-admin/super-admin-account-security-forms";
 import { prisma } from "@/server/db/client";
 import { requireSuperAdminPage } from "@/server/services/super-admin";
 
@@ -67,17 +64,10 @@ export default async function SuperAdminAccountPage() {
               </Badge>
             </div>
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/super-admin/account/change-password"
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              Change Password
-            </Link>
-          </div>
         </CardContent>
       </Card>
+
+      <SuperAdminAccountSecurityForms />
     </>
   );
 }
