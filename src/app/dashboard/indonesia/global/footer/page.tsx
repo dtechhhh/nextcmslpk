@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { GlobalConfigEditorPage } from "@/components/dashboard/global-config-editor-page";
 
 export default function IndonesiaFooterPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Global"
-      title="Footer config"
-    />
-  );
+  return <GlobalConfigEditorPage definitionKey="indonesia.footer" />;
 }
 
