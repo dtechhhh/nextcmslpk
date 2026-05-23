@@ -1,11 +1,5 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function JapanProfilKandidatEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Pages"
-      title="Profil Kandidat editor"
-    />
-  );
+  return <PageEditorPage definitionKey="japan.profil_kandidat" />;
 }
-

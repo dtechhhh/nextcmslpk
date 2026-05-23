@@ -283,7 +283,7 @@ export function PageEditor({
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-sm font-medium text-muted-foreground">
-            Indonesia / Pages
+            {definition.variantKey === "japan" ? "Japan" : "Indonesia"} / Pages
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-normal">
