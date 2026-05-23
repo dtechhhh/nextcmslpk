@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function IndonesiaHomepageEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Pages"
-      title="Homepage editor"
-    />
-  );
+  return <PageEditorPage definitionKey="indonesia.homepage" />;
 }
 
