@@ -1,11 +1,5 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function JapanNewsPageEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Pages"
-      title="News Page editor"
-    />
-  );
+  return <PageEditorPage definitionKey="japan.news_page" />;
 }
-

@@ -1,11 +1,5 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function JapanMetodePelatihanEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Pages"
-      title="Metode Pelatihan editor"
-    />
-  );
+  return <PageEditorPage definitionKey="japan.metode_pelatihan" />;
 }
-

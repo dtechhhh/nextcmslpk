@@ -1,11 +1,5 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function JapanTentangKamiEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Pages"
-      title="Tentang Kami editor"
-    />
-  );
+  return <PageEditorPage definitionKey="japan.tentang_kami" />;
 }
-
