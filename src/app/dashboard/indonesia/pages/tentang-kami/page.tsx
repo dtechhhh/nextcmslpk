@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function IndonesiaTentangKamiEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Pages"
-      title="Tentang Kami editor"
-    />
-  );
+  return <PageEditorPage definitionKey="indonesia.tentang_kami" />;
 }
 
