@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
 export default function IndonesiaJobPageEditorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Pages"
-      title="Job Page editor"
-    />
-  );
+  return <PageEditorPage definitionKey="indonesia.job_page" />;
 }
 
