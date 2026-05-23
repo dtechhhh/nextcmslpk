@@ -1,7 +1,5 @@
 "use server";
 
-import { createHmac } from "node:crypto";
-
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -24,6 +22,7 @@ import {
 import { zodErrorToFieldErrors } from "@/lib/validations/global/_shared";
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
+import { signPreviewToken } from "@/server/services/preview-token";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
 import type { VariantKey } from "@/types";
 
@@ -150,6 +149,7 @@ export async function saveDraft(pageId: unknown, dataJson: unknown) {
       },
       data: {
         dataJson: toPrismaJson(validated.data),
+        updatedBy: context.userId,
       },
       select: {
         id: true,
@@ -158,6 +158,21 @@ export async function saveDraft(pageId: unknown, dataJson: unknown) {
         publishedDataJson: true,
         updatedAt: true,
       },
+    });
+
+    await createAuditLog({
+      tenantId: context.tenantId,
+      userId: context.userId,
+      action: "content.saveDraft",
+      targetType: "ContentPage",
+      targetId: page.id,
+      metadata: {
+        variantId: page.variantId,
+        variantKey: page.variantKey,
+        pageKey: page.pageKey,
+        status: updated.status,
+      },
+      ipAddress: null,
     });
 
     return {
@@ -223,7 +238,7 @@ export async function publishPage(pageId: unknown) {
       ipAddress: null,
     });
 
-    revalidatePath(getPublicPath(page.pageKey));
+    revalidatePath(getPublicPath(page.variantKey, page.pageKey));
 
     return {
       ok: true,
@@ -286,7 +301,7 @@ export async function unpublishPage(pageId: unknown) {
       ipAddress: null,
     });
 
-    revalidatePath(getPublicPath(page.pageKey));
+    revalidatePath(getPublicPath(page.variantKey, page.pageKey));
 
     return {
       ok: true,
@@ -356,7 +371,7 @@ export async function generatePreviewToken(pageId: unknown) {
     const pageKey = assertAllowedContentPageKey(variantKey, toPageKey(page.pageKey));
     const issuedAt = Math.floor(Date.now() / 1000);
     const expiresAt = issuedAt + 60 * 60;
-    const token = signJwt({
+    const token = signPreviewToken({
       iss: "nextcmslpk",
       sub: page.id,
       type: "content_page",
@@ -368,7 +383,7 @@ export async function generatePreviewToken(pageId: unknown) {
     });
     const previewUrl = buildPreviewUrl({
       host: page.variant.domains[0]?.host,
-      publicPath: getPublicPath(pageKey),
+      publicPath: getPublicPath(variantKey, pageKey),
       token,
     });
 
@@ -480,8 +495,8 @@ function assertAllowedContentPageKey(variantKey: VariantKey, pageKey: PageKey) {
   return pageKey;
 }
 
-function getPublicPath(pageKey: PageKey) {
-  const definitionKey = `indonesia.${pageKey}` as PageEditorDefinitionKey;
+function getPublicPath(variantKey: VariantKey, pageKey: PageKey) {
+  const definitionKey = `${variantKey}.${pageKey}` as PageEditorDefinitionKey;
   const definition = PAGE_EDITOR_DEFINITIONS[definitionKey];
 
   return definition?.publicPath ?? `/${pageKey.replace(/_/g, "-")}`;
@@ -497,7 +512,7 @@ function buildPreviewUrl({
   token: string;
 }) {
   const baseUrl = host
-    ? `https://${host}`
+    ? `${getPreviewProtocol(host)}://${host}`
     : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const url = new URL(publicPath, baseUrl);
 
@@ -507,24 +522,18 @@ function buildPreviewUrl({
   return url.toString();
 }
 
-function signJwt(payload: Record<string, unknown>) {
-  const secret = process.env.AUTH_SECRET;
-
-  if (!secret) {
-    throw new AppError("CONFIG_ERROR", "AUTH_SECRET belum dikonfigurasi.", 500);
+function getPreviewProtocol(host: string) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    (host.startsWith("localhost") ||
+      host.startsWith("127.0.0.1") ||
+      host.startsWith("[::1]") ||
+      host.includes(".local"))
+  ) {
+    return "http";
   }
 
-  const header = {
-    alg: "HS256",
-    typ: "JWT",
-  };
-  const encodedHeader = Buffer.from(JSON.stringify(header)).toString("base64url");
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const signature = createHmac("sha256", secret)
-    .update(`${encodedHeader}.${encodedPayload}`)
-    .digest("base64url");
-
-  return `${encodedHeader}.${encodedPayload}.${signature}`;
+  return "https";
 }
 
 function toVariantKey(value: string): VariantKey {
