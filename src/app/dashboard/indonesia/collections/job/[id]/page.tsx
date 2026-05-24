@@ -1,10 +1,19 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function IndonesiaEditJobPage() {
+type IndonesiaEditJobPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function IndonesiaEditJobPage({
+  params,
+}: IndonesiaEditJobPageProps) {
+  const { id } = await params;
+
   return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Edit job"
+    <CollectionEditorPage
+      variantKey="indonesia"
+      collectionKey="job"
+      itemId={id}
     />
   );
 }

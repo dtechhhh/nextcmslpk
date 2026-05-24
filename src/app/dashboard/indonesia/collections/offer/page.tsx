@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionListPage } from "@/components/dashboard/collection-list-page";
 
 export default function IndonesiaOfferListPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Offer list"
-    />
-  );
+  return <CollectionListPage variantKey="indonesia" collectionKey="offer" />;
 }
 
