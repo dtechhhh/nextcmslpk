@@ -10,8 +10,12 @@ import { createAuditLog } from "@/server/services/audit";
 import {
   confirmUpload as confirmStorageUpload,
   deleteMedia as deleteStorageMedia,
+  generatePresignedUploadUrl as generateStoragePresignedUploadUrl,
+  getMediaReferences as getStorageMediaReferences,
   getPublicUrl,
+  getTotalReferenceCount,
 } from "@/server/services/storage";
+import { verifySecurityStamp } from "@/server/services/security-stamp";
 
 const mediaIdInputSchema = z.union([
   z.string().cuid().transform((mediaId) => ({ mediaId })),
@@ -41,6 +45,17 @@ const pageSchema = z
   ])
   .optional()
   .transform((page) => page ?? { page: 1, pageSize: 24 });
+
+const updateAltTextSchema = z.object({
+  mediaId: z.string().cuid(),
+  altText: z.string().trim().max(200).transform((val) => val || null),
+});
+
+const generateUploadUrlSchema = z.object({
+  fileName: z.string().trim().min(1).max(200),
+  contentType: z.string().trim().min(1),
+  fileSize: z.number().int().positive(),
+});
 
 export async function confirmUpload(input: unknown) {
   try {
@@ -179,12 +194,21 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
       db.mediaAsset.count({ where }),
     ]);
 
+    const itemsWithUsage = await Promise.all(
+      items.map(async (item) => {
+        const references = await getStorageMediaReferences(session.tenantId, item.id);
+
+        return {
+          ...item,
+          publicUrl: getPublicUrl(item.storagePath),
+          usageCount: getTotalReferenceCount(references),
+        };
+      }),
+    );
+
     return {
       ok: true,
-      items: items.map((item) => ({
-        ...item,
-        publicUrl: getPublicUrl(item.storagePath),
-      })),
+      items: itemsWithUsage,
       total,
       page: normalizedPage.page,
       pageSize: normalizedPage.pageSize,
@@ -192,6 +216,111 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
     };
   } catch (error) {
     return toActionError(error, "Media gagal dimuat.");
+  }
+}
+
+export async function getMediaReferences(input: unknown) {
+  try {
+    const session = await requireTenantSession();
+    const parsed = mediaIdInputSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        mediaId: ["Media tidak valid."],
+      });
+    }
+
+    const references = await getStorageMediaReferences(session.tenantId, parsed.data.mediaId);
+
+    return {
+      ok: true,
+      totalReferences: getTotalReferenceCount(references),
+      references,
+    };
+  } catch (error) {
+    return toActionError(error, "Referensi media gagal dimuat.");
+  }
+}
+
+export async function updateMediaAltText(input: unknown) {
+  try {
+    const session = await requireTenantSession();
+    const parsed = updateAltTextSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        altText: ["Alt text maksimal 200 karakter."],
+      });
+    }
+
+    const db = tenantDb(session.session);
+    const media = await db.mediaAsset.findFirst({
+      where: { id: parsed.data.mediaId },
+      select: { id: true },
+    });
+
+    if (!media) {
+      throw new ValidationError({
+        mediaId: ["Media tidak ditemukan."],
+      });
+    }
+
+    const updated = await db.mediaAsset.update({
+      where: { id: parsed.data.mediaId },
+      data: { altText: parsed.data.altText },
+      select: { id: true, altText: true },
+    });
+
+    return {
+      ok: true,
+      media: updated,
+    };
+  } catch (error) {
+    return toActionError(error, "Alt text gagal diubah.");
+  }
+}
+
+export async function generatePresignedUploadUrl(input: unknown) {
+  try {
+    const session = await requireTenantSession();
+    const parsed = generateUploadUrlSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        form: ["Data upload tidak valid."],
+      });
+    }
+
+    const result = await generateStoragePresignedUploadUrl(
+      session.tenantId,
+      parsed.data.fileName,
+      parsed.data.contentType,
+      parsed.data.fileSize,
+    );
+
+    await createAuditLog({
+      tenantId: session.tenantId,
+      userId: session.userId,
+      action: "media.uploadStarted",
+      targetType: "MediaAsset",
+      targetId: result.mediaId,
+      metadata: {
+        fileName: parsed.data.fileName,
+        fileSize: parsed.data.fileSize,
+      },
+      ipAddress: null,
+    });
+
+    return {
+      ok: true,
+      mediaId: result.mediaId,
+      presignedUrl: result.presignedUrl,
+      publicUrl: result.publicUrl,
+      storagePath: result.storagePath,
+      expiresAt: result.expiresAt.toISOString(),
+    };
+  } catch (error) {
+    return toActionError(error, "Presigned URL gagal dibuat.");
   }
 }
 
@@ -210,6 +339,8 @@ async function requireTenantSession(expectedTenantId?: string) {
   if (expectedTenantId && expectedTenantId !== user.tenantId) {
     throw new ForbiddenError("Tenant tidak sesuai sesi.");
   }
+
+  await verifySecurityStamp(session);
 
   return {
     session,

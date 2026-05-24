@@ -1,7 +1,7 @@
 "use client";
 
-import { FileTextIcon, ImageIcon, SearchIcon, XIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { FileTextIcon, ImageIcon, Loader2Icon, SearchIcon, UploadIcon, XIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { listMedia } from "@/server/actions/tenant/media";
+import {
+  confirmUpload,
+  generatePresignedUploadUrl,
+  listMedia,
+} from "@/server/actions/tenant/media";
 import { cn } from "@/lib/utils";
 
 type MediaType = "IMAGE" | "DOCUMENT";
@@ -49,6 +53,9 @@ export function MediaPicker({
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === value) ?? null,
@@ -63,8 +70,7 @@ export function MediaPicker({
 
     let cancelled = false;
 
-    async function loadItems() {
-      setLoading(true);
+    async function load() {
       const response = await listMedia(
         tenantId,
         {
@@ -93,7 +99,7 @@ export function MediaPicker({
       setTotalPages(Math.max(response.totalPages, 1));
     }
 
-    void loadItems();
+    void load();
 
     return () => {
       cancelled = true;
@@ -105,6 +111,53 @@ export function MediaPicker({
     setOpen(false);
   }
 
+  async function handleInlineUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    const file = files[0];
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const presignedResult = await generatePresignedUploadUrl({
+        fileName: file.name,
+        contentType: file.type,
+        fileSize: file.size,
+      });
+
+      if (!isPresignedSuccess(presignedResult)) {
+        setUploadError(getActionErrorMessage(presignedResult, "Upload gagal."));
+        setUploading(false);
+        return;
+      }
+
+      await uploadFile(presignedResult.presignedUrl, file);
+
+      const confirmResult = await confirmUpload(presignedResult.mediaId);
+
+      if (!isConfirmSuccess(confirmResult)) {
+        setUploadError(getActionErrorMessage(confirmResult, "Konfirmasi gagal."));
+        setUploading(false);
+        return;
+      }
+
+      onChange(presignedResult.mediaId);
+      setOpen(false);
+      toast.success("Media berhasil diupload.");
+    } catch {
+      setUploadError("Upload gagal.");
+    } finally {
+      setUploading(false);
+    }
+
+    event.target.value = "";
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
@@ -113,7 +166,10 @@ export function MediaPicker({
           variant="outline"
           className="min-w-0 justify-start"
           disabled={disabled}
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setLoading(true);
+            setOpen(true);
+          }}
         >
           <PickerIcon />
           <span className="truncate">
@@ -146,23 +202,55 @@ export function MediaPicker({
           </DialogHeader>
 
           <div className="flex flex-col gap-4 overflow-hidden">
-            <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                className="pl-8"
-                placeholder="Search media"
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setPage(1);
-                }}
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  className="pl-8"
+                  placeholder="Search media"
+                  onChange={(event) => {
+                    setLoading(true);
+                    setQuery(event.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? (
+                  <Loader2Icon className="size-4 animate-spin" />
+                ) : (
+                  <UploadIcon className="size-4" />
+                )}
+                Upload
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={
+                  mediaType === "IMAGE"
+                    ? "image/jpeg,image/png,image/webp"
+                    : "application/pdf"
+                }
+                className="hidden"
+                onChange={handleInlineUpload}
               />
             </div>
+
+            {uploadError ? (
+              <p className="text-xs text-destructive">{uploadError}</p>
+            ) : null}
 
             <div className="min-h-72 overflow-y-auto pr-1">
               {loading ? (
                 <div className="grid min-h-72 place-items-center text-sm text-muted-foreground">
-                  Loading media...
+                  <Loader2Icon className="size-5 animate-spin" />
                 </div>
               ) : items.length === 0 ? (
                 <div className="grid min-h-72 place-items-center rounded-lg border border-dashed text-sm text-muted-foreground">
@@ -215,7 +303,10 @@ export function MediaPicker({
                   type="button"
                   variant="outline"
                   disabled={page <= 1 || loading}
-                  onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                  onClick={() => {
+                    setLoading(true);
+                    setPage((current) => Math.max(current - 1, 1));
+                  }}
                 >
                   Previous
                 </Button>
@@ -223,9 +314,10 @@ export function MediaPicker({
                   type="button"
                   variant="outline"
                   disabled={page >= totalPages || loading}
-                  onClick={() =>
-                    setPage((current) => Math.min(current + 1, totalPages))
-                  }
+                  onClick={() => {
+                    setLoading(true);
+                    setPage((current) => Math.min(current + 1, totalPages));
+                  }}
                 >
                   Next
                 </Button>
@@ -236,6 +328,28 @@ export function MediaPicker({
       </Dialog>
     </div>
   );
+}
+
+async function uploadFile(url: string, file: File): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", file.type);
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(new Error(`Upload failed with status ${xhr.status}`));
+      }
+    });
+
+    xhr.addEventListener("error", () => reject(new Error("Upload failed")));
+    xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
+
+    xhr.send(file);
+  });
 }
 
 function isMediaListSuccess(value: unknown): value is {
@@ -249,6 +363,21 @@ function isMediaListSuccess(value: unknown): value is {
     Array.isArray(value.items) &&
     typeof value.totalPages === "number"
   );
+}
+
+function isPresignedSuccess(value: unknown): value is {
+  ok: true;
+  mediaId: string;
+  presignedUrl: string;
+} {
+  return isRecord(value) && value.ok === true && typeof value.presignedUrl === "string" && typeof value.mediaId === "string";
+}
+
+function isConfirmSuccess(value: unknown): value is {
+  ok: true;
+  media: unknown;
+} {
+  return isRecord(value) && value.ok === true;
 }
 
 function getActionErrorMessage(value: unknown, fallback: string) {
