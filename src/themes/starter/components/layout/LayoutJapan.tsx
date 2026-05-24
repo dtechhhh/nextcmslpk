@@ -1,0 +1,182 @@
+import type { TenantModel } from "@/generated/prisma/models";
+import type { ReactNode } from "react";
+
+import {
+  resolveMediaUrl,
+  type PublicJson,
+} from "@/server/resolvers/public";
+import { FooterJapan } from "@/themes/starter/components/layout/FooterJapan";
+import { HeaderJapan } from "@/themes/starter/components/layout/HeaderJapan";
+
+type LayoutJapanProps = {
+  globalConfig: Record<string, PublicJson>;
+  tenant: TenantModel;
+  children: ReactNode;
+};
+
+export async function LayoutJapan({
+  globalConfig,
+  tenant,
+  children,
+}: LayoutJapanProps) {
+  const brandHeader = record(globalConfig.brand_header);
+  const lineBusinessContact = record(globalConfig.line_business_contact);
+  const footer = record(globalConfig.footer);
+  const brand = record(brandHeader.brand);
+  const topbar = record(brandHeader.topbar);
+  const lineContact = record(lineBusinessContact.line_contact);
+  const businessEmail = record(lineBusinessContact.business_email);
+  const businessInfo = record(lineBusinessContact.business_info);
+  const documents = record(lineBusinessContact.documents);
+  const socialLinks = record(lineBusinessContact.social_links);
+  const footerBrand = record(footer.brand);
+  const footerContact = record(footer.contact);
+  const headerPrimaryCta = record(brandHeader.header_primary_cta);
+  const headerSecondaryCta = record(brandHeader.header_secondary_cta);
+
+  const lpkName = stringValue(brand.lpk_name) || tenant.name;
+  const lineAccountId = stringValue(lineContact.line_official_account_id);
+  const defaultLineMessage =
+    stringValue(lineContact.default_message_template) ||
+    "Hello, I would like to consult with {lpk_name}.";
+  const [logoSrc, logoLightSrc, headerDocumentUrl, footerLogoSrc, footerResourceLinks] =
+    await Promise.all([
+      resolveMediaUrl(stringValue(brand.logo_image_id)),
+      resolveMediaUrl(stringValue(brand.logo_light_image_id)),
+      resolveHeaderDocumentUrl(headerSecondaryCta, documents),
+      resolveMediaUrl(stringValue(footerBrand.logo_image_id)),
+      resolveFooterResourceLinks(footer),
+    ]);
+
+  return (
+    <div
+      data-variant="japan"
+      className="theme-japan font-japanese min-h-screen bg-white text-neutral-900"
+    >
+      <HeaderJapan
+        lpkName={lpkName}
+        tagline={stringValue(brand.tagline)}
+        logoSrc={logoSrc ?? undefined}
+        logoLightSrc={logoLightSrc ?? undefined}
+        topbar={{
+          locationLabel: stringValue(topbar.location_label),
+          emailLabel: stringValue(topbar.email_label),
+          businessHoursLabel: stringValue(topbar.business_hours_label),
+          isEnabled: booleanValue(topbar.is_enabled, true),
+        }}
+        navItems={arrayOfRecords(brandHeader.navbar).map((item) => ({
+          key: stringValue(item.key),
+          label: stringValue(item.label),
+          href: stringValue(item.href) || "/",
+          isEnabled: booleanValue(item.is_enabled, true),
+          sortOrder: numberValue(item.sort_order),
+        }))}
+        primaryCTA={{
+          label:
+            stringValue(headerPrimaryCta.label) ||
+            stringValue(lineContact.line_display_label) ||
+            "Contact via LINE",
+          lineAccountId,
+          lineMessageTemplate:
+            stringValue(headerPrimaryCta.line_message_template) || defaultLineMessage,
+        }}
+        secondaryCTA={{
+          label: stringValue(headerSecondaryCta.label) || "Company Profile",
+          type:
+            stringValue(headerSecondaryCta.type) === "document"
+              ? "document"
+              : "internal_link",
+          documentUrl: headerDocumentUrl ?? undefined,
+          href: stringValue(headerSecondaryCta.href) || "/contact",
+          isEnabled: booleanValue(headerSecondaryCta.is_enabled, true),
+        }}
+        sticky={booleanValue(record(brandHeader.header_behavior).sticky_header, true)}
+      />
+      <main>{children}</main>
+      <FooterJapan
+        lpkName={stringValue(footerBrand.lpk_name) || lpkName}
+        logoSrc={footerLogoSrc ?? logoSrc ?? undefined}
+        shortDescription={stringValue(footerBrand.short_description)}
+        companyLinks={arrayOfRecords(footer.company_links).map((item) => ({
+          label: stringValue(item.label),
+          href: stringValue(item.href) || "/",
+          isEnabled: booleanValue(item.is_enabled, true),
+          sortOrder: numberValue(item.sort_order),
+        }))}
+        resourceLinks={footerResourceLinks}
+        contact={{
+          usedFromGlobal: booleanValue(footerContact.use_global_contact, true),
+        }}
+        contactData={{
+          phone: stringValue(businessInfo.phone_label),
+          address: stringValue(businessInfo.address),
+          operationalHours: stringValue(businessInfo.operational_hours),
+          email: stringValue(businessEmail.email),
+        }}
+        social={{
+          line: stringValue(socialLinks.line),
+          linkedin: stringValue(socialLinks.linkedin),
+          youtube: stringValue(socialLinks.youtube),
+          instagram: stringValue(socialLinks.instagram),
+        }}
+        legal={{
+          copyrightText:
+            stringValue(record(footer.legal).copyright_text) ||
+            `Copyright ${new Date().getFullYear()} ${lpkName}.`,
+          showPoweredBy: booleanValue(record(footer.legal).show_powered_by, true),
+        }}
+      />
+    </div>
+  );
+}
+
+async function resolveHeaderDocumentUrl(
+  headerSecondaryCta: PublicJson,
+  documents: PublicJson,
+) {
+  const headerDocumentId = stringValue(headerSecondaryCta.document_file_id);
+  const fallbackDocumentId = stringValue(documents.company_profile_file_id);
+
+  return resolveMediaUrl(headerDocumentId || fallbackDocumentId);
+}
+
+async function resolveFooterResourceLinks(footer: PublicJson) {
+  return Promise.all(
+    arrayOfRecords(footer.resource_links).map(async (item) => ({
+      label: stringValue(item.label),
+      href: stringValue(item.href) || undefined,
+      documentUrl:
+        (await resolveMediaUrl(stringValue(item.document_file_id))) || undefined,
+      isEnabled: booleanValue(item.is_enabled, true),
+      sortOrder: numberValue(item.sort_order),
+    })),
+  );
+}
+
+function record(value: unknown): PublicJson {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as PublicJson)
+    : {};
+}
+
+function arrayOfRecords(value: unknown) {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function isRecord(value: unknown): value is PublicJson {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function booleanValue(value: unknown, fallback: boolean) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function numberValue(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+export type { LayoutJapanProps };

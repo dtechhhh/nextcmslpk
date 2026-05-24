@@ -124,6 +124,13 @@ function ContentBlocks({ blocks, variant }: ContentBlocksProps) {
           ) : null
         }
 
+        if (
+          (block.type === "offer_callout" && variant !== "indonesia") ||
+          (block.type === "sector_callout" && variant !== "japan")
+        ) {
+          return null
+        }
+
         if (block.type === "offer_callout" || block.type === "sector_callout") {
           const title = stringValue(block.data, "title")
           const description = stringValue(block.data, "description")
