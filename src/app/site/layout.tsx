@@ -1,49 +1,65 @@
+import type { ReactNode } from "react";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 
-import { resolvePublicDomainByHost } from "@/server/resolvers/domain";
+import { NotFoundPage, SuspendedPage, UnavailablePage } from "@/components/site/state-pages";
+import starterTheme from "@/themes/starter/registry";
+import { LayoutIndonesia } from "@/themes/starter/components/layout/LayoutIndonesia";
+import { resolveDomain } from "@/server/resolvers/domain";
+import { resolveGlobalConfig } from "@/server/resolvers/public";
+
+export const dynamic = "force-dynamic";
 
 export default async function SiteLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
-  const host = (await headers()).get("host") ?? "";
-  const domain = await resolvePublicDomainByHost(host);
+  const host = (await headers()).get("host") || "";
+  const result = await resolveDomain(host);
 
-  if (domain.status === "suspended") {
-    return <SuspendedPage host={domain.host} tenantName={domain.tenantName} />;
+  if (result.type === "not_found") {
+    return <NotFoundPage />;
   }
 
-  if (domain.status === "disabled") {
-    notFound();
+  if (result.type === "suspended") {
+    return <SuspendedPage />;
   }
 
-  return (
-    <section className="min-h-full bg-background text-foreground">
-      {children}
-    </section>
-  );
-}
+  if (result.type === "unavailable") {
+    return <UnavailablePage />;
+  }
 
-function SuspendedPage({
-  host,
-  tenantName,
-}: {
-  host: string;
-  tenantName: string;
-}) {
-  return (
-    <section className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
-      <div className="w-full max-w-md rounded-lg border p-6 text-center">
-        <p className="text-sm font-medium text-muted-foreground">{host}</p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-normal">
-          Tenant Suspended
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          {tenantName} sedang disuspend sementara.
-        </p>
+  const theme = starterTheme;
+  const tenant = result.tenant;
+  const variant = result.variant;
+  const variantKey = variant.variantKey;
+  const globalConfig = await resolveGlobalConfig(variant.id);
+
+  if (variantKey === "indonesia") {
+    return (
+      <LayoutIndonesia
+        globalConfig={globalConfig}
+        tenant={tenant}
+        variantId={variant.id}
+      >
+        {children}
+      </LayoutIndonesia>
+    );
+  }
+
+  if (variantKey === "japan" && theme.layouts.japan) {
+    const LayoutJapan = theme.layouts.japan;
+    return (
+      <div data-variant="japan">
+        <LayoutJapan
+          globalConfig={globalConfig}
+          tenant={tenant}
+        >
+          {children}
+        </LayoutJapan>
       </div>
-    </section>
-  );
+    );
+  }
+
+  return <UnavailablePage />;
 }

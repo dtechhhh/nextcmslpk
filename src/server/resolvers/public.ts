@@ -1,456 +1,462 @@
-import { PAGE_EDITOR_DEFINITIONS } from "@/lib/page-editor-definitions";
-import {
-  findCollectionByPublicPath,
-  getPublicItemPath,
-} from "@/lib/collection-definitions";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+import type { PublishStatus } from "@/generated/prisma/enums";
+import type { ContentItemModel, ContentItemWhereInput } from "@/generated/prisma/models";
+import { getPublicUrl } from "@/server/services/storage";
 import { prisma } from "@/server/db/client";
-import {
-  resolvePublicDomainByHost,
-  type PublicDomainResolution,
-} from "@/server/resolvers/domain";
-import { verifyPreviewToken } from "@/server/services/preview-token";
-import type { VariantKey } from "@/types";
 
 export type PublicPageSearchParams = Record<string, string | string[] | undefined>;
 
-export type PublicContentPageResolution =
-  | {
-      status: "ok";
-      isPreview: boolean;
-      noStore: boolean;
-      page: {
-        id: string;
-        title: string;
-        pageKey: string;
-        publicPath: string;
-        variantKey: VariantKey;
-        dataJson: Record<string, unknown>;
-        updatedAt: string;
-      };
-    }
-  | {
-      status: "invalid_preview";
-      normalPath: string;
-    }
-  | {
-      status: "not_found" | "unknown_domain" | "disabled" | "suspended";
-    };
+export type PublicJson = Record<string, unknown>;
 
-type ResolvePublicContentPageInput = {
-  host: string;
-  publicPath: string;
-  searchParams: PublicPageSearchParams;
+export type PreviewTokenResolution = {
+  valid: boolean;
+  itemId?: string;
+  pageId?: string;
+  tenantId?: string;
+  variantId?: string;
+  pageKey?: string;
+  collectionKey?: string;
 };
 
-export async function resolvePublicContentPage({
-  host,
-  publicPath,
-  searchParams,
-}: ResolvePublicContentPageInput): Promise<PublicContentPageResolution> {
-  const normalizedPath = normalizePublicPath(publicPath);
+export type PublicCollectionItem = {
+  id: string;
+  title: string;
+  slug: string;
+  status: PublishStatus;
+  excerpt?: string;
+  thumbnailImageId?: string;
+  thumbnailSrc?: string;
+  heroImageId?: string;
+  heroSrc?: string;
+  isFeatured: boolean;
+  publishedAt?: string;
+  startAt?: string;
+  expiredAt?: string;
+  sortOrder: number;
+  dataJson: PublicJson;
+  isExpired: boolean;
+};
 
-  if (isPreviewRequest(searchParams)) {
-    return resolvePreviewContentPage({
-      host,
-      publicPath: normalizedPath,
-      searchParams,
-    });
-  }
-
-  const domain = await resolvePublicDomainByHost(host);
-
-  if (domain.status !== "active") {
-    return {
-      status: domain.status === "unknown" ? "unknown_domain" : domain.status,
-    };
-  }
-
-  return resolvePublishedContentPage(domain, normalizedPath);
-}
-
-async function resolvePublishedContentPage(
-  domain: Extract<PublicDomainResolution, { status: "active" }>,
-  publicPath: string,
-): Promise<PublicContentPageResolution> {
-  const variantKey = toVariantKey(domain.variantKey);
-
-  if (!variantKey) {
-    return {
-      status: "not_found",
-    };
-  }
-
-  const pageDefinition = findPageDefinitionByPublicPath(variantKey, publicPath);
-
-  if (!pageDefinition) {
-    return resolvePublishedContentItem(domain, publicPath);
-  }
-
-  const page = await prisma.contentPage.findFirst({
-    where: {
-      tenantId: domain.tenantId,
-      variantId: domain.variantId,
-      pageKey: pageDefinition.pageKey,
-    },
-    select: {
-      id: true,
-      title: true,
-      pageKey: true,
-      status: true,
-      publishedDataJson: true,
-      updatedAt: true,
-    },
+export async function resolveGlobalConfig(variantId: string) {
+  const configs = await prisma.variantGlobalConfig.findMany({
+    where: { variantId },
+    select: { configKey: true, dataJson: true },
   });
 
-  if (
-    !page ||
-    page.status !== "PUBLISHED" ||
-    !isRecord(page.publishedDataJson)
-  ) {
-    return {
-      status: "not_found",
-    };
-  }
-
-  return {
-    status: "ok",
-    isPreview: false,
-    noStore: false,
-    page: {
-      id: page.id,
-      title: page.title,
-      pageKey: page.pageKey,
-      publicPath: pageDefinition.publicPath,
-      variantKey,
-      dataJson: cloneRecord(page.publishedDataJson),
-      updatedAt: page.updatedAt.toISOString(),
-    },
-  };
+  return configs.reduce<Record<string, PublicJson>>((globalConfig, config) => {
+    globalConfig[config.configKey] = normalizeJson(config.dataJson);
+    return globalConfig;
+  }, {});
 }
 
-async function resolvePublishedContentItem(
-  domain: Extract<PublicDomainResolution, { status: "active" }>,
-  publicPath: string,
-): Promise<PublicContentPageResolution> {
-  const variantKey = toVariantKey(domain.variantKey);
-
-  if (!variantKey) {
-    return {
-      status: "not_found",
-    };
-  }
-
-  const collectionMatch = findCollectionByPublicPath(variantKey, publicPath);
-
-  if (!collectionMatch) {
-    return {
-      status: "not_found",
-    };
-  }
-
-  const item = await prisma.contentItem.findFirst({
-    where: {
-      tenantId: domain.tenantId,
-      variantId: domain.variantId,
-      collectionKey: collectionMatch.definition.key,
-      slug: collectionMatch.slug,
-    },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      collectionKey: true,
-      status: true,
-      publishedDataJson: true,
-      updatedAt: true,
-    },
-  });
-
-  if (
-    !item ||
-    item.status !== "PUBLISHED" ||
-    !isRecord(item.publishedDataJson)
-  ) {
-    return {
-      status: "not_found",
-    };
-  }
-
-  return {
-    status: "ok",
-    isPreview: false,
-    noStore: false,
-    page: {
-      id: item.id,
-      title: item.title,
-      pageKey: item.collectionKey,
-      publicPath: getPublicItemPath(collectionMatch.definition.key, item.slug),
-      variantKey,
-      dataJson: cloneRecord(item.publishedDataJson),
-      updatedAt: item.updatedAt.toISOString(),
-    },
-  };
-}
-
-async function resolvePreviewContentPage({
-  host,
-  publicPath,
-  searchParams,
-}: ResolvePublicContentPageInput): Promise<PublicContentPageResolution> {
-  const token = readParam(searchParams.token);
-
-  if (!token) {
-    return invalidPreview(publicPath);
-  }
-
-  const verifiedToken = verifyPreviewToken(token);
-
-  if (!verifiedToken.ok) {
-    return invalidPreview(publicPath);
-  }
-
-  const payload = verifiedToken.payload;
-
-  if (payload.type === "content_item") {
-    return resolvePreviewContentItem({
-      host,
-      publicPath,
-      payload,
-    });
-  }
-
-  if (payload.type !== "content_page") {
-    return invalidPreview(publicPath);
-  }
-
-  if (!payload.pageKey) {
-    return invalidPreview(publicPath);
-  }
-
-  const page = await prisma.contentPage.findFirst({
-    where: {
-      id: payload.sub,
-      tenantId: payload.tenantId,
-      variantId: payload.variantId,
-      pageKey: payload.pageKey,
-    },
-    select: {
-      id: true,
-      title: true,
-      pageKey: true,
-      dataJson: true,
-      updatedAt: true,
-      variant: {
-        select: {
-          key: true,
-          status: true,
-          tenant: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (
-    !page ||
-    page.variant.tenant.status !== "ACTIVE" ||
-    page.variant.status !== "ACTIVE"
-  ) {
-    return invalidPreview(publicPath);
-  }
-
-  const variantKey = toVariantKey(page.variant.key);
-
-  if (!variantKey) {
-    return invalidPreview(publicPath);
-  }
-
-  const pageDefinition = findPageDefinition(variantKey, page.pageKey);
-
-  if (!pageDefinition || normalizePublicPath(pageDefinition.publicPath) !== publicPath) {
-    return invalidPreview(publicPath);
-  }
-
-  const domain = await resolvePublicDomainByHost(host);
-
-  if (
-    domain.status === "active" &&
-    (domain.tenantId !== payload.tenantId ||
-      domain.variantId !== payload.variantId)
-  ) {
-    return invalidPreview(publicPath);
-  }
-
-  return {
-    status: "ok",
-    isPreview: true,
-    noStore: true,
-    page: {
-      id: page.id,
-      title: page.title,
-      pageKey: page.pageKey,
-      publicPath: pageDefinition.publicPath,
-      variantKey,
-      dataJson: normalizePageData(page.dataJson),
-      updatedAt: page.updatedAt.toISOString(),
-    },
-  };
-}
-
-async function resolvePreviewContentItem({
-  host,
-  publicPath,
-  payload,
-}: {
-  host: string;
-  publicPath: string;
-  payload: {
-    sub: string;
-    tenantId: string;
-    variantId: string;
-    collectionKey?: string;
-  };
-}): Promise<PublicContentPageResolution> {
-  if (!payload.collectionKey) {
-    return invalidPreview(publicPath);
-  }
-
-  const item = await prisma.contentItem.findFirst({
-    where: {
-      id: payload.sub,
-      tenantId: payload.tenantId,
-      variantId: payload.variantId,
-      collectionKey: payload.collectionKey,
-    },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      collectionKey: true,
-      dataJson: true,
-      updatedAt: true,
-      variant: {
-        select: {
-          key: true,
-          status: true,
-          tenant: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (
-    !item ||
-    item.variant.tenant.status !== "ACTIVE" ||
-    item.variant.status !== "ACTIVE"
-  ) {
-    return invalidPreview(publicPath);
-  }
-
-  const variantKey = toVariantKey(item.variant.key);
-
-  if (!variantKey) {
-    return invalidPreview(publicPath);
-  }
-
-  const collectionMatch = findCollectionByPublicPath(variantKey, publicPath);
-
-  if (
-    !collectionMatch ||
-    collectionMatch.definition.key !== item.collectionKey ||
-    collectionMatch.slug !== item.slug
-  ) {
-    return invalidPreview(publicPath);
-  }
-
-  const domain = await resolvePublicDomainByHost(host);
-
-  if (
-    domain.status === "active" &&
-    (domain.tenantId !== payload.tenantId ||
-      domain.variantId !== payload.variantId)
-  ) {
-    return invalidPreview(publicPath);
-  }
-
-  return {
-    status: "ok",
-    isPreview: true,
-    noStore: true,
-    page: {
-      id: item.id,
-      title: item.title,
-      pageKey: item.collectionKey,
-      publicPath: getPublicItemPath(collectionMatch.definition.key, item.slug),
-      variantKey,
-      dataJson: normalizePageData(item.dataJson),
-      updatedAt: item.updatedAt.toISOString(),
-    },
-  };
-}
-
-function invalidPreview(publicPath: string): PublicContentPageResolution {
-  return {
-    status: "invalid_preview",
-    normalPath: publicPath,
-  };
-}
-
-function isPreviewRequest(searchParams: PublicPageSearchParams) {
-  return readParam(searchParams.preview) === "true";
-}
-
-function findPageDefinitionByPublicPath(
-  variantKey: VariantKey,
-  publicPath: string,
+export async function resolvePageData(
+  variantId: string,
+  pageKey: string,
+  opts?: { preview?: boolean; token?: string },
 ) {
-  const normalizedPath = normalizePublicPath(publicPath);
+  if (opts?.preview) {
+    const preview = opts.token ? await resolvePreviewTokenForVariant(opts.token, variantId) : null;
 
-  return Object.values(PAGE_EDITOR_DEFINITIONS).find(
-    (definition) =>
-      definition.variantKey === variantKey &&
-      normalizePublicPath(definition.publicPath) === normalizedPath,
+    if (!preview?.valid || preview.pageKey !== pageKey) {
+      return null;
+    }
+
+    const page = await prisma.contentPage.findFirst({
+      where: {
+        id: preview.pageId,
+        tenantId: preview.tenantId,
+        variantId,
+        pageKey,
+      },
+      select: { id: true, title: true, pageKey: true, dataJson: true, updatedAt: true },
+    });
+
+    return page
+      ? {
+          id: page.id,
+          title: page.title,
+          pageKey: page.pageKey,
+          dataJson: normalizeJson(page.dataJson),
+          updatedAt: page.updatedAt.toISOString(),
+          isPreview: true,
+        }
+      : null;
+  }
+
+  const page = await prisma.contentPage.findFirst({
+    where: { variantId, pageKey, status: "PUBLISHED" },
+    select: {
+      id: true,
+      title: true,
+      pageKey: true,
+      publishedDataJson: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!page || !isRecord(page.publishedDataJson)) {
+    return null;
+  }
+
+  return {
+    id: page.id,
+    title: page.title,
+    pageKey: page.pageKey,
+    dataJson: cloneRecord(page.publishedDataJson),
+    updatedAt: page.updatedAt.toISOString(),
+    isPreview: false,
+  };
+}
+
+export async function resolveMediaUrl(mediaId: string) {
+  if (!mediaId) {
+    return null;
+  }
+
+  const media = await prisma.mediaAsset.findFirst({
+    where: { id: mediaId, status: "ACTIVE" },
+    select: { storagePath: true },
+  });
+
+  return media ? getPublicUrl(media.storagePath) : null;
+}
+
+export async function resolveOptionLabel(optionId: string) {
+  if (!optionId) {
+    return null;
+  }
+
+  return prisma.optionValue.findUnique({
+    where: { id: optionId },
+    select: { label: true, value: true },
+  });
+}
+
+export async function resolveOptionSet(variantId: string, key: string) {
+  const optionSet = await prisma.optionSet.findUnique({
+    where: { variantId_key: { variantId, key } },
+    select: {
+      values: {
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+        select: { id: true, label: true, value: true },
+      },
+    },
+  });
+
+  return optionSet?.values ?? [];
+}
+
+export async function resolveCollectionList(
+  variantId: string,
+  collectionKey: string,
+  opts: {
+    filters?: Record<string, string>;
+    page?: number;
+    pageSize?: number;
+    source?: "featured" | "latest_active" | "latest_published" | "manual";
+    max?: number;
+    activeOnly?: boolean;
+    manualIds?: string[];
+  } = {},
+) {
+  const page = Math.max(1, opts.page ?? 1);
+  const pageSize = Math.max(1, Math.min(50, opts.pageSize ?? opts.max ?? 12));
+  const skip = (page - 1) * pageSize;
+  const now = new Date();
+  const source = opts.source;
+
+  const where = buildCollectionListWhere({
+    variantId,
+    collectionKey,
+    now,
+    source,
+    opts,
+  });
+  const orderBy =
+    source === "latest_active" || source === "latest_published"
+      ? [{ publishedAt: "desc" as const }, { updatedAt: "desc" as const }]
+      : [
+          { sortOrder: "asc" as const },
+          { publishedAt: "desc" as const },
+          { updatedAt: "desc" as const },
+        ];
+  const [total, rows] = await prisma.$transaction([
+    prisma.contentItem.count({ where }),
+    prisma.contentItem.findMany({
+      where,
+      orderBy,
+      skip,
+      take: pageSize,
+    }),
+  ]);
+  const items = await Promise.all(rows.map((row) => mapContentItem(row)));
+
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  };
+}
+
+export async function resolveCollectionItem(
+  variantId: string,
+  collectionKey: string,
+  slug: string,
+  opts?: { preview?: boolean; token?: string },
+) {
+  if (opts?.preview) {
+    const preview = opts.token ? await resolvePreviewTokenForVariant(opts.token, variantId) : null;
+
+    if (
+      !preview?.valid ||
+      preview.collectionKey !== collectionKey ||
+      !preview.itemId
+    ) {
+      return null;
+    }
+
+    const item = await prisma.contentItem.findFirst({
+      where: {
+        id: preview.itemId,
+        tenantId: preview.tenantId,
+        variantId,
+        collectionKey,
+        slug,
+      },
+    });
+
+    return item ? { ...(await mapContentItem(item, true)), isPreview: true } : null;
+  }
+
+  const item = await prisma.contentItem.findFirst({
+    where: { variantId, collectionKey, slug, status: "PUBLISHED" },
+  });
+
+  return item && isRecord(item.publishedDataJson)
+    ? { ...(await mapContentItem(item)), isPreview: false }
+    : null;
+}
+
+export async function resolveActiveOffer(variantId: string) {
+  const offer = await prisma.contentItem.findFirst({
+    where: {
+      variantId,
+      collectionKey: "offer",
+      status: "PUBLISHED",
+      OR: [{ expiredAt: null }, { expiredAt: { gt: new Date() } }],
+    },
+    orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }, { publishedAt: "desc" }],
+  });
+
+  return offer && isRecord(offer.publishedDataJson) ? mapContentItem(offer) : null;
+}
+
+export async function resolvePreviewToken(token: string, tenantId: string) {
+  const payload = verifyJwt(token);
+
+  if (!payload || payload.tenantId !== tenantId) {
+    return { valid: false };
+  }
+
+  return {
+    valid: true,
+    tenantId: payload.tenantId,
+    variantId: payload.variantId,
+    itemId: payload.type === "content_item" ? payload.sub : undefined,
+    pageId: payload.type === "content_page" ? payload.sub : undefined,
+    pageKey: payload.pageKey,
+    collectionKey: payload.collectionKey,
+  };
+}
+
+async function resolvePreviewTokenForVariant(token: string, variantId: string) {
+  const payload = verifyJwt(token);
+
+  if (!payload || payload.variantId !== variantId) {
+    return null;
+  }
+
+  return {
+    valid: true,
+    tenantId: payload.tenantId,
+    variantId: payload.variantId,
+    itemId: payload.type === "content_item" ? payload.sub : undefined,
+    pageId: payload.type === "content_page" ? payload.sub : undefined,
+    pageKey: payload.pageKey,
+    collectionKey: payload.collectionKey,
+  } satisfies PreviewTokenResolution;
+}
+
+async function mapContentItem(
+  item: ContentItemModel,
+  useDraftData = false,
+): Promise<PublicCollectionItem> {
+  const [thumbnailSrc, heroSrc] = await Promise.all([
+    item.thumbnailImageId ? resolveMediaUrl(item.thumbnailImageId) : null,
+    item.heroImageId ? resolveMediaUrl(item.heroImageId) : null,
+  ]);
+  const dataJson = useDraftData ? item.dataJson : item.publishedDataJson;
+
+  return {
+    id: item.id,
+    title: item.title,
+    slug: item.slug,
+    status: item.status,
+    excerpt: item.excerpt ?? undefined,
+    thumbnailImageId: item.thumbnailImageId ?? undefined,
+    thumbnailSrc: thumbnailSrc ?? undefined,
+    heroImageId: item.heroImageId ?? undefined,
+    heroSrc: heroSrc ?? undefined,
+    isFeatured: item.isFeatured,
+    publishedAt: item.publishedAt?.toISOString(),
+    startAt: item.startAt?.toISOString(),
+    expiredAt: item.expiredAt?.toISOString(),
+    sortOrder: item.sortOrder,
+    dataJson: normalizeJson(dataJson),
+    isExpired: Boolean(item.expiredAt && item.expiredAt <= new Date()),
+  };
+}
+
+function buildCollectionListWhere({
+  variantId,
+  collectionKey,
+  now,
+  source,
+  opts,
+}: {
+  variantId: string;
+  collectionKey: string;
+  now: Date;
+  source: "featured" | "latest_active" | "latest_published" | "manual" | undefined;
+  opts: {
+    filters?: Record<string, string>;
+    activeOnly?: boolean;
+    manualIds?: string[];
+  };
+}): ContentItemWhereInput {
+  const filterConditions = buildPublishedJsonFilterConditions(opts.filters);
+
+  return {
+    variantId,
+    collectionKey,
+    status: "PUBLISHED",
+    ...(opts.activeOnly || source === "latest_active"
+      ? { OR: [{ expiredAt: null }, { expiredAt: { gt: now } }] }
+      : {}),
+    ...(source === "featured" ? { isFeatured: true } : {}),
+    ...(source === "manual" && opts.manualIds?.length ? { id: { in: opts.manualIds } } : {}),
+    ...(filterConditions.length ? { AND: filterConditions } : {}),
+  };
+}
+
+function buildPublishedJsonFilterConditions(
+  filters?: Record<string, string>,
+): ContentItemWhereInput[] {
+  const activeFilters = Object.entries(filters ?? {}).filter(([, value]) => value);
+
+  return activeFilters.map(([key, value]) => ({
+    OR: filterJsonPaths(key).flatMap((path) => [
+      { publishedDataJson: { path: [path], equals: value } },
+      { publishedDataJson: { path: [path], array_contains: [value] } },
+    ]),
+  }));
+}
+
+function filterJsonPaths(key: string) {
+  return [
+    key,
+    `${key}_option_id`,
+    `${key}_id`,
+    `${key}_option_ids`,
+    `${key}_ids`,
+  ];
+}
+
+type PreviewJwtPayload = {
+  iss: "nextcmslpk";
+  sub: string;
+  type: "content_page" | "content_item";
+  tenantId: string;
+  variantId: string;
+  pageKey?: string;
+  collectionKey?: string;
+  iat: number;
+  exp: number;
+};
+
+function verifyJwt(token: string): PreviewJwtPayload | null {
+  const secret = process.env.PREVIEW_SECRET || process.env.AUTH_SECRET;
+
+  if (!secret) {
+    return null;
+  }
+
+  const [encodedHeader, encodedPayload, signature, ...extraParts] = token.split(".");
+
+  if (!encodedHeader || !encodedPayload || !signature || extraParts.length > 0) {
+    return null;
+  }
+
+  const expectedSignature = createHmac("sha256", secret)
+    .update(`${encodedHeader}.${encodedPayload}`)
+    .digest("base64url");
+
+  if (!safeEqual(signature, expectedSignature)) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf8"),
+    ) as unknown;
+
+    if (!isPreviewPayload(payload)) {
+      return null;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const isExpired = payload.exp <= now;
+    const isOlderThanOneHour = payload.iat < now - 60 * 60;
+
+    return isExpired || isOlderThanOneHour ? null : payload;
+  } catch {
+    return null;
+  }
+}
+
+function safeEqual(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+
+  return (
+    leftBuffer.byteLength === rightBuffer.byteLength &&
+    timingSafeEqual(leftBuffer, rightBuffer)
   );
 }
 
-function findPageDefinition(variantKey: VariantKey, pageKey: string) {
-  return Object.values(PAGE_EDITOR_DEFINITIONS).find(
-    (definition) =>
-      definition.variantKey === variantKey && definition.pageKey === pageKey,
+function isPreviewPayload(value: unknown): value is PreviewJwtPayload {
+  return (
+    isRecord(value) &&
+    value.iss === "nextcmslpk" &&
+    (value.type === "content_page" || value.type === "content_item") &&
+    typeof value.sub === "string" &&
+    typeof value.tenantId === "string" &&
+    typeof value.variantId === "string" &&
+    typeof value.iat === "number" &&
+    typeof value.exp === "number"
   );
 }
 
-function normalizePublicPath(value: string) {
-  const trimmedValue = value.trim();
-  const path = trimmedValue.startsWith("/") ? trimmedValue : `/${trimmedValue}`;
-  const withoutTrailingSlash = path.replace(/\/+$/, "");
-
-  return withoutTrailingSlash === "" ? "/" : withoutTrailingSlash;
-}
-
-function readParam(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function toVariantKey(value: string): VariantKey | null {
-  return value === "indonesia" || value === "japan" ? value : null;
-}
-
-function normalizePageData(value: unknown) {
+function normalizeJson(value: unknown): PublicJson {
   return isRecord(value) ? cloneRecord(value) : {};
 }
 
 function cloneRecord(value: Record<string, unknown>) {
-  return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+  return JSON.parse(JSON.stringify(value)) as PublicJson;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
