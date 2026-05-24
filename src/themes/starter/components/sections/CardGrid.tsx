@@ -57,6 +57,7 @@ interface CardGridProps {
   columns?: 2 | 3
   ctaLabel?: string
   ctaHref?: string
+  variant?: "indonesia" | "japan"
 }
 
 function CardGrid({
@@ -66,6 +67,7 @@ function CardGrid({
   columns = 3,
   ctaLabel,
   ctaHref,
+  variant = "indonesia",
 }: CardGridProps) {
   const enabledItems = items.filter((item) => item.isEnabled !== false)
 
@@ -98,7 +100,7 @@ function CardGrid({
           )}
         >
           {enabledItems.map((item) => (
-            <CardGridCard key={item.id} item={item} />
+            <CardGridCard key={item.id} item={item} variant={variant} />
           ))}
         </div>
 
@@ -114,15 +116,22 @@ function CardGrid({
   )
 }
 
-function CardGridCard({ item }: { item: CardGridItem }) {
+function CardGridCard({
+  item,
+  variant,
+}: {
+  item: CardGridItem
+  variant: "indonesia" | "japan"
+}) {
   const Icon = item.iconKey ? ICON_REGISTRY[item.iconKey] ?? HelpCircle : null
   const badgeVariant = item.badgeVariant === "new" ? "new_badge" : item.badgeVariant
 
   const card = (
     <Card
+      variant={variant}
       className={cn(
         "h-full gap-0 py-0 transition-shadow",
-        item.href && "hover:shadow-lg"
+        item.href && variant === "indonesia" && "hover:shadow-lg"
       )}
     >
       {item.imageSrc ? (
