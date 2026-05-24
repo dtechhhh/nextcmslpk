@@ -39,10 +39,16 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
   --color-primary-200: var(--primary-200);
   --color-primary-300: var(--primary-300);
   --color-primary-500: var(--primary-500);
   --color-primary-700: var(--primary-700);
+  --color-secondary-500: var(--secondary-500);
+  --color-secondary-600: var(--secondary-600);
+  --color-warning-50: var(--warning-50);
+  --color-warning-200: var(--warning-200);
+  --color-warning-700: var(--warning-700);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
