@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionListPage } from "@/components/dashboard/collection-list-page";
 
 export default function JapanSectorListPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Collections"
-      title="Sector list"
-    />
-  );
+  return <CollectionListPage variantKey="japan" collectionKey="sector" />;
 }
 

@@ -1,8 +1,14 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function JapanEditNewsPage() {
-  return (
-    <DashboardPlaceholderPage eyebrow="Japan / Collections" title="Edit news" />
-  );
+type JapanEditNewsPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function JapanEditNewsPage({
+  params,
+}: JapanEditNewsPageProps) {
+  const { id } = await params;
+
+  return <CollectionEditorPage variantKey="japan" collectionKey="news" itemId={id} />;
 }
 

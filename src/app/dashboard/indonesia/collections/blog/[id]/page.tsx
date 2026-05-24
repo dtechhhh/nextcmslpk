@@ -1,10 +1,19 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function IndonesiaEditBlogPage() {
+type IndonesiaEditBlogPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function IndonesiaEditBlogPage({
+  params,
+}: IndonesiaEditBlogPageProps) {
+  const { id } = await params;
+
   return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Edit blog"
+    <CollectionEditorPage
+      variantKey="indonesia"
+      collectionKey="blog"
+      itemId={id}
     />
   );
 }

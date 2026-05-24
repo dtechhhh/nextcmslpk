@@ -1,10 +1,19 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function IndonesiaEditOfferPage() {
+type IndonesiaEditOfferPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function IndonesiaEditOfferPage({
+  params,
+}: IndonesiaEditOfferPageProps) {
+  const { id } = await params;
+
   return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Edit offer"
+    <CollectionEditorPage
+      variantKey="indonesia"
+      collectionKey="offer"
+      itemId={id}
     />
   );
 }
