@@ -1,8 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionListPage } from "@/components/dashboard/collection-list-page";
 
 export default function IndonesiaJobListPage() {
-  return (
-    <DashboardPlaceholderPage eyebrow="Indonesia / Collections" title="Job list" />
-  );
+  return <CollectionListPage variantKey="indonesia" collectionKey="job" />;
 }
 

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { Prisma } from "@/generated/prisma/client";
 import { AppError, AuthError, ForbiddenError, ValidationError } from "@/lib/errors";
-import { prisma } from "@/server/db/client";
+import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import {
   confirmUpload as confirmStorageUpload,
@@ -123,9 +123,8 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
       });
     }
 
-    const where: Prisma.MediaAssetWhereInput = {
-      tenantId: session.tenantId,
-    };
+    const db = tenantDb(session.session);
+    const where: Prisma.MediaAssetWhereInput = {};
     const normalizedFilter = parsedFilter.data ?? {};
     const normalizedPage = parsedPage.data;
 
@@ -155,8 +154,8 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
     }
 
     const skip = (normalizedPage.page - 1) * normalizedPage.pageSize;
-    const [items, total] = await prisma.$transaction([
-      prisma.mediaAsset.findMany({
+    const [items, total] = await Promise.all([
+      db.mediaAsset.findMany({
         where,
         orderBy: {
           createdAt: "desc",
@@ -177,7 +176,7 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
           createdAt: true,
         },
       }),
-      prisma.mediaAsset.count({ where }),
+      db.mediaAsset.count({ where }),
     ]);
 
     return {
@@ -200,7 +199,7 @@ async function requireTenantSession(expectedTenantId?: string) {
   const session = await auth();
   const user = session?.user;
 
-  if (!user?.userId) {
+  if (!session || !user?.userId) {
     throw new AuthError("Sesi tidak valid.");
   }
 
@@ -213,6 +212,7 @@ async function requireTenantSession(expectedTenantId?: string) {
   }
 
   return {
+    session,
     userId: user.userId,
     tenantId: user.tenantId,
   };
