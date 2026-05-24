@@ -1,10 +1,20 @@
-import { PublicPageRoute } from "@/app/site/public-page-route";
-import type { PublicPageSearchParams } from "@/server/resolvers/public";
+import {
+  generatePublicMetadata,
+  renderHomepage,
+  type PageSearchParams,
+} from "@/app/site/_public-page-helpers";
 
-type SitePageProps = {
-  searchParams: Promise<PublicPageSearchParams>;
-};
+export const revalidate = 60;
 
-export default function SitePage({ searchParams }: SitePageProps) {
-  return <PublicPageRoute publicPath="/" searchParams={searchParams} />;
+export function generateMetadata({ searchParams }: { searchParams: PageSearchParams }) {
+  return generatePublicMetadata({
+    pageKey: "homepage",
+    path: "/",
+    titleFallback: "Home",
+    searchParams,
+  });
+}
+
+export default function SitePage({ searchParams }: { searchParams: PageSearchParams }) {
+  return renderHomepage({ searchParams });
 }
