@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { CalloutPicker } from "@/components/dashboard/forms/callout-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
 import { StatusBadge } from "@/components/dashboard/collection-list";
@@ -468,6 +469,7 @@ export function CollectionEditor({
               data={data}
               errors={errors}
               tenantId={tenantId}
+              variantId={variantId}
               optionSets={optionSets}
               setValue={setValue}
               slugStatus={effectiveSlugStatus}
@@ -568,6 +570,7 @@ function EditorSection({
   data,
   errors,
   tenantId,
+  variantId,
   optionSets,
   setValue,
   slugStatus,
@@ -577,6 +580,7 @@ function EditorSection({
   data: Record<string, unknown>;
   errors: FieldErrors;
   tenantId: string;
+  variantId: string;
   optionSets: CollectionOptionSets;
   setValue: (path: string, value: unknown) => void;
   slugStatus: SlugStatus;
@@ -606,6 +610,7 @@ function EditorSection({
                   data={data}
                   errors={errors}
                   tenantId={tenantId}
+                  variantId={variantId}
                   optionSets={optionSets}
                   setValue={setValue}
                   slugStatus={slugStatus}
@@ -625,6 +630,7 @@ function FieldRenderer({
   data,
   errors,
   tenantId,
+  variantId,
   optionSets,
   setValue,
   basePath,
@@ -635,6 +641,7 @@ function FieldRenderer({
   data: Record<string, unknown>;
   errors: FieldErrors;
   tenantId: string;
+  variantId: string;
   optionSets: CollectionOptionSets;
   setValue: (path: string, value: unknown) => void;
   basePath?: string;
@@ -689,6 +696,7 @@ function FieldRenderer({
                   data={data}
                   errors={errors}
                   tenantId={tenantId}
+                  variantId={variantId}
                   optionSets={optionSets}
                   setValue={setValue}
                   basePath={`${path}.${index}`}
@@ -745,6 +753,7 @@ function FieldRenderer({
         <FieldLabel>{field.label}</FieldLabel>
         <ContentBlocksEditor
           tenantId={tenantId}
+          variantId={variantId}
           items={normalizeContentBlocks(getAtPath(data, path))}
           blockTypes={field.blockTypes}
           onChange={(items) => setValue(path, items)}
@@ -947,11 +956,13 @@ function renderControl({
 
 function ContentBlocksEditor({
   tenantId,
+  variantId,
   items,
   blockTypes,
   onChange,
 }: {
   tenantId: string;
+  variantId: string;
   items: Record<string, unknown>[];
   blockTypes: ContentBlockType[];
   onChange: (items: Record<string, unknown>[]) => void;
@@ -1006,6 +1017,7 @@ function ContentBlocksEditor({
 
             <BlockFields
               tenantId={tenantId}
+              variantId={variantId}
               type={type}
               item={item}
               onChange={(path, value) => updateBlock(index, path, value)}
@@ -1019,11 +1031,13 @@ function ContentBlocksEditor({
 
 function BlockFields({
   tenantId,
+  variantId,
   type,
   item,
   onChange,
 }: {
   tenantId: string;
+  variantId: string;
   type: ContentBlockType;
   item: Record<string, unknown>;
   onChange: (path: string, value: unknown) => void;
@@ -1119,12 +1133,26 @@ function BlockFields({
     case "youtube_embed":
       return (
         <>
-          <Field>
+          <Field className="md:col-span-2">
             <FieldLabel>YouTube video ID</FieldLabel>
             <Input
               value={readString(data.video_id)}
-              onChange={(event) => onChange("data.video_id", event.target.value)}
+              maxLength={11}
+              placeholder="dQw4w9WgXcQ"
+              aria-invalid={
+                Boolean(readString(data.video_id)) &&
+                !/^[a-zA-Z0-9_-]{11}$/.test(readString(data.video_id))
+              }
+              onChange={(event) =>
+                onChange("data.video_id", event.target.value)
+              }
             />
+            {readString(data.video_id) &&
+            !/^[a-zA-Z0-9_-]{11}$/.test(readString(data.video_id)) ? (
+              <p className="text-xs text-destructive">
+                Video ID harus 11 karakter (alfanumerik, dash, underscore).
+              </p>
+            ) : null}
           </Field>
           <Field>
             <FieldLabel>Caption</FieldLabel>
@@ -1137,21 +1165,27 @@ function BlockFields({
       );
     case "offer_callout":
       return (
-        <Field>
-          <FieldLabel>Offer ID</FieldLabel>
-          <Input
+        <Field className="md:col-span-2">
+          <FieldLabel>Offer</FieldLabel>
+          <CalloutPicker
+            variantId={variantId}
+            collectionKey="offer"
             value={readString(data.offer_id)}
-            onChange={(event) => onChange("data.offer_id", event.target.value)}
+            onChange={(id) => onChange("data.offer_id", id)}
+            placeholder="Pilih offer..."
           />
         </Field>
       );
     case "sector_callout":
       return (
-        <Field>
-          <FieldLabel>Sector ID</FieldLabel>
-          <Input
+        <Field className="md:col-span-2">
+          <FieldLabel>Sector</FieldLabel>
+          <CalloutPicker
+            variantId={variantId}
+            collectionKey="sector"
             value={readString(data.sector_id)}
-            onChange={(event) => onChange("data.sector_id", event.target.value)}
+            onChange={(id) => onChange("data.sector_id", id)}
+            placeholder="Pilih sector..."
           />
         </Field>
       );
@@ -1289,11 +1323,69 @@ function readContentBlockType(value: unknown, allowedTypes: ContentBlockType[]) 
 }
 
 function getBlockLabel(item: Record<string, unknown>, index: number) {
-  const type = readString(item.type);
+  const type = readString(item.type) as ContentBlockType;
   const data = isRecord(item.data) ? item.data : {};
-  const label = readString(data.text) || readString(data.label);
 
-  return label ? `${formatBlockType(type)} - ${label}` : `Block ${index + 1}`;
+  switch (type) {
+    case "heading": {
+      const level = readString(data.level) || "h2";
+      const text = readString(data.text);
+      return text
+        ? `${level.toUpperCase()} - ${truncateText(text, 40)}`
+        : `Heading ${index + 1}`;
+    }
+    case "paragraph": {
+      const text = readString(data.text);
+      return text
+        ? `Paragraph - ${truncateText(text, 50)}`
+        : `Paragraph ${index + 1}`;
+    }
+    case "quote": {
+      const text = readString(data.text);
+      const author = readString(data.author);
+      return text
+        ? `Quote - ${truncateText(text, 40)}${author ? ` — ${author}` : ""}`
+        : `Quote ${index + 1}`;
+    }
+    case "image": {
+      const alt = readString(data.alt_text) || readString(data.caption);
+      return alt ? `Image - ${truncateText(alt, 40)}` : `Image ${index + 1}`;
+    }
+    case "youtube_embed": {
+      const videoId = readString(data.video_id);
+      return videoId
+        ? `YouTube - ${videoId}`
+        : `YouTube ${index + 1}`;
+    }
+    case "offer_callout": {
+      const offerId = readString(data.offer_id);
+      return offerId ? `Offer Callout - ${offerId}` : `Offer Callout ${index + 1}`;
+    }
+    case "sector_callout": {
+      const sectorId = readString(data.sector_id);
+      return sectorId
+        ? `Sector Callout - ${sectorId}`
+        : `Sector Callout ${index + 1}`;
+    }
+    case "whatsapp_cta": {
+      const label = readString(data.label);
+      return label
+        ? `WhatsApp CTA - ${truncateText(label, 30)}`
+        : `WhatsApp CTA ${index + 1}`;
+    }
+    case "line_cta": {
+      const label = readString(data.label);
+      return label
+        ? `LINE CTA - ${truncateText(label, 30)}`
+        : `LINE CTA ${index + 1}`;
+    }
+    default:
+      return `Block ${index + 1}`;
+  }
+}
+
+function truncateText(text: string, max: number) {
+  return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
 function formatBlockType(type: string) {
