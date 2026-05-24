@@ -1,10 +1,19 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function IndonesiaEditProgramPage() {
+type IndonesiaEditProgramPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function IndonesiaEditProgramPage({
+  params,
+}: IndonesiaEditProgramPageProps) {
+  const { id } = await params;
+
   return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Edit program"
+    <CollectionEditorPage
+      variantKey="indonesia"
+      collectionKey="program"
+      itemId={id}
     />
   );
 }

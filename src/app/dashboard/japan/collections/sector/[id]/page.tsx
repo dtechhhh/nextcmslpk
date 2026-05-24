@@ -1,10 +1,19 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function JapanEditSectorPage() {
+type JapanEditSectorPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function JapanEditSectorPage({
+  params,
+}: JapanEditSectorPageProps) {
+  const { id } = await params;
+
   return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Collections"
-      title="Edit sector"
+    <CollectionEditorPage
+      variantKey="japan"
+      collectionKey="sector"
+      itemId={id}
     />
   );
 }

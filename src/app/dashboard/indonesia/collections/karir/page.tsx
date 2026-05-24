@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionListPage } from "@/components/dashboard/collection-list-page";
 
 export default function IndonesiaKarirListPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Karir list"
-    />
-  );
+  return <CollectionListPage variantKey="indonesia" collectionKey="karir" />;
 }
 

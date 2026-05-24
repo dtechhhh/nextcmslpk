@@ -1,0 +1,72 @@
+import { z } from "zod";
+
+import {
+  contentIdSchema,
+  ctaDefaults,
+  faqItemSchema,
+  identityDefaults,
+  optionalString,
+  sidebarDefaults,
+} from "@/lib/validations/collections/_shared";
+
+const sortFields = {
+  is_enabled: z.boolean().default(true),
+  sort_order: z.coerce.number().int().min(0).default(0),
+};
+
+const itemWithTitleDesc = z
+  .object({
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
+export const sectorSchema = z
+  .object({
+    ...identityDefaults,
+    ...sidebarDefaults,
+    title: optionalString(200),
+    slug: optionalString(120),
+    subtitle: optionalString(200),
+    short_description: optionalString(600),
+    overview: optionalString(3000),
+    status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
+    sector_category_option_id: contentIdSchema,
+    suitability_items: z.array(itemWithTitleDesc).default([]),
+    example_positions: z.array(itemWithTitleDesc).default([]),
+    training_alignment_items: z.array(itemWithTitleDesc).default([]),
+    candidate_requirements: z.array(z.string()).default([]),
+    process_items: z.array(itemWithTitleDesc).default([]),
+    faqs: z.array(faqItemSchema).default([]),
+    primary_cta_label: optionalString(120),
+    line_message_template: optionalString(600),
+    secondary_cta_label: optionalString(120),
+    secondary_document_file_id: contentIdSchema,
+  })
+  .passthrough();
+
+export type SectorData = z.infer<typeof sectorSchema>;
+
+export const sectorDefaults: SectorData = {
+  ...identityDefaults,
+  ...sidebarDefaults,
+  ...ctaDefaults,
+  title: "",
+  slug: "",
+  subtitle: "",
+  short_description: "",
+  overview: "",
+  status: "DRAFT",
+  sector_category_option_id: "",
+  suitability_items: [],
+  example_positions: [],
+  training_alignment_items: [],
+  candidate_requirements: [],
+  process_items: [],
+  faqs: [],
+  primary_cta_label: "",
+  line_message_template: "",
+  secondary_cta_label: "",
+  secondary_document_file_id: "",
+};

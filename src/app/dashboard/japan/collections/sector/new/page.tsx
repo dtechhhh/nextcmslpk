@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
 export default function JapanCreateSectorPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Japan / Collections"
-      title="Create sector"
-    />
-  );
+  return <CollectionEditorPage variantKey="japan" collectionKey="sector" />;
 }
 

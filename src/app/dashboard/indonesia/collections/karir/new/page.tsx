@@ -1,11 +1,6 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
 export default function IndonesiaCreateKarirPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia / Collections"
-      title="Create karir"
-    />
-  );
+  return <CollectionEditorPage variantKey="indonesia" collectionKey="karir" />;
 }
 
