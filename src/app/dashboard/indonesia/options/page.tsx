@@ -1,12 +1,36 @@
-import { DashboardPlaceholderPage } from "@/components/dashboard/dashboard-placeholder-page";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { OptionDataManager } from "@/components/dashboard/option-data-manager";
+import { prisma } from "@/server/db/client";
 
-export default function IndonesiaOptionsPage() {
-  return (
-    <DashboardPlaceholderPage
-      eyebrow="Indonesia"
-      title="Option sets"
-      description="Option data manager for Indonesia."
-    />
-  );
+export const dynamic = "force-dynamic";
+
+export default async function IndonesiaOptionsPage() {
+  const session = await auth();
+  const tenantId = session?.user?.tenantId;
+
+  if (!tenantId) {
+    redirect("/dashboard/login");
+  }
+
+  const variant = await prisma.variant.findFirst({
+    where: { tenantId, key: "indonesia" },
+    select: { id: true },
+  });
+
+  if (!variant) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium text-muted-foreground">Indonesia / Option Data</p>
+          <h1 className="text-2xl font-semibold tracking-normal">Option Sets</h1>
+        </div>
+        <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+          Indonesia variant not found. Please initialize variant content first.
+        </div>
+      </div>
+    );
+  }
+
+  return <OptionDataManager variantId={variant.id} variantLabel="Indonesia" />;
 }
-
