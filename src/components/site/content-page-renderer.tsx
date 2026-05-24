@@ -1,9 +1,12 @@
+import { cn } from "@/lib/utils";
+import type { VariantKey } from "@/types";
+
 type ContentPageRendererProps = {
   isPreview: boolean;
   page: {
     title: string;
     pageKey: string;
-    variantKey: string;
+    variantKey: VariantKey;
     dataJson: Record<string, unknown>;
     updatedAt: string;
   };
@@ -17,7 +20,12 @@ export function ContentPageRenderer({ isPreview, page }: ContentPageRendererProp
   const sections = Object.entries(page.dataJson).filter(([key]) => key !== "hero");
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main
+      className={cn(
+        "min-h-screen bg-background text-foreground",
+        page.variantKey === "japan" ? "theme-japan font-japanese" : "theme-indonesia",
+      )}
+    >
       {isPreview ? (
         <div className="sticky top-0 z-20 border-b bg-amber-100 px-6 py-3 text-sm font-medium text-amber-950">
           PREVIEW MODE - Konten ini belum dipublish
