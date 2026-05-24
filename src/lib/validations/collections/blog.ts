@@ -6,85 +6,47 @@ import {
   optionalString,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
+import {
+  headingBlockSchema,
+  imageBlockSchema,
+  offerCalloutBlockSchema,
+  paragraphBlockSchema,
+  quoteBlockSchema,
+  whatsappCtaBlockSchema,
+  youtubeBlockSchema,
+  type ContentBlockType,
+} from "@/lib/validations/shared/content-blocks";
 
-const blockBase = {
-  type: z.string(),
-  sort_order: z.coerce.number().int().min(0).default(0),
-};
-
-const headingBlock = z.object({
-  ...blockBase,
-  type: z.literal("heading"),
-  data: z.object({
-    level: z.enum(["h2", "h3"]).default("h2"),
-    text: optionalString(300),
-  }),
-});
-
-const paragraphBlock = z.object({
-  ...blockBase,
-  type: z.literal("paragraph"),
-  data: z.object({
-    text: optionalString(2000).refine((value) => !/<\/?[a-z][\s\S]*>/i.test(value), {
-      message: "Paragraph harus plain text.",
-    }),
-  }),
-});
-
-const quoteBlock = z.object({
-  ...blockBase,
-  type: z.literal("quote"),
-  data: z.object({
-    text: optionalString(1000),
-    author: optionalString(200),
-  }),
-});
-
-const imageBlock = z.object({
-  ...blockBase,
-  type: z.literal("image"),
-  data: z.object({
-    image_id: mediaIdSchema,
-    alt_text: optionalString(200),
-    caption: optionalString(300),
-  }),
-});
-
-const youtubeBlock = z.object({
-  ...blockBase,
-  type: z.literal("youtube_embed"),
-  data: z.object({
-    video_id: optionalString(20),
-    caption: optionalString(300),
-  }),
-});
-
-const offerCalloutBlock = z.object({
-  ...blockBase,
-  type: z.literal("offer_callout"),
-  data: z.object({
-    offer_id: contentIdSchema,
-  }),
-});
-
-const whatsappCtaBlock = z.object({
-  ...blockBase,
-  type: z.literal("whatsapp_cta"),
-  data: z.object({
-    label: optionalString(120),
-    whatsapp_message_template: optionalString(600),
-  }),
-});
+const BLOG_BLOCK_TYPES: ContentBlockType[] = [
+  "heading",
+  "paragraph",
+  "quote",
+  "image",
+  "youtube_embed",
+  "offer_callout",
+  "whatsapp_cta",
+];
 
 const contentBlock = z.discriminatedUnion("type", [
-  headingBlock,
-  paragraphBlock,
-  quoteBlock,
-  imageBlock,
-  youtubeBlock,
-  offerCalloutBlock,
-  whatsappCtaBlock,
+  headingBlockSchema,
+  paragraphBlockSchema,
+  quoteBlockSchema,
+  imageBlockSchema,
+  youtubeBlockSchema,
+  offerCalloutBlockSchema,
+  whatsappCtaBlockSchema,
 ]);
+
+export {
+  headingBlockSchema,
+  imageBlockSchema,
+  offerCalloutBlockSchema,
+  paragraphBlockSchema,
+  quoteBlockSchema,
+  whatsappCtaBlockSchema,
+  youtubeBlockSchema,
+  BLOG_BLOCK_TYPES,
+};
 
 export const blogSchema = z
   .object({

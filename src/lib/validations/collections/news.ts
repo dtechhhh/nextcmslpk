@@ -6,76 +6,47 @@ import {
   optionalString,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
+import {
+  headingBlockSchema,
+  imageBlockSchema,
+  lineCtaBlockSchema,
+  paragraphBlockSchema,
+  quoteBlockSchema,
+  sectorCalloutBlockSchema,
+  youtubeBlockSchema,
+  type ContentBlockType,
+} from "@/lib/validations/shared/content-blocks";
 
-const blockBase = {
-  type: z.string(),
-  sort_order: z.coerce.number().int().min(0).default(0),
-};
-
-const plainText = optionalString(2000).refine(
-  (value) => !/<\/?[a-z][\s\S]*>/i.test(value),
-  {
-    message: "Paragraph harus plain text.",
-  },
-);
+const NEWS_BLOCK_TYPES: ContentBlockType[] = [
+  "heading",
+  "paragraph",
+  "quote",
+  "image",
+  "youtube_embed",
+  "line_cta",
+  "sector_callout",
+];
 
 const contentBlock = z.discriminatedUnion("type", [
-  z.object({
-    ...blockBase,
-    type: z.literal("heading"),
-    data: z.object({
-      level: z.enum(["h2", "h3"]).default("h2"),
-      text: optionalString(300),
-    }),
-  }),
-  z.object({
-    ...blockBase,
-    type: z.literal("paragraph"),
-    data: z.object({
-      text: plainText,
-    }),
-  }),
-  z.object({
-    ...blockBase,
-    type: z.literal("quote"),
-    data: z.object({
-      text: optionalString(1000),
-      author: optionalString(200),
-    }),
-  }),
-  z.object({
-    ...blockBase,
-    type: z.literal("image"),
-    data: z.object({
-      image_id: mediaIdSchema,
-      alt_text: optionalString(200),
-      caption: optionalString(300),
-    }),
-  }),
-  z.object({
-    ...blockBase,
-    type: z.literal("youtube_embed"),
-    data: z.object({
-      video_id: optionalString(20),
-      caption: optionalString(300),
-    }),
-  }),
-  z.object({
-    ...blockBase,
-    type: z.literal("line_cta"),
-    data: z.object({
-      label: optionalString(120),
-      line_message_template: optionalString(600),
-    }),
-  }),
-  z.object({
-    ...blockBase,
-    type: z.literal("sector_callout"),
-    data: z.object({
-      sector_id: contentIdSchema,
-    }),
-  }),
+  headingBlockSchema,
+  paragraphBlockSchema,
+  quoteBlockSchema,
+  imageBlockSchema,
+  youtubeBlockSchema,
+  lineCtaBlockSchema,
+  sectorCalloutBlockSchema,
 ]);
+
+export {
+  headingBlockSchema,
+  imageBlockSchema,
+  lineCtaBlockSchema,
+  paragraphBlockSchema,
+  quoteBlockSchema,
+  sectorCalloutBlockSchema,
+  youtubeBlockSchema,
+  NEWS_BLOCK_TYPES,
+};
 
 export const newsSchema = z
   .object({
