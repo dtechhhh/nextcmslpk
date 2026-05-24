@@ -1200,6 +1200,74 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+const lookupItemsSchema = z.object({
+  variantId: z.string().min(1),
+  collectionKey: collectionKeySchema,
+  search: z.string().trim().max(120).optional(),
+});
+
+export async function lookupCollectionItems(input: unknown) {
+  try {
+    const context = await requireTenantActionContext();
+    const parsed = lookupItemsSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        form: ["Input tidak valid."],
+      });
+    }
+
+    const db = tenantDb(context.session);
+    const variant = await getOwnedVariant(db, parsed.data.variantId);
+    const collectionKey = assertOwnedCollectionKey(
+      variant.key,
+      parsed.data.collectionKey,
+    );
+
+    const searchValue = parsed.data.search?.trim();
+    const where: Prisma.ContentItemWhereInput = {
+      variantId: variant.id,
+      collectionKey,
+      status: { in: ["PUBLISHED", "DRAFT"] },
+    };
+
+    if (searchValue) {
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: searchValue } },
+            { dataJson: { path: ["title"], string_contains: searchValue } },
+          ],
+        },
+      ];
+    }
+
+    const rows = await db.contentItem.findMany({
+      where,
+      orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        status: true,
+      },
+    });
+
+    return {
+      ok: true,
+      items: rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        slug: row.slug,
+        status: row.status,
+      })),
+    };
+  } catch (error) {
+    return toActionError(error, "Item gagal dimuat.");
+  }
+}
+
 function toActionError(error: unknown, fallback: string) {
   if (error instanceof AuthError) {
     return {
