@@ -1,3 +1,4 @@
+import Image, { type ImageProps } from "next/image"
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
@@ -77,15 +78,21 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CardImage({
+  alt,
   className,
+  sizes = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
   ...props
-}: React.ImgHTMLAttributes<HTMLImageElement>) {
+}: Omit<ImageProps, "fill">) {
   return (
-    <img
-      data-slot="card-image"
-      className={cn("aspect-[4/3] w-full object-cover", className)}
-      {...props}
-    />
+    <div data-slot="card-image" className="relative aspect-[4/3] w-full overflow-hidden">
+      <Image
+        fill
+        alt={alt}
+        sizes={sizes}
+        className={cn("object-cover", className)}
+        {...props}
+      />
+    </div>
   )
 }
 
