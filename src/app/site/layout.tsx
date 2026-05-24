@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { headers } from "next/headers";
 
 import { NotFoundPage, SuspendedPage, UnavailablePage } from "@/components/site/state-pages";
-import starterTheme from "@/themes/starter/registry";
 import { LayoutIndonesia } from "@/themes/starter/components/layout/LayoutIndonesia";
+import { LayoutJapan } from "@/themes/starter/components/layout/LayoutJapan";
 import { resolveDomain } from "@/server/resolvers/domain";
 import { resolveGlobalConfig } from "@/server/resolvers/public";
 
@@ -29,7 +29,6 @@ export default async function SiteLayout({
     return <UnavailablePage />;
   }
 
-  const theme = starterTheme;
   const tenant = result.tenant;
   const variant = result.variant;
   const variantKey = variant.variantKey;
@@ -47,17 +46,11 @@ export default async function SiteLayout({
     );
   }
 
-  if (variantKey === "japan" && theme.layouts.japan) {
-    const LayoutJapan = theme.layouts.japan;
+  if (variantKey === "japan") {
     return (
-      <div data-variant="japan">
-        <LayoutJapan
-          globalConfig={globalConfig}
-          tenant={tenant}
-        >
-          {children}
-        </LayoutJapan>
-      </div>
+      <LayoutJapan globalConfig={globalConfig} tenant={tenant}>
+        {children}
+      </LayoutJapan>
     );
   }
 

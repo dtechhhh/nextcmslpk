@@ -14,9 +14,14 @@ interface RelatedItem {
 interface RelatedItemsProps {
   title?: string
   items: RelatedItem[]
+  variant?: "indonesia" | "japan"
 }
 
-function RelatedItems({ title = "Artikel Terkait", items }: RelatedItemsProps) {
+function RelatedItems({
+  title = "Artikel Terkait",
+  items,
+  variant = "indonesia",
+}: RelatedItemsProps) {
   const visibleItems = items.slice(0, 3)
 
   if (visibleItems.length === 0) {
@@ -32,7 +37,10 @@ function RelatedItems({ title = "Artikel Terkait", items }: RelatedItemsProps) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {visibleItems.map((item) => (
             <a key={item.slug} href={item.detailPath} className="group block h-full">
-              <Card className="h-full py-0 transition-shadow hover:shadow-lg">
+              <Card
+                variant={variant}
+                className="h-full py-0 transition-shadow"
+              >
                 {item.thumbnailSrc ? (
                   <div className="relative aspect-video overflow-hidden">
                     <Image
