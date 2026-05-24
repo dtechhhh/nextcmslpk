@@ -268,7 +268,6 @@ export async function changePasswordAction(input: unknown) {
       select: {
         passwordHash: true,
         role: true,
-        totpVerified: true,
       },
     });
 
@@ -302,25 +301,9 @@ export async function changePasswordAction(input: unknown) {
       },
     });
 
-    try {
-      await updateSession({
-        user: {
-          securityStamp,
-        },
-      } as Parameters<typeof updateSession>[0]);
-    } catch {
-      return {
-        ok: true,
-        redirectTo: "/dashboard/login",
-      };
-    }
-
     return {
       ok: true,
-      redirectTo:
-        user.role === "TENANT_ADMIN" && !user.totpVerified
-          ? "/dashboard/account/totp-setup"
-          : "/dashboard",
+      redirectTo: user.role === "SUPER_ADMIN" ? "/super-admin/login" : "/dashboard/login",
     };
   } catch {
     return { ok: false, error: "Password gagal diubah." };
