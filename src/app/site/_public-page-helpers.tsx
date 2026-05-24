@@ -17,6 +17,18 @@ import {
   type PublicJson,
   type PublicPageSearchParams,
 } from "@/server/resolvers/public";
+import {
+  JapanAboutPage,
+  JapanCandidateProfilePage,
+  JapanContactPage,
+  JapanHomepage,
+  JapanNewsDetailPage,
+  JapanNewsListPage,
+  JapanRecruitmentNetworkPage,
+  JapanSectorDetailPage,
+  JapanSectorListPage,
+  JapanTrainingMethodPage,
+} from "@/themes/starter/pages/japan/JapanPublicPages";
 import { Button } from "@/themes/starter/components/ui/Button";
 import { Container } from "@/themes/starter/components/ui/Container";
 import { Card, CardContent } from "@/themes/starter/components/ui/Card";
@@ -104,6 +116,25 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
   }
 
   const data = page.dataJson;
+  if (context.variantKey === "japan") {
+    const latestNewsConfig = record(data.latest_news);
+    const latestNews = await resolveCollectionList(context.variantId, "news", {
+      source: "latest_published",
+      pageSize: numberValue(latestNewsConfig.max_items) || 4,
+    });
+
+    return (
+      <JapanHomepage
+        page={page}
+        globalConfig={context.globalConfig}
+        tenantName={getLpkName(context.globalConfig, context.tenant.name)}
+        variantId={context.variantId}
+        isPreview={isPreview}
+        latestNews={latestNews.items}
+      />
+    );
+  }
+
   const whatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
   const [heroImage, programs, jobs, blogs, activeOffer] = await Promise.all([
     resolveMediaUrl(stringValue(record(data.hero).image_id)),
@@ -327,6 +358,191 @@ export async function renderDetailPage(options: DetailPageOptions) {
   );
 }
 
+type JapanStaticPageKind =
+  | "about"
+  | "training_method"
+  | "candidate_profile"
+  | "recruitment_network"
+  | "contact";
+
+type JapanStaticPageOptions = PageLoadOptions & {
+  kind: JapanStaticPageKind;
+};
+
+type JapanListPageKind = "sector" | "news";
+
+type JapanListPageOptions = {
+  kind: JapanListPageKind;
+  pageKey: string;
+  collectionKey: "sector" | "news";
+  path: string;
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams: PageSearchParams;
+};
+
+type JapanDetailPageOptions = {
+  collectionKey: "sector" | "news";
+  slug: string;
+  pathPrefix: string;
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams?: PageSearchParams;
+};
+
+export async function renderJapanStaticPage(options: JapanStaticPageOptions) {
+  const { context, page, isPreview } = await loadPublicPage(options);
+
+  if (context.variantKey !== "japan" || !page) {
+    notFound();
+  }
+
+  const commonProps = {
+    page,
+    globalConfig: context.globalConfig,
+    tenantName: getLpkName(context.globalConfig, context.tenant.name),
+    variantId: context.variantId,
+    isPreview,
+  };
+
+  if (options.kind === "about") {
+    return <JapanAboutPage {...commonProps} />;
+  }
+
+  if (options.kind === "training_method") {
+    return <JapanTrainingMethodPage {...commonProps} />;
+  }
+
+  if (options.kind === "candidate_profile") {
+    return <JapanCandidateProfilePage {...commonProps} />;
+  }
+
+  if (options.kind === "recruitment_network") {
+    return <JapanRecruitmentNetworkPage {...commonProps} />;
+  }
+
+  return <JapanContactPage {...commonProps} />;
+}
+
+export async function renderJapanListPage(options: JapanListPageOptions) {
+  const { context, page, isPreview } = await loadPublicPage({
+    pageKey: options.pageKey,
+    path: options.path,
+    cacheTags: options.cacheTags,
+    revalidate: options.revalidate,
+    searchParams: options.searchParams,
+  });
+
+  if (context.variantKey !== "japan" || !page) {
+    notFound();
+  }
+
+  const params = await options.searchParams;
+  const filters = readFilters(params);
+  const currentPage = numberFromParam(params.page) || 1;
+  const filterConfigs = getJapanFilterConfigs(options.kind, page.dataJson);
+  const [collection, filterDefs] = await Promise.all([
+    unstable_cache(
+      () =>
+        resolveCollectionList(context.variantId, options.collectionKey, {
+          filters,
+          page: currentPage,
+          pageSize: 12,
+        }),
+      [
+        "public-japan-collection",
+        context.variantId,
+        options.collectionKey,
+        JSON.stringify(filters),
+        String(currentPage),
+      ],
+      {
+        revalidate: options.revalidate,
+        tags: resolveTags(options.cacheTags, context.variantId),
+      },
+    )(),
+    Promise.all(filterConfigs.map((config) => resolveOptionSet(context.variantId, config.optionSetKey))),
+  ]);
+  const filterBarFilters = filterConfigs.map((config, index) => ({
+    key: config.key,
+    label: config.label,
+    isEnabled: true,
+    options: filterDefs[index].map((option) => ({
+      label: option.label,
+      value: option.id,
+    })),
+  }));
+  const commonProps = {
+    page,
+    globalConfig: context.globalConfig,
+    tenantName: getLpkName(context.globalConfig, context.tenant.name),
+    variantId: context.variantId,
+    isPreview,
+    collection,
+    filters: filterBarFilters,
+    currentFilters: filters,
+  };
+
+  return options.kind === "sector" ? (
+    <JapanSectorListPage {...commonProps} />
+  ) : (
+    <JapanNewsListPage {...commonProps} />
+  );
+}
+
+export async function renderJapanDetailPage(options: JapanDetailPageOptions) {
+  const context = await getOkContext();
+
+  if (context.variantKey !== "japan") {
+    notFound();
+  }
+
+  const params = options.searchParams ? await options.searchParams : {};
+  const path = `${options.pathPrefix}/${options.slug}`;
+  const preview = await getPreviewState(params, context.tenant.id, path);
+  const item = preview.isPreview
+    ? await resolveCollectionItem(context.variantId, options.collectionKey, options.slug, {
+        preview: true,
+        token: preview.token,
+      })
+    : await unstable_cache(
+        () => resolveCollectionItem(context.variantId, options.collectionKey, options.slug),
+        ["public-japan-item", context.variantId, options.collectionKey, options.slug],
+        {
+          revalidate: options.revalidate,
+          tags: resolveTags(options.cacheTags, context.variantId),
+        },
+      )();
+
+  if (!item) {
+    notFound();
+  }
+
+  if (preview.isPreview) {
+    noStore();
+  }
+
+  const commonProps = {
+    item,
+    globalConfig: context.globalConfig,
+    tenantName: getLpkName(context.globalConfig, context.tenant.name),
+    variantId: context.variantId,
+    isPreview: preview.isPreview,
+  };
+
+  if (options.collectionKey === "sector") {
+    return <JapanSectorDetailPage {...commonProps} />;
+  }
+
+  const relatedMaxItems = numberValue(item.dataJson.related_max_items) || 3;
+  const relatedItems = await resolveCollectionList(context.variantId, "news", {
+    source: "latest_published",
+    pageSize: relatedMaxItems + 1,
+  });
+
+  return <JapanNewsDetailPage {...commonProps} relatedItems={relatedItems.items} />;
+}
+
 export async function generatePublicMetadata({
   pageKey,
   path,
@@ -344,11 +560,18 @@ export async function generatePublicMetadata({
   const page = await resolvePageData(context.variantId, pageKey);
   const data = page?.dataJson ?? {};
   const hero = record(data.hero);
-  const imageUrl = await resolveMediaUrl(stringValue(hero.image_id));
+  const heroImageId =
+    stringValue(hero.image_id) ||
+    stringValue(hero.media_id) ||
+    firstString(hero.slider_media_ids);
+  const imageUrl = await resolveMediaUrl(heroImageId);
   const fallbackImageUrl = await resolveDefaultOgImage(context.globalConfig);
 
   return buildMetadata({
-    title: `${stringValue(hero.headline) || page?.title || titleFallback} | ${context.tenant.name}`,
+    title: `${stringValue(hero.headline) || page?.title || titleFallback} | ${getLpkName(
+      context.globalConfig,
+      context.tenant.name,
+    )}`,
     description: stringValue(hero.subheadline),
     imageUrl: imageUrl || fallbackImageUrl,
     path,
@@ -374,7 +597,10 @@ export async function generateItemMetadata({
   const fallbackImageUrl = await resolveDefaultOgImage(context.globalConfig);
 
   return buildMetadata({
-    title: `${item?.title || formatLabel(collectionKey)} | ${context.tenant.name}`,
+    title: `${item?.title || formatLabel(collectionKey)} | ${getLpkName(
+      context.globalConfig,
+      context.tenant.name,
+    )}`,
     description: item?.excerpt,
     imageUrl: item?.heroSrc || item?.thumbnailSrc || fallbackImageUrl,
     path,
@@ -709,6 +935,53 @@ function getWhatsappHref(
     : "#";
 }
 
+function getLpkName(globalConfig: Record<string, PublicJson>, fallback: string) {
+  const brand = record(record(globalConfig.brand_header).brand);
+
+  return stringValue(brand.lpk_name) || fallback;
+}
+
+function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
+  const filterConfig = record(data.filter_config);
+
+  if (kind === "sector") {
+    return booleanValue(filterConfig.enable_sector_category_filter, true)
+      ? [
+          {
+            key: "sector_category",
+            label: "Sector category",
+            optionSetKey: "japan_sector_category",
+          },
+        ]
+      : [];
+  }
+
+  return [
+    booleanValue(filterConfig.enable_category_filter, true)
+      ? {
+          key: "category",
+          label: "Category",
+          optionSetKey: "japan_news_category",
+        }
+      : null,
+    booleanValue(filterConfig.enable_tag_filter, true)
+      ? {
+          key: "tag",
+          label: "Tag",
+          optionSetKey: "japan_news_tag",
+        }
+      : null,
+  ].filter(
+    (
+      config,
+    ): config is {
+      key: string;
+      label: string;
+      optionSetKey: string;
+    } => Boolean(config),
+  );
+}
+
 function resolveTags(
   tags: string[] | ((variantId: string) => string[]),
   variantId: string,
@@ -737,6 +1010,12 @@ function readParam(value: string | string[] | undefined) {
 function numberFromParam(value: string | string[] | undefined) {
   const number = Number(readParam(value));
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : undefined;
+}
+
+function firstString(value: unknown) {
+  return Array.isArray(value)
+    ? stringValue(value.find((item) => typeof item === "string"))
+    : "";
 }
 
 function record(value: unknown): PublicJson {
