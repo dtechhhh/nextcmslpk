@@ -20,6 +20,31 @@ const japanNavbarKeySchema = z.enum([
 
 const headerStyleSchema = z.enum(["solid", "transparent_on_hero"]);
 
+function optionalHexColor(label: string) {
+  return z
+    .string()
+    .trim()
+    .refine((value) => value === "" || /^#[0-9a-fA-F]{6}$/.test(value), {
+      message: `${label} harus kosong atau memakai format hex #RRGGBB.`,
+    })
+    .default("");
+}
+
+const appearanceSchema = z
+  .object({
+    primary_color: optionalHexColor("Primary color"),
+    primary_hover_color: optionalHexColor("Primary hover color"),
+    accent_color: optionalHexColor("Accent color"),
+    cta_color: optionalHexColor("CTA color"),
+  })
+  .passthrough()
+  .default({
+    primary_color: "",
+    primary_hover_color: "",
+    accent_color: "",
+    cta_color: "",
+  });
+
 const indonesiaNavbarItemSchema = z
   .object({
     key: indonesiaNavbarKeySchema,
@@ -69,6 +94,7 @@ export const indonesiaBrandHeaderSchema = z
         header_style: headerStyleSchema.default("solid"),
       })
       .passthrough(),
+    appearance: appearanceSchema,
   })
   .passthrough();
 
@@ -113,6 +139,7 @@ export const japanBrandHeaderSchema = z
         header_style: headerStyleSchema.default("solid"),
       })
       .passthrough(),
+    appearance: appearanceSchema,
   })
   .passthrough();
 

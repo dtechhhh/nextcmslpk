@@ -1326,7 +1326,7 @@ function ContactChannels({
         <div className="grid gap-6 md:grid-cols-2">
           <Card variant="japan" className="p-6">
             <CardContent className="p-0">
-              <MessageCircle aria-hidden="true" className="size-8 text-[#06C755]" />
+              <MessageCircle aria-hidden="true" className="size-8 text-[var(--color-cta)]" />
               <h2 className="mt-4 text-2xl font-bold text-neutral-900">LINE</h2>
               <Button render={<a href={lineHref} />} variant="line" className="mt-6">
                 {lineLabel}

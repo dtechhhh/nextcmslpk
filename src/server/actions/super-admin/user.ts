@@ -16,9 +16,11 @@ import {
 import {
   getRequestIpAddress,
   requireSuperAdminActionSession,
+  sensitiveActionCredentialsSchema,
   toActionError,
   toFieldErrors,
   validationError,
+  verifySensitiveSuperAdminAction,
   type SuperAdminActionResult,
 } from "@/server/actions/super-admin/_shared";
 
@@ -35,12 +37,12 @@ const createTenantAdminSchema = z.object({
       usernamePattern,
       "Username hanya boleh huruf, angka, titik, underscore, dan dash.",
     ),
-});
+}).merge(sensitiveActionCredentialsSchema);
 
 const tenantAdminActionSchema = z.object({
   tenantId: z.string().cuid(),
   userId: z.string().cuid(),
-});
+}).merge(sensitiveActionCredentialsSchema);
 
 export async function createTenantAdmin(
   input: unknown,
@@ -61,6 +63,12 @@ export async function createTenantAdmin(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
+
     const temporaryPassword = generateTemporaryPassword();
     const totp = await generateTOTPSecret(`Tenant Admin:${parsed.data.username}`);
     const passwordHash = await hashPassword(temporaryPassword);
@@ -180,6 +188,12 @@ export async function resetPassword(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
+
     const temporaryPassword = generateTemporaryPassword();
     const passwordHash = await hashPassword(temporaryPassword);
     const securityStamp = randomUUID();
@@ -247,6 +261,12 @@ export async function resetTotp(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
+
     const user = await prisma.user.findFirst({
       where: {
         id: parsed.data.userId,
@@ -324,6 +344,12 @@ export async function toggleActive(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
+
     const updated = await prisma.$transaction(
       async (tx) => {
         const user = await findTenantAdminUser(tx, parsed.data);

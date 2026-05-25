@@ -23,6 +23,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { generateSlug } from "@/lib/slugify";
 import {
+  emptySensitiveActionCredentials,
+  SensitiveActionFields,
+  type SensitiveActionCredentials,
+} from "@/components/super-admin/sensitive-action";
+import {
   checkTenantSlugAvailability,
   createTenant,
 } from "@/server/actions/super-admin/tenant";
@@ -35,6 +40,9 @@ export function CreateTenantForm() {
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
+  const [credentials, setCredentials] = useState<SensitiveActionCredentials>(
+    emptySensitiveActionCredentials,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -77,6 +85,7 @@ export function CreateTenantForm() {
       const result = await createTenant({
         name,
         slug,
+        ...credentials,
       });
 
       if (!result.ok) {
@@ -86,6 +95,7 @@ export function CreateTenantForm() {
       }
 
       toast.success("Tenant berhasil dibuat.");
+      setCredentials(emptySensitiveActionCredentials());
       router.replace(result.redirectTo);
       router.refresh();
     });
@@ -156,6 +166,12 @@ export function CreateTenantForm() {
             </Field>
 
             {error ? <FieldError>{error}</FieldError> : null}
+            <SensitiveActionFields
+              credentials={credentials}
+              disabled={isPending}
+              idPrefix="create-tenant"
+              onChange={setCredentials}
+            />
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button

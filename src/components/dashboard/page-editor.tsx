@@ -146,6 +146,10 @@ export function PageEditor({
 
           if (Object.keys(actionErrors).length > 0) {
             setErrors(actionErrors);
+          } else {
+            setErrors({
+              form: [getActionErrorMessage(response, "Draft gagal disimpan.")],
+            });
           }
 
           setSaveState("error");
@@ -170,6 +174,9 @@ export function PageEditor({
 
         return true;
       } catch {
+        setErrors({
+          form: ["Draft gagal disimpan. Coba lagi."],
+        });
         setSaveState("error");
         toast.error("Draft gagal disimpan.");
         return false;
@@ -217,10 +224,25 @@ export function PageEditor({
       const response = await publishPage(pageId);
 
       if (!isPageMutationSuccess(response)) {
+        const actionErrors = getActionFieldErrors(
+          getRecordValue(response, "details"),
+        );
+
+        if (Object.keys(actionErrors).length > 0) {
+          setErrors(actionErrors);
+          setSaveState("error");
+        } else {
+          setErrors({
+            form: [getActionErrorMessage(response, "Page gagal dipublish.")],
+          });
+          setSaveState("error");
+        }
+
         toast.error(getActionErrorMessage(response, "Page gagal dipublish."));
         return;
       }
 
+      setErrors({});
       setStatus(response.page.status);
       setLastSavedAt(response.page.updatedAt);
       toast.success("Page dipublish.");
@@ -277,6 +299,7 @@ export function PageEditor({
   const controlsDisabled = isSaving || isPublishing || isUnpublishing;
   const canPreview =
     hasSavedDraft && saveState === "saved" && !isSaving && !isPreviewing;
+  const formError = getError(errors, "form");
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
@@ -331,6 +354,12 @@ export function PageEditor({
           ) : null}
         </div>
       </div>
+
+      {formError ? (
+        <FieldError className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+          {formError}
+        </FieldError>
+      ) : null}
 
       <FieldGroup>
         {definition.sections.map((section) => (
@@ -829,6 +858,10 @@ function isPreviewTokenSuccess(value: unknown): value is {
 }
 
 function getActionErrorMessage(value: unknown, fallback: string) {
+  if (isRecord(value) && value.code === "VALIDATION_ERROR") {
+    return "Lengkapi field yang ditandai sebelum lanjut.";
+  }
+
   if (isRecord(value) && typeof value.error === "string") {
     return value.error;
   }

@@ -17,6 +17,7 @@ type IdleTrackerProps = {
 export function IdleTracker({ callbackUrl = "/dashboard/login" }: IdleTrackerProps) {
   useEffect(() => {
     let lastSyncedAt = 0;
+    let isSigningOut = false;
 
     function syncActivity(lastActivity: number) {
       const now = Date.now();
@@ -45,7 +46,14 @@ export function IdleTracker({ callbackUrl = "/dashboard/login" }: IdleTrackerPro
       }
 
       if (Date.now() - lastActivity > IDLE_TIMEOUT_MS) {
-        void signOut({ callbackUrl });
+        if (isSigningOut) {
+          return;
+        }
+
+        isSigningOut = true;
+        void signOut({ redirect: false }).finally(() => {
+          window.location.replace(callbackUrl);
+        });
         return;
       }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { changePasswordAction } from "@/server/actions/auth";
 
 export function ChangePasswordForm() {
-  const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,25 +31,30 @@ export function ChangePasswordForm() {
     event.preventDefault();
     setError(null);
 
+    const payload = {
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    };
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+
     startTransition(async () => {
-      const result = await changePasswordAction({
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      });
+      const result = await changePasswordAction(payload);
 
       if (!result.ok) {
         setError(result.error ?? "Password gagal diubah.");
 
         if (result.redirectTo) {
-          router.replace(result.redirectTo);
+          window.location.replace(result.redirectTo);
         }
 
         return;
       }
 
-      router.replace(result.redirectTo ?? "/dashboard");
-      router.refresh();
+      window.location.replace(result.redirectTo ?? "/dashboard");
     });
   }
 

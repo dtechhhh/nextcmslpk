@@ -9,6 +9,7 @@ import {
 import { FloatingCTA } from "@/themes/starter/components/sections/FloatingCTA";
 import { FooterIndonesia } from "@/themes/starter/components/layout/FooterIndonesia";
 import { HeaderIndonesia } from "@/themes/starter/components/layout/HeaderIndonesia";
+import { getVariantAppearanceStyle } from "@/themes/starter/design-system/appearance";
 
 type LayoutIndonesiaProps = {
   globalConfig: Record<string, PublicJson>;
@@ -31,6 +32,10 @@ export async function LayoutIndonesia({
   const whatsapp = record(whatsappContact.whatsapp);
   const contact = record(whatsappContact.contact);
   const socialLinks = record(whatsappContact.social_links);
+  const appearanceStyle = getVariantAppearanceStyle(
+    "indonesia",
+    brandHeader.appearance,
+  );
 
   const lpkName = stringValue(brand.lpk_name) || tenant.name;
   const whatsappNumber = stringValue(whatsapp.number);
@@ -48,7 +53,11 @@ export async function LayoutIndonesia({
   ]);
 
   return (
-    <div data-variant="indonesia" className="theme-indonesia min-h-screen bg-white">
+    <div
+      data-variant="indonesia"
+      className="theme-indonesia min-h-screen bg-white"
+      style={appearanceStyle}
+    >
       <HeaderIndonesia
         lpkName={lpkName}
         logoSrc={logoSrc ?? undefined}
@@ -173,3 +182,4 @@ function numberValue(value: unknown) {
 }
 
 export type { LayoutIndonesiaProps };
+export default LayoutIndonesia;

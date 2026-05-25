@@ -19,6 +19,13 @@ import {
   listMedia,
 } from "@/server/actions/tenant/media";
 import { cn } from "@/lib/utils";
+import {
+  LOGO_IMAGE_REQUIREMENT_TEXT,
+  validateLogoFileBasics,
+  validateLogoImageAsset,
+  validateLogoImageDimensions,
+  type MediaPreset,
+} from "@/lib/media-constraints";
 
 type MediaType = "IMAGE" | "DOCUMENT";
 
@@ -29,6 +36,8 @@ type MediaItem = {
   fileSize: number;
   mediaType: MediaType;
   status: string;
+  width: number | null;
+  height: number | null;
   publicUrl?: string;
 };
 
@@ -37,6 +46,7 @@ type MediaPickerProps = {
   value: string;
   onChange: (mediaId: string) => void;
   mediaType?: MediaType;
+  mediaPreset?: MediaPreset;
   disabled?: boolean;
 };
 
@@ -45,6 +55,7 @@ export function MediaPicker({
   value,
   onChange,
   mediaType = "IMAGE",
+  mediaPreset,
   disabled = false,
 }: MediaPickerProps) {
   const [open, setOpen] = useState(false);
@@ -124,6 +135,15 @@ export function MediaPicker({
     setUploadError(null);
 
     try {
+      const validationError = await validateFileForPreset(file, mediaPreset);
+
+      if (validationError) {
+        setUploadError(validationError);
+        setUploading(false);
+        event.target.value = "";
+        return;
+      }
+
       const presignedResult = await generatePresignedUploadUrl({
         fileName: file.name,
         contentType: file.type,
@@ -150,7 +170,7 @@ export function MediaPicker({
       setOpen(false);
       toast.success("Media berhasil diupload.");
     } catch {
-      setUploadError("Upload gagal.");
+      setUploadError("Upload ke storage gagal. Periksa konfigurasi CORS R2.");
     } finally {
       setUploading(false);
     }
@@ -197,7 +217,9 @@ export function MediaPicker({
               {mediaType === "IMAGE" ? "Select image" : "Select document"}
             </DialogTitle>
             <DialogDescription>
-              Choose an active asset from the tenant media library.
+              {mediaPreset === "logo"
+                ? LOGO_IMAGE_REQUIREMENT_TEXT
+                : "Choose an active asset from the tenant media library."}
             </DialogDescription>
           </DialogHeader>
 
@@ -258,38 +280,56 @@ export function MediaPicker({
                 </div>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {items.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={cn(
-                        "group overflow-hidden rounded-lg border bg-background text-left transition-colors hover:border-primary",
-                        item.id === value && "border-primary ring-2 ring-primary/20",
-                      )}
-                      onClick={() => handleSelect(item.id)}
-                    >
-                      <div className="grid aspect-video place-items-center bg-muted">
-                        {item.mediaType === "IMAGE" && item.publicUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={item.publicUrl}
-                            alt={item.fileName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <FileTextIcon className="size-8 text-muted-foreground" />
+                  {items.map((item) => {
+                    const presetErrors = getPresetErrors(item, mediaPreset);
+                    const isInvalidForPreset = presetErrors.length > 0;
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        disabled={isInvalidForPreset}
+                        title={presetErrors.join(" ")}
+                        className={cn(
+                          "group overflow-hidden rounded-lg border bg-background text-left transition-colors hover:border-primary",
+                          item.id === value && "border-primary ring-2 ring-primary/20",
+                          isInvalidForPreset && "cursor-not-allowed opacity-55",
                         )}
-                      </div>
-                      <div className="flex flex-col gap-1 p-3">
-                        <span className="truncate text-sm font-medium">
-                          {item.fileName}
-                        </span>
-                        <span className="truncate text-xs text-muted-foreground">
-                          {item.mimeType}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                        onClick={() => handleSelect(item.id)}
+                      >
+                        <div className="grid aspect-video place-items-center bg-muted">
+                          {item.mediaType === "IMAGE" && item.publicUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.publicUrl}
+                              alt={item.fileName}
+                              className="h-full w-full object-contain"
+                            />
+                          ) : (
+                            <FileTextIcon className="size-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1 p-3">
+                          <span className="truncate text-sm font-medium">
+                            {item.fileName}
+                          </span>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {item.mimeType}
+                          </span>
+                          {item.width && item.height ? (
+                            <span className="truncate text-xs text-muted-foreground">
+                              {item.width}&times;{item.height}
+                            </span>
+                          ) : null}
+                          {isInvalidForPreset ? (
+                            <span className="line-clamp-2 text-xs text-destructive">
+                              {presetErrors[0]}
+                            </span>
+                          ) : null}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -349,6 +389,69 @@ async function uploadFile(url: string, file: File): Promise<void> {
     xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
 
     xhr.send(file);
+  });
+}
+
+async function validateFileForPreset(
+  file: File,
+  mediaPreset: MediaPreset | undefined,
+) {
+  if (mediaPreset !== "logo") {
+    return null;
+  }
+
+  const basicErrors = validateLogoFileBasics(file);
+
+  if (basicErrors.length > 0) {
+    return basicErrors.join(" ");
+  }
+
+  let dimensions: { width: number; height: number };
+
+  try {
+    dimensions = await readImageDimensions(file);
+  } catch {
+    return "Dimensi logo tidak bisa dibaca. Gunakan file JPG, PNG, atau WebP yang valid.";
+  }
+
+  const dimensionErrors = validateLogoImageDimensions(
+    dimensions.width,
+    dimensions.height,
+  );
+
+  return dimensionErrors.length > 0 ? dimensionErrors.join(" ") : null;
+}
+
+function getPresetErrors(
+  media: MediaItem,
+  mediaPreset: MediaPreset | undefined,
+) {
+  if (mediaPreset !== "logo") {
+    return [];
+  }
+
+  return validateLogoImageAsset(media);
+}
+
+function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.addEventListener("load", () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    });
+
+    image.addEventListener("error", () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image dimensions could not be read"));
+    });
+
+    image.src = url;
   });
 }
 

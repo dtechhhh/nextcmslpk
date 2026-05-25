@@ -1,6 +1,8 @@
 import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function IndonesiaCreateBlogPage() {
-  return <CollectionEditorPage variantKey="indonesia" collectionKey="blog" />;
+export const dynamic = "force-dynamic";
+
+export default async function IndonesiaCreateBlogPage() {
+  return CollectionEditorPage({ variantKey: "indonesia", collectionKey: "blog" });
 }
 
