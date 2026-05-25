@@ -17,29 +17,29 @@ const themeBadgeVariants = cva(
         ghost:
           "hover:bg-[var(--color-muted)] hover:text-[var(--color-muted-foreground)]",
         success:
-          "bg-[#22c55e] text-white",
+          "bg-[var(--color-status-success)] text-white",
         warning:
-          "bg-[#f59e0b] text-white",
+          "bg-[var(--color-status-warning)] text-white",
         error:
-          "bg-[#ef4444] text-white",
+          "bg-[var(--color-status-error)] text-white",
         info:
-          "bg-[#3b82f6] text-white",
+          "bg-[var(--color-status-info)] text-white",
         neutral:
-          "bg-[#64748b] text-white",
+          "bg-[var(--color-neutral-500)] text-white",
         draft:
-          "bg-[#64748b] text-white",
+          "bg-[var(--color-neutral-500)] text-white",
         published:
-          "bg-[#22c55e] text-white",
+          "bg-[var(--color-status-success)] text-white",
         closed:
-          "bg-[#f59e0b] text-white",
+          "bg-[var(--color-status-warning)] text-white",
         filled:
-          "bg-[#3b82f6] text-white",
+          "bg-[var(--color-status-info)] text-white",
         expired:
-          "border-[#f59e0b]/20 bg-[#f59e0b]/10 text-[#f59e0b]",
+          "border-[color-mix(in_srgb,var(--color-status-warning)_20%,transparent)] bg-[color-mix(in_srgb,var(--color-status-warning)_10%,transparent)] text-[var(--color-status-warning)]",
         promo:
-          "bg-[#e53935] text-white",
+          "bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)]",
         new_badge:
-          "bg-[#e53935] text-white",
+          "bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)]",
       },
     },
     defaultVariants: {

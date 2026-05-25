@@ -21,28 +21,33 @@ import { generateSlug } from "@/lib/slugify";
 import { prisma } from "@/server/db/client";
 import { getClientIp } from "@/server/services/rate-limit";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
+import {
+  sensitiveActionCredentialsSchema,
+  verifySensitiveSuperAdminAction,
+} from "@/server/actions/super-admin/_shared";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-const createTenantSchema = z.object({
-  name: z.string().trim().min(3, "Nama minimal 3 karakter."),
-  slug: z
-    .string()
-    .trim()
-    .min(1, "Slug wajib diisi.")
-    .regex(slugPattern, "Slug hanya boleh huruf kecil, angka, dan dash."),
-});
+const createTenantSchema = z
+  .object({
+    name: z.string().trim().min(3, "Nama minimal 3 karakter."),
+    slug: z
+      .string()
+      .trim()
+      .min(1, "Slug wajib diisi.")
+      .regex(slugPattern, "Slug hanya boleh huruf kecil, angka, dan dash."),
+  })
+  .merge(sensitiveActionCredentialsSchema);
 
 const updateTenantSchema = createTenantSchema.extend({
   id: z.string().cuid(),
 });
 
-const tenantIdSchema = z.union([
-  z.string().cuid().transform((id) => ({ id })),
-  z.object({
+const tenantStatusSchema = z
+  .object({
     id: z.string().cuid(),
-  }),
-]);
+  })
+  .merge(sensitiveActionCredentialsSchema);
 
 const tenantSlugSchema = z.object({
   slug: z
@@ -53,10 +58,12 @@ const tenantSlugSchema = z.object({
   excludeTenantId: z.string().cuid().optional(),
 });
 
-const variantActionSchema = z.object({
-  tenantId: z.string().cuid(),
-  variantId: z.string().cuid(),
-});
+const variantActionSchema = z
+  .object({
+    tenantId: z.string().cuid(),
+    variantId: z.string().cuid(),
+  })
+  .merge(sensitiveActionCredentialsSchema);
 
 const changeVariantThemeSchema = variantActionSchema.extend({
   themeKey: z.literal("starter"),
@@ -237,6 +244,11 @@ export async function createTenant(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     const tenant = await prisma.$transaction(
       async (tx) => {
@@ -386,6 +398,11 @@ export async function updateTenant(input: unknown): Promise<TenantActionResult> 
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     await prisma.$transaction(
       async (tx) => {
@@ -506,6 +523,11 @@ export async function toggleVariantStatus(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     const updated = await prisma.$transaction(
       async (tx) => {
@@ -590,6 +612,11 @@ export async function changeVariantTheme(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     await prisma.$transaction(
       async (tx) => {
@@ -664,15 +691,19 @@ async function setTenantStatus(
 ): Promise<TenantActionResult> {
   try {
     const session = await requireSuperAdminSession();
-    const parsed = tenantIdSchema.safeParse(input);
+    const parsed = tenantStatusSchema.safeParse(input);
 
     if (!parsed.success) {
-      throw new ValidationError({
-        id: ["Tenant tidak valid."],
-      });
+      throw new ValidationError(toFieldErrors(parsed.error));
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
+
     const securityStamp = randomUUID();
 
     await prisma.$transaction(
@@ -821,7 +852,10 @@ function toActionError(error: unknown, fallback: string): ActionFailure {
   if (error instanceof AppError) {
     return {
       ok: false,
-      error: error.message,
+      error:
+        error instanceof ValidationError
+          ? getFirstValidationMessage(error) ?? error.message
+          : error.message,
       code: error.code,
       details: error.details,
     };
@@ -831,4 +865,28 @@ function toActionError(error: unknown, fallback: string): ActionFailure {
     ok: false,
     error: fallback,
   };
+}
+
+function getFirstValidationMessage(error: ValidationError) {
+  const errors = error.details?.errors;
+
+  if (!isValidationErrors(errors)) {
+    return null;
+  }
+
+  return Object.values(errors).flat()[0] ?? null;
+}
+
+function isValidationErrors(
+  value: unknown,
+): value is Record<string, string[]> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Object.values(value).every(
+      (messages) =>
+        Array.isArray(messages) &&
+        messages.every((message) => typeof message === "string"),
+    )
+  );
 }

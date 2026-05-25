@@ -1,5 +1,7 @@
 import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
+export const dynamic = "force-dynamic";
+
 type IndonesiaEditProgramPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -9,12 +11,6 @@ export default async function IndonesiaEditProgramPage({
 }: IndonesiaEditProgramPageProps) {
   const { id } = await params;
 
-  return (
-    <CollectionEditorPage
-      variantKey="indonesia"
-      collectionKey="program"
-      itemId={id}
-    />
-  );
+  return CollectionEditorPage({ variantKey: "indonesia", collectionKey: "program", itemId: id });
 }
 

@@ -1,8 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Loader2Icon } from "lucide-react";
-import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -23,9 +20,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  changeVariantTheme,
   toggleVariantStatus,
 } from "@/server/actions/super-admin/tenant";
+import { SensitiveActionDialog } from "@/components/super-admin/sensitive-action";
 
 type TenantVariant = {
   id: string;
@@ -45,49 +42,28 @@ export function TenantVariantsTab({
   variants,
 }: TenantVariantsTabProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
 
-  function handleToggleStatus(variant: TenantVariant) {
-    startTransition(async () => {
-      const result = await toggleVariantStatus({
+  async function handleToggleStatus(
+    variant: TenantVariant,
+    credentials: { currentPassword: string; totpCode: string },
+  ) {
+    const result = await toggleVariantStatus({
         tenantId,
         variantId: variant.id,
-      });
-
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success(
-        result.status === "ACTIVE"
-          ? "Variant berhasil diaktifkan."
-          : "Variant berhasil dinonaktifkan.",
-      );
-      router.refresh();
+      ...credentials,
     });
-  }
 
-  function handleThemeChange(variant: TenantVariant, themeKey: string | null) {
-    if (!themeKey || themeKey === variant.themeKey) {
-      return;
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        error: result.error,
+      };
     }
 
-    startTransition(async () => {
-      const result = await changeVariantTheme({
-        tenantId,
-        variantId: variant.id,
-        themeKey,
-      });
-
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success("Theme variant berhasil diubah.");
-      router.refresh();
-    });
+    return {
+      ok: true as const,
+      status: result.status,
+    };
   }
 
   return (
@@ -109,8 +85,7 @@ export function TenantVariantsTab({
             <TableCell>
               <Select
                 value={variant.themeKey}
-                onValueChange={(value) => handleThemeChange(variant, value)}
-                disabled={isPending}
+                disabled
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -127,14 +102,31 @@ export function TenantVariantsTab({
             </TableCell>
             <TableCell>
               <div className="flex items-center justify-end gap-3">
-                {isPending ? (
-                  <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
-                ) : null}
-                <Switch
-                  checked={variant.status === "ACTIVE"}
-                  onCheckedChange={() => handleToggleStatus(variant)}
-                  disabled={isPending}
-                  aria-label={`Toggle ${variant.key} status`}
+                <SensitiveActionDialog
+                  title={
+                    variant.status === "ACTIVE"
+                      ? "Disable variant?"
+                      : "Activate variant?"
+                  }
+                  description={
+                    variant.status === "ACTIVE"
+                      ? "Public domain untuk variant ini akan berhenti melayani konten."
+                      : "Public domain untuk variant ini akan kembali melayani konten."
+                  }
+                  actionLabel={variant.status === "ACTIVE" ? "Disable" : "Activate"}
+                  triggerLabel={variant.status === "ACTIVE" ? "Disable" : "Activate"}
+                  triggerVariant={variant.status === "ACTIVE" ? "destructive" : "outline"}
+                  triggerSize="sm"
+                  actionVariant={variant.status === "ACTIVE" ? "destructive" : "default"}
+                  onConfirm={(credentials) => handleToggleStatus(variant, credentials)}
+                  onSuccess={() => {
+                    toast.success(
+                      variant.status === "ACTIVE"
+                        ? "Variant berhasil dinonaktifkan."
+                        : "Variant berhasil diaktifkan.",
+                    );
+                    router.refresh();
+                  }}
                 />
               </div>
             </TableCell>

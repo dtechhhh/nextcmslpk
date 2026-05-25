@@ -1,4 +1,5 @@
 import type { ConfigKey } from "@/lib/constants";
+import type { MediaPreset } from "@/lib/media-constraints";
 import type { VariantKey } from "@/types";
 
 export type GlobalConfigData = Record<string, unknown>;
@@ -20,6 +21,9 @@ export type GlobalConfigField =
       inputType?: "text" | "email" | "url" | "tel";
     })
   | (BaseField & {
+      kind: "color";
+    })
+  | (BaseField & {
       kind: "textarea";
     })
   | (BaseField & {
@@ -35,7 +39,11 @@ export type GlobalConfigField =
       options: GlobalConfigFieldOption[];
     })
   | (BaseField & {
-      kind: "media" | "document" | "icon";
+      kind: "media";
+      mediaPreset?: MediaPreset;
+    })
+  | (BaseField & {
+      kind: "document" | "icon";
     })
   | (BaseField & {
       kind: "string-array";
@@ -233,6 +241,20 @@ const japanNavItemFields: GlobalConfigField[] = [
   { kind: "number", path: "sort_order", label: "Sort order", min: 0 },
 ];
 
+const indonesiaAppearanceDefaults = {
+  primary_color: "",
+  primary_hover_color: "",
+  accent_color: "",
+  cta_color: "",
+};
+
+const japanAppearanceDefaults = {
+  primary_color: "",
+  primary_hover_color: "",
+  accent_color: "",
+  cta_color: "",
+};
+
 export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
   "indonesia.brand_header": {
     variantKey: "indonesia",
@@ -258,6 +280,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         sticky_header: true,
         header_style: "solid",
       },
+      appearance: indonesiaAppearanceDefaults,
     },
     sections: [
       {
@@ -265,8 +288,18 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         title: "Brand",
         fields: [
           { kind: "text", path: "brand.lpk_name", label: "LPK name" },
-          { kind: "media", path: "brand.logo_image_id", label: "Logo image" },
-          { kind: "media", path: "brand.logo_light_image_id", label: "Light logo image" },
+          {
+            kind: "media",
+            path: "brand.logo_image_id",
+            label: "Logo image",
+            mediaPreset: "logo",
+          },
+          {
+            kind: "media",
+            path: "brand.logo_light_image_id",
+            label: "Light logo image",
+            mediaPreset: "logo",
+          },
         ],
       },
       {
@@ -332,6 +365,36 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
             path: "header_behavior.header_style",
             label: "Header style",
             options: headerStyleOptions,
+          },
+        ],
+      },
+      {
+        key: "appearance",
+        title: "Appearance",
+        fields: [
+          {
+            kind: "color",
+            path: "appearance.primary_color",
+            label: "Primary color",
+            placeholder: "#2e9fd6",
+          },
+          {
+            kind: "color",
+            path: "appearance.primary_hover_color",
+            label: "Primary hover color",
+            placeholder: "#2184b8",
+          },
+          {
+            kind: "color",
+            path: "appearance.accent_color",
+            label: "Accent color",
+            placeholder: "#e53935",
+          },
+          {
+            kind: "color",
+            path: "appearance.cta_color",
+            label: "CTA color",
+            placeholder: "#25D366",
           },
         ],
       },
@@ -459,7 +522,12 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         key: "brand",
         title: "Brand",
         fields: [
-          { kind: "media", path: "brand.logo_image_id", label: "Logo image" },
+          {
+            kind: "media",
+            path: "brand.logo_image_id",
+            label: "Logo image",
+            mediaPreset: "logo",
+          },
           { kind: "text", path: "brand.lpk_name", label: "LPK name" },
           {
             kind: "textarea",
@@ -585,6 +653,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         sticky_header: true,
         header_style: "solid",
       },
+      appearance: japanAppearanceDefaults,
     },
     sections: [
       {
@@ -593,8 +662,18 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         fields: [
           { kind: "text", path: "brand.lpk_name", label: "LPK name" },
           { kind: "text", path: "brand.tagline", label: "Tagline" },
-          { kind: "media", path: "brand.logo_image_id", label: "Logo image" },
-          { kind: "media", path: "brand.logo_light_image_id", label: "Light logo image" },
+          {
+            kind: "media",
+            path: "brand.logo_image_id",
+            label: "Logo image",
+            mediaPreset: "logo",
+          },
+          {
+            kind: "media",
+            path: "brand.logo_light_image_id",
+            label: "Light logo image",
+            mediaPreset: "logo",
+          },
         ],
       },
       {
@@ -684,6 +763,36 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
             path: "header_behavior.header_style",
             label: "Header style",
             options: headerStyleOptions,
+          },
+        ],
+      },
+      {
+        key: "appearance",
+        title: "Appearance",
+        fields: [
+          {
+            kind: "color",
+            path: "appearance.primary_color",
+            label: "Primary color",
+            placeholder: "#1e3a5f",
+          },
+          {
+            kind: "color",
+            path: "appearance.primary_hover_color",
+            label: "Primary hover color",
+            placeholder: "#162d4a",
+          },
+          {
+            kind: "color",
+            path: "appearance.accent_color",
+            label: "Accent color",
+            placeholder: "#e53935",
+          },
+          {
+            kind: "color",
+            path: "appearance.cta_color",
+            label: "CTA color",
+            placeholder: "#06C755",
           },
         ],
       },
@@ -847,7 +956,12 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         key: "brand",
         title: "Brand",
         fields: [
-          { kind: "media", path: "brand.logo_image_id", label: "Logo image" },
+          {
+            kind: "media",
+            path: "brand.logo_image_id",
+            label: "Logo image",
+            mediaPreset: "logo",
+          },
           { kind: "text", path: "brand.lpk_name", label: "LPK name" },
           {
             kind: "textarea",

@@ -422,6 +422,33 @@ function renderControl({
   const rawValue = getAtPath(data, path);
 
   switch (field.kind) {
+    case "color":
+      return (
+        <div className="flex items-center gap-2">
+          <Input
+            value={
+              isHexColor(rawValue)
+                ? rawValue
+                : isHexColor(field.placeholder)
+                  ? field.placeholder
+                  : "#000000"
+            }
+            type="color"
+            className="h-8 w-12 shrink-0 cursor-pointer p-1"
+            aria-label={`${field.label} swatch`}
+            onChange={(event) => setValue(path, event.target.value)}
+          />
+          <Input
+            value={toInputValue(rawValue)}
+            type="text"
+            inputMode="text"
+            maxLength={7}
+            placeholder={field.placeholder ?? "#000000"}
+            aria-invalid={Boolean(error)}
+            onChange={(event) => setValue(path, event.target.value)}
+          />
+        </div>
+      );
     case "text":
       return (
         <Input
@@ -479,6 +506,7 @@ function renderControl({
           tenantId={tenantId}
           value={toInputValue(rawValue)}
           mediaType={field.kind === "document" ? "DOCUMENT" : "IMAGE"}
+          mediaPreset={field.kind === "media" ? field.mediaPreset : undefined}
           onChange={(mediaId) => setValue(path, mediaId)}
         />
       );
@@ -747,6 +775,10 @@ function toInputValue(value: unknown) {
   }
 
   return "";
+}
+
+function isHexColor(value: unknown): value is string {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

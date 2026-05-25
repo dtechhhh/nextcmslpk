@@ -7,6 +7,7 @@ import {
 } from "@/server/resolvers/public";
 import { FooterJapan } from "@/themes/starter/components/layout/FooterJapan";
 import { HeaderJapan } from "@/themes/starter/components/layout/HeaderJapan";
+import { getVariantAppearanceStyle } from "@/themes/starter/design-system/appearance";
 
 type LayoutJapanProps = {
   globalConfig: Record<string, PublicJson>;
@@ -33,6 +34,7 @@ export async function LayoutJapan({
   const footerContact = record(footer.contact);
   const headerPrimaryCta = record(brandHeader.header_primary_cta);
   const headerSecondaryCta = record(brandHeader.header_secondary_cta);
+  const appearanceStyle = getVariantAppearanceStyle("japan", brandHeader.appearance);
 
   const lpkName = stringValue(brand.lpk_name) || tenant.name;
   const lineAccountId = stringValue(lineContact.line_official_account_id);
@@ -52,6 +54,7 @@ export async function LayoutJapan({
     <div
       data-variant="japan"
       className="theme-japan font-japanese min-h-screen bg-white text-neutral-900"
+      style={appearanceStyle}
     >
       <HeaderJapan
         lpkName={lpkName}
@@ -180,3 +183,4 @@ function numberValue(value: unknown) {
 }
 
 export type { LayoutJapanProps };
+export default LayoutJapan;
