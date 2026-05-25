@@ -1,11 +1,13 @@
 "use server";
 
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
 import { Prisma } from "@/generated/prisma/client";
 import { CONFIG_KEYS_INDONESIA, CONFIG_KEYS_JAPAN, type ConfigKey } from "@/lib/constants";
 import { AppError, AuthError, ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { validateLogoImageAsset } from "@/lib/media-constraints";
 import {
   getGlobalConfigSchema,
   isAllowedGlobalConfigKey,
@@ -33,6 +35,15 @@ const updateGlobalConfigSchema = globalConfigLookupSchema.extend({
 });
 
 type GlobalConfigKey = z.infer<typeof globalConfigKeySchema>;
+type LogoMediaPath = { path: string; label: string };
+
+const LOGO_MEDIA_PATHS_BY_CONFIG_KEY: Partial<Record<ConfigKey, LogoMediaPath[]>> = {
+  brand_header: [
+    { path: "brand.logo_image_id", label: "Logo image" },
+    { path: "brand.logo_light_image_id", label: "Light logo image" },
+  ],
+  footer: [{ path: "brand.logo_image_id", label: "Footer logo image" }],
+};
 
 export async function getGlobalConfig(variantId: unknown, configKey: unknown) {
   try {
@@ -113,6 +124,12 @@ export async function updateGlobalConfig(
       throw new ValidationError(zodErrorToFieldErrors(validated.error));
     }
 
+    await validateGlobalConfigLogoReferences(
+      db,
+      normalizedConfigKey,
+      validated.data,
+    );
+
     const existingConfig = await ensureGlobalConfig(db, {
       tenantId: context.tenantId,
       variantId: variant.id,
@@ -132,6 +149,8 @@ export async function updateGlobalConfig(
         updatedAt: true,
       },
     });
+
+    await revalidateTag(`variant:${variant.id}`, { expire: 0 });
 
     await createAuditLog({
       tenantId: context.tenantId,
@@ -284,6 +303,80 @@ function normalizeConfigData(value: unknown) {
   }
 
   return {};
+}
+
+async function validateGlobalConfigLogoReferences(
+  db: ReturnType<typeof tenantDb>,
+  configKey: ConfigKey,
+  dataJson: unknown,
+) {
+  const paths = LOGO_MEDIA_PATHS_BY_CONFIG_KEY[configKey] ?? [];
+
+  if (paths.length === 0) {
+    return;
+  }
+
+  const references: Array<LogoMediaPath & { mediaId: string }> = paths
+    .map((item) => ({
+      ...item,
+      mediaId: readStringAtPath(dataJson, item.path),
+    }))
+    .filter((item) => item.mediaId !== "");
+
+  if (references.length === 0) {
+    return;
+  }
+
+  const mediaIds = [...new Set(references.map((item) => item.mediaId))];
+  const mediaAssets = await db.mediaAsset.findMany({
+    where: {
+      id: {
+        in: mediaIds,
+      },
+    },
+    select: {
+      id: true,
+      fileSize: true,
+      height: true,
+      mediaType: true,
+      mimeType: true,
+      status: true,
+      width: true,
+    },
+  });
+  const mediaById = new Map(mediaAssets.map((media) => [media.id, media]));
+  const errors: Record<string, string[]> = {};
+
+  for (const reference of references) {
+    const media = mediaById.get(reference.mediaId);
+
+    if (!media) {
+      errors[reference.path] = [`${reference.label} tidak ditemukan.`];
+      continue;
+    }
+
+    const validationErrors = validateLogoImageAsset(media);
+
+    if (validationErrors.length > 0) {
+      errors[reference.path] = validationErrors;
+    }
+  }
+
+  if (Object.keys(errors).length > 0) {
+    throw new ValidationError(errors);
+  }
+}
+
+function readStringAtPath(source: unknown, path: string) {
+  const value = path.split(".").reduce<unknown>((current, segment) => {
+    if (!isRecord(current)) {
+      return undefined;
+    }
+
+    return current[segment];
+  }, source);
+
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function toPrismaJson(value: unknown) {

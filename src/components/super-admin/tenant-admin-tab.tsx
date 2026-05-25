@@ -14,6 +14,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  emptySensitiveActionCredentials,
+  SensitiveActionDialog,
+  SensitiveActionFields,
+  type SensitiveActionCredentials,
+} from "@/components/super-admin/sensitive-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -56,6 +62,8 @@ type TenantAdminTabProps = {
 export function TenantAdminTab({ tenantId, admins }: TenantAdminTabProps) {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [createCredentials, setCreateCredentials] =
+    useState<SensitiveActionCredentials>(emptySensitiveActionCredentials);
   const [error, setError] = useState<string | null>(null);
   const [provisioningResult, setProvisioningResult] =
     useState<ProvisioningResult | null>(null);
@@ -70,6 +78,7 @@ export function TenantAdminTab({ tenantId, admins }: TenantAdminTabProps) {
       const result = await createTenantAdmin({
         tenantId,
         username,
+        ...createCredentials,
       });
 
       if (!result.ok) {
@@ -79,6 +88,7 @@ export function TenantAdminTab({ tenantId, admins }: TenantAdminTabProps) {
       }
 
       setUsername("");
+      setCreateCredentials(emptySensitiveActionCredentials());
       setProvisioningResult({
         title: "Tenant admin created",
         username,
@@ -90,80 +100,91 @@ export function TenantAdminTab({ tenantId, admins }: TenantAdminTabProps) {
     });
   }
 
-  function handleResetPassword(admin: TenantAdmin) {
+  async function handleResetPassword(
+    admin: TenantAdmin,
+    credentials: SensitiveActionCredentials,
+  ) {
     setError(null);
     setProvisioningResult(null);
 
-    startTransition(async () => {
-      const result = await resetPassword({
-        tenantId,
-        userId: admin.id,
-      });
-
-      if (!result.ok) {
-        setError(result.error);
-        toast.error(result.error);
-        return;
-      }
-
-      setProvisioningResult({
-        title: "Temporary password generated",
-        username: admin.username,
-        temporaryPassword: result.temporaryPassword,
-      });
-      toast.success("Password tenant admin berhasil direset.");
-      router.refresh();
+    const result = await resetPassword({
+      tenantId,
+      userId: admin.id,
+      ...credentials,
     });
+
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        error: result.error,
+      };
+    }
+
+    setProvisioningResult({
+      title: "Temporary password generated",
+      username: admin.username,
+      temporaryPassword: result.temporaryPassword,
+    });
+
+    return {
+      ok: true as const,
+    };
   }
 
-  function handleResetTotp(admin: TenantAdmin) {
+  async function handleResetTotp(
+    admin: TenantAdmin,
+    credentials: SensitiveActionCredentials,
+  ) {
     setError(null);
     setProvisioningResult(null);
 
-    startTransition(async () => {
-      const result = await resetTotp({
-        tenantId,
-        userId: admin.id,
-      });
-
-      if (!result.ok) {
-        setError(result.error);
-        toast.error(result.error);
-        return;
-      }
-
-      setProvisioningResult({
-        title: "TOTP reset",
-        username: admin.username,
-        qrCodeDataUri: result.qrCodeDataUri,
-      });
-      toast.success("TOTP tenant admin berhasil direset.");
-      router.refresh();
+    const result = await resetTotp({
+      tenantId,
+      userId: admin.id,
+      ...credentials,
     });
+
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        error: result.error,
+      };
+    }
+
+    setProvisioningResult({
+      title: "TOTP reset",
+      username: admin.username,
+      qrCodeDataUri: result.qrCodeDataUri,
+    });
+
+    return {
+      ok: true as const,
+    };
   }
 
-  function handleToggleActive(admin: TenantAdmin) {
+  async function handleToggleActive(
+    admin: TenantAdmin,
+    credentials: SensitiveActionCredentials,
+  ) {
     setError(null);
 
-    startTransition(async () => {
-      const result = await toggleActive({
-        tenantId,
-        userId: admin.id,
-      });
-
-      if (!result.ok) {
-        setError(result.error);
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success(
-        result.isActive
-          ? "Tenant admin berhasil diaktifkan."
-          : "Tenant admin berhasil dinonaktifkan.",
-      );
-      router.refresh();
+    const result = await toggleActive({
+      tenantId,
+      userId: admin.id,
+      ...credentials,
     });
+
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        error: result.error,
+      };
+    }
+
+    return {
+      ok: true as const,
+      isActive: result.isActive,
+    };
   }
 
   return (
@@ -193,6 +214,14 @@ export function TenantAdminTab({ tenantId, admins }: TenantAdminTabProps) {
               )}
               Create Admin
             </Button>
+          </div>
+          <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
+            <SensitiveActionFields
+              credentials={createCredentials}
+              disabled={isPending}
+              idPrefix="create-tenant-admin"
+              onChange={setCreateCredentials}
+            />
           </div>
         </form>
       ) : (
@@ -232,36 +261,62 @@ export function TenantAdminTab({ tenantId, admins }: TenantAdminTabProps) {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap justify-end gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
+                    <SensitiveActionDialog
+                      title="Reset tenant admin password?"
+                      description="Password sementara baru akan dibuat dan sesi lama tenant admin akan invalid."
+                      actionLabel="Reset Password"
+                      triggerLabel="Password"
+                      triggerIcon={<KeyRoundIcon />}
+                      triggerSize="sm"
                       disabled={isPending}
-                      onClick={() => handleResetPassword(admin)}
-                    >
-                      <KeyRoundIcon />
-                      Password
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
+                      onConfirm={(credentials) => handleResetPassword(admin, credentials)}
+                      onSuccess={() => {
+                        toast.success("Password tenant admin berhasil direset.");
+                        router.refresh();
+                      }}
+                    />
+                    <SensitiveActionDialog
+                      title="Reset tenant admin TOTP?"
+                      description="QR TOTP baru akan dibuat dan tenant admin perlu setup ulang."
+                      actionLabel="Reset TOTP"
+                      triggerLabel="TOTP"
+                      triggerIcon={<QrCodeIcon />}
+                      triggerSize="sm"
                       disabled={isPending}
-                      onClick={() => handleResetTotp(admin)}
-                    >
-                      <QrCodeIcon />
-                      TOTP
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={admin.isActive ? "destructive" : "outline"}
+                      onConfirm={(credentials) => handleResetTotp(admin, credentials)}
+                      onSuccess={() => {
+                        toast.success("TOTP tenant admin berhasil direset.");
+                        router.refresh();
+                      }}
+                    />
+                    <SensitiveActionDialog
+                      title={
+                        admin.isActive
+                          ? "Deactivate tenant admin?"
+                          : "Activate tenant admin?"
+                      }
+                      description={
+                        admin.isActive
+                          ? "Tenant admin tidak bisa login setelah dinonaktifkan."
+                          : "Tenant admin akan bisa login kembali."
+                      }
+                      actionLabel={admin.isActive ? "Deactivate" : "Activate"}
+                      triggerLabel={admin.isActive ? "Deactivate" : "Activate"}
+                      triggerIcon={admin.isActive ? <PowerIcon /> : <RefreshCcwIcon />}
+                      triggerVariant={admin.isActive ? "destructive" : "outline"}
+                      triggerSize="sm"
+                      actionVariant={admin.isActive ? "destructive" : "default"}
                       disabled={isPending}
-                      onClick={() => handleToggleActive(admin)}
-                    >
-                      {admin.isActive ? <PowerIcon /> : <RefreshCcwIcon />}
-                      {admin.isActive ? "Deactivate" : "Activate"}
-                    </Button>
+                      onConfirm={(credentials) => handleToggleActive(admin, credentials)}
+                      onSuccess={() => {
+                        toast.success(
+                          admin.isActive
+                            ? "Tenant admin berhasil dinonaktifkan."
+                            : "Tenant admin berhasil diaktifkan.",
+                        );
+                        router.refresh();
+                      }}
+                    />
                   </div>
                 </TableCell>
               </TableRow>

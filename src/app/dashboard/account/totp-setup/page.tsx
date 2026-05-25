@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-
 import { auth } from "@/auth";
 import { TOTPSetupForm } from "@/components/auth/totp-setup-form";
 import { getTenantAdminTOTPSetupState } from "@/server/services/dashboard-account";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
+
+export const dynamic = "force-dynamic";
 
 export default async function TOTPSetupPage() {
   const session = await auth();

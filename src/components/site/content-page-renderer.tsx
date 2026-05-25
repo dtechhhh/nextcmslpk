@@ -23,7 +23,7 @@ export function ContentPageRenderer({ isPreview, page }: ContentPageRendererProp
     <main
       className={cn(
         "min-h-screen bg-background text-foreground",
-        page.variantKey === "japan" ? "theme-japan font-japanese" : "theme-indonesia",
+        page.variantKey === "japan" && "font-japanese",
       )}
     >
       {isPreview ? (

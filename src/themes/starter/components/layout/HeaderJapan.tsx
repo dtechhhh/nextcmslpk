@@ -80,7 +80,7 @@ export function HeaderJapan({
   return (
     <header className={cn("z-40 bg-white", sticky && "sticky top-0")}>
       {topbar.isEnabled ? (
-        <div className="hidden border-b-2 border-[#e53935] bg-primary-700 text-white md:flex">
+        <div className="hidden border-b-2 border-secondary-500 bg-primary-700 text-white md:flex">
           <div className="mx-auto grid h-10 w-full max-w-7xl grid-cols-3 items-center gap-4 px-4 text-xs font-medium sm:px-6 lg:px-8">
             <p className="truncate text-left">{topbar.locationLabel}</p>
             <p className="truncate text-center">{topbar.emailLabel}</p>

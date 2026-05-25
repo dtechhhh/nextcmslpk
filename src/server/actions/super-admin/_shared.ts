@@ -1,9 +1,33 @@
 import { headers } from "next/headers";
+import { z } from "zod";
 
 import { auth } from "@/auth";
 import { AppError, AuthError, ForbiddenError, ValidationError } from "@/lib/errors";
-import { getClientIp } from "@/server/services/rate-limit";
+import {
+  decryptTOTPSecret,
+  verifyPassword,
+  verifyTOTPCode,
+} from "@/server/services/auth";
+import {
+  getClientIp,
+  limitPasswordAttempt,
+  limitTOTPVerifyAttempt,
+} from "@/server/services/rate-limit";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
+import { prisma } from "@/server/db/client";
+
+const PASSWORD_RATE_LIMIT_ERROR =
+  "Terlalu banyak percobaan password. Coba lagi nanti.";
+const TOTP_RATE_LIMIT_ERROR = "Terlalu banyak percobaan TOTP. Coba lagi nanti.";
+
+export const sensitiveActionCredentialsSchema = z.object({
+  currentPassword: z.string().min(1, "Password super admin wajib diisi."),
+  totpCode: z.string().regex(/^\d{6}$/, "Kode TOTP harus 6 digit."),
+});
+
+export type SensitiveActionCredentials = z.infer<
+  typeof sensitiveActionCredentialsSchema
+>;
 
 export type ActionSuccess<T extends object = object> = {
   ok: true;
@@ -44,6 +68,68 @@ export async function getRequestIpAddress() {
     return getClientIp(await headers());
   } catch {
     return "unknown";
+  }
+}
+
+export async function verifySensitiveSuperAdminAction({
+  userId,
+  credentials,
+  ipAddress,
+}: {
+  userId: string;
+  credentials: SensitiveActionCredentials;
+  ipAddress: string;
+}) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      username: true,
+      passwordHash: true,
+      role: true,
+      totpSecret: true,
+      totpVerified: true,
+    },
+  });
+
+  if (!user || user.role !== "SUPER_ADMIN") {
+    throw new AppError("NOT_FOUND", "Super admin tidak ditemukan.", 404);
+  }
+
+  const passwordValid = await verifyPassword(
+    credentials.currentPassword,
+    user.passwordHash,
+  );
+
+  if (!passwordValid) {
+    const rateLimit = await limitPasswordAttempt(userId);
+
+    if (!rateLimit.success) {
+      throw new AppError("RATE_LIMITED", PASSWORD_RATE_LIMIT_ERROR, 429);
+    }
+
+    throw validationError("currentPassword", "Password super admin salah.");
+  }
+
+  if (!user.totpVerified || !user.totpSecret) {
+    throw validationError("totpCode", "TOTP super admin belum aktif.");
+  }
+
+  const secret = decryptTOTPSecret(user.totpSecret);
+
+  if (!verifyTOTPCode(secret, credentials.totpCode)) {
+    const rateLimit = await limitTOTPVerifyAttempt({
+      ipAddress,
+      username: user.username,
+    });
+
+    if (!rateLimit.success) {
+      throw new AppError("RATE_LIMITED", TOTP_RATE_LIMIT_ERROR, 429);
+    }
+
+    throw validationError("totpCode", "Kode TOTP tidak valid.");
   }
 }
 

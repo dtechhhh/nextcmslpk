@@ -13,16 +13,11 @@ import {
 import { toast } from "sonner";
 
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  emptySensitiveActionCredentials,
+  SensitiveActionDialog,
+  SensitiveActionFields,
+  type SensitiveActionCredentials,
+} from "@/components/super-admin/sensitive-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -85,8 +80,14 @@ export function TenantDomainsTab({
   const router = useRouter();
   const [host, setHost] = useState("");
   const [variantId, setVariantId] = useState(variants[0]?.id ?? "");
+  const [createCredentials, setCreateCredentials] =
+    useState<SensitiveActionCredentials>(emptySensitiveActionCredentials);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const selectedVariant = variants.find((variant) => variant.id === variantId);
+  const variantLabelsByKey = new Map(
+    variants.map((variant) => [variant.key, variant.label]),
+  );
 
   function handleAddDomain(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,6 +98,7 @@ export function TenantDomainsTab({
         tenantId,
         variantId,
         host,
+        ...createCredentials,
       });
 
       if (!result.ok) {
@@ -106,33 +108,39 @@ export function TenantDomainsTab({
       }
 
       setHost("");
+      setCreateCredentials(emptySensitiveActionCredentials());
       toast.success("Domain berhasil ditambahkan.");
       router.refresh();
     });
   }
 
-  function runDomainAction(
-    action: (input: { tenantId: string; domainId: string }) => Promise<{
+  async function runDomainAction(
+    action: (input: {
+      tenantId: string;
+      domainId: string;
+      currentPassword: string;
+      totpCode: string;
+    }) => Promise<{
       ok: boolean;
       error?: string;
     }>,
     domainId: string,
-    successMessage: string,
+    credentials: SensitiveActionCredentials,
   ) {
     setError(null);
 
-    startTransition(async () => {
-      const result = await action({ tenantId, domainId });
+    const result = await action({ tenantId, domainId, ...credentials });
 
-      if (!result.ok) {
-        setError(result.error ?? "Action gagal dijalankan.");
-        toast.error(result.error ?? "Action gagal dijalankan.");
-        return;
-      }
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        error: result.error ?? "Action gagal dijalankan.",
+      };
+    }
 
-      toast.success(successMessage);
-      router.refresh();
-    });
+    return {
+      ok: true as const,
+    };
   }
 
   return (
@@ -160,7 +168,9 @@ export function TenantDomainsTab({
             disabled={isPending || variants.length === 0}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pilih variant" />
+              <SelectValue placeholder="Pilih variant">
+                {selectedVariant?.label}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {variants.map((variant) => (
@@ -184,6 +194,14 @@ export function TenantDomainsTab({
         {error ? (
           <FieldError className="md:col-span-3">{error}</FieldError>
         ) : null}
+        <div className="grid gap-3 md:col-span-3 md:grid-cols-2">
+          <SensitiveActionFields
+            credentials={createCredentials}
+            disabled={isPending}
+            idPrefix="create-domain"
+            onChange={setCreateCredentials}
+          />
+        </div>
       </form>
 
       <Table>
@@ -204,7 +222,7 @@ export function TenantDomainsTab({
                   <div className="flex flex-col">
                     <span className="font-medium">{domain.host}</span>
                     <span className="text-xs text-muted-foreground">
-                      {domain.variantKey}
+                      {variantLabelsByKey.get(domain.variantKey) ?? domain.variantKey}
                     </span>
                   </div>
                 </TableCell>
@@ -228,70 +246,78 @@ export function TenantDomainsTab({
                 <TableCell>
                   <div className="flex flex-wrap justify-end gap-2">
                     {domain.status === "PENDING" ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
+                      <SensitiveActionDialog
+                        title="Verify domain?"
+                        description={`${domain.host} akan diaktifkan untuk public site.`}
+                        actionLabel="Verify"
+                        triggerLabel="Verify"
+                        triggerIcon={<CheckCircle2Icon />}
+                        triggerSize="sm"
                         disabled={isPending}
-                        onClick={() =>
-                          runDomainAction(
-                            verifyDomain,
-                            domain.id,
-                            "Domain berhasil diverifikasi.",
-                          )
+                        onConfirm={(credentials) =>
+                          runDomainAction(verifyDomain, domain.id, credentials)
                         }
-                      >
-                        <CheckCircle2Icon />
-                        Verify
-                      </Button>
+                        onSuccess={() => {
+                          toast.success("Domain berhasil diverifikasi.");
+                          router.refresh();
+                        }}
+                      />
                     ) : null}
                     {domain.status === "ACTIVE" && !domain.isPrimary ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
+                      <SensitiveActionDialog
+                        title="Set primary domain?"
+                        description={`${domain.host} akan menjadi primary domain untuk variant ini.`}
+                        actionLabel="Set Primary"
+                        triggerLabel="Primary"
+                        triggerIcon={<StarIcon />}
+                        triggerSize="sm"
                         disabled={isPending}
-                        onClick={() =>
-                          runDomainAction(
-                            setPrimary,
-                            domain.id,
-                            "Primary domain berhasil diubah.",
-                          )
+                        onConfirm={(credentials) =>
+                          runDomainAction(setPrimary, domain.id, credentials)
                         }
-                      >
-                        <StarIcon />
-                        Primary
-                      </Button>
+                        onSuccess={() => {
+                          toast.success("Primary domain berhasil diubah.");
+                          router.refresh();
+                        }}
+                      />
                     ) : null}
                     {domain.status === "ACTIVE" ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
+                      <SensitiveActionDialog
+                        title="Disable domain?"
+                        description={`${domain.host} akan berhenti melayani public site.`}
+                        actionLabel="Disable"
+                        triggerLabel="Disable"
+                        triggerIcon={<PowerIcon />}
+                        triggerSize="sm"
+                        actionVariant="destructive"
                         disabled={isPending}
-                        onClick={() =>
-                          runDomainAction(
-                            disableDomain,
-                            domain.id,
-                            "Domain berhasil dinonaktifkan.",
-                          )
+                        onConfirm={(credentials) =>
+                          runDomainAction(disableDomain, domain.id, credentials)
                         }
-                      >
-                        <PowerIcon />
-                        Disable
-                      </Button>
+                        onSuccess={() => {
+                          toast.success("Domain berhasil dinonaktifkan.");
+                          router.refresh();
+                        }}
+                      />
                     ) : null}
                     {domain.status === "PENDING" ? (
-                      <DeleteDomainDialog
+                      <SensitiveActionDialog
+                        title="Delete domain?"
+                        description={`${domain.host} akan dihapus dari tenant ini.`}
+                        actionLabel="Delete"
+                        triggerLabel="Delete"
+                        triggerIcon={<Trash2Icon />}
+                        triggerVariant="destructive"
+                        triggerSize="sm"
+                        actionVariant="destructive"
                         disabled={isPending}
-                        host={domain.host}
-                        onConfirm={() =>
-                          runDomainAction(
-                            deleteDomain,
-                            domain.id,
-                            "Domain berhasil dihapus.",
-                          )
+                        onConfirm={(credentials) =>
+                          runDomainAction(deleteDomain, domain.id, credentials)
                         }
+                        onSuccess={() => {
+                          toast.success("Domain berhasil dihapus.");
+                          router.refresh();
+                        }}
                       />
                     ) : null}
                   </div>
@@ -311,42 +337,5 @@ export function TenantDomainsTab({
         </TableBody>
       </Table>
     </div>
-  );
-}
-
-function DeleteDomainDialog({
-  disabled,
-  host,
-  onConfirm,
-}: {
-  disabled: boolean;
-  host: string;
-  onConfirm: () => void;
-}) {
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={
-          <Button type="button" size="sm" variant="destructive" disabled={disabled} />
-        }
-      >
-        <Trash2Icon />
-        Delete
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete domain?</AlertDialogTitle>
-          <AlertDialogDescription>
-            {host} akan dihapus dari tenant ini.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirm}>
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }

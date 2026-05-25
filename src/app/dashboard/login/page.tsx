@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-
 import { auth } from "@/auth";
 import { LoginForm } from "@/components/auth/login-form";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardLoginPage() {
   const session = await auth();

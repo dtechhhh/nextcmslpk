@@ -298,19 +298,6 @@ export async function generatePresignedUploadUrl(input: unknown) {
       parsed.data.fileSize,
     );
 
-    await createAuditLog({
-      tenantId: session.tenantId,
-      userId: session.userId,
-      action: "media.uploadStarted",
-      targetType: "MediaAsset",
-      targetId: result.mediaId,
-      metadata: {
-        fileName: parsed.data.fileName,
-        fileSize: parsed.data.fileSize,
-      },
-      ipAddress: null,
-    });
-
     return {
       ok: true,
       mediaId: result.mediaId,

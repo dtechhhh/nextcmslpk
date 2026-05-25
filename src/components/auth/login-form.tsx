@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useRef, useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { Loader2Icon } from "lucide-react";
 
@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { checkLoginCredentialsAction } from "@/server/actions/auth";
 
 const GENERIC_LOGIN_ERROR = "Username atau password salah";
+const TOTP_LOGIN_ERROR = "Kode TOTP salah atau sudah kedaluwarsa";
 
 type LoginScope = "super-admin" | "dashboard";
 
@@ -45,25 +46,33 @@ export function LoginForm({
   const [requiresTotp, setRequiresTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const passwordRef = useRef("");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
     startTransition(async () => {
+      const submittedPassword = requiresTotp ? passwordRef.current : password;
+
       if (!requiresTotp) {
         const result = await checkLoginCredentialsAction({
           username,
-          password,
+          password: submittedPassword,
           scope,
         });
 
         if (!result.ok) {
-          setError(GENERIC_LOGIN_ERROR);
+          passwordRef.current = "";
+          setPassword("");
+          setError(getPasswordStepError(result.error));
           return;
         }
 
         if (result.requiresTotp) {
+          passwordRef.current = submittedPassword;
+          setPassword("");
+          setTotpCode("");
           setRequiresTotp(true);
           return;
         }
@@ -72,7 +81,7 @@ export function LoginForm({
       try {
         const result = await signIn("credentials", {
           username,
-          password,
+          password: submittedPassword,
           totpCode,
           scope,
           redirectTo,
@@ -80,13 +89,18 @@ export function LoginForm({
         });
 
         if (result?.error) {
-          setError(GENERIC_LOGIN_ERROR);
+          setTotpCode("");
+          setError(requiresTotp ? TOTP_LOGIN_ERROR : GENERIC_LOGIN_ERROR);
           return;
         }
 
+        passwordRef.current = "";
+        setPassword("");
+        setTotpCode("");
         window.location.replace(redirectTo);
       } catch {
-        setError(GENERIC_LOGIN_ERROR);
+        setTotpCode("");
+        setError(requiresTotp ? TOTP_LOGIN_ERROR : GENERIC_LOGIN_ERROR);
       }
     });
   }
@@ -102,49 +116,65 @@ export function LoginForm({
       <CardContent>
         <form onSubmit={handleSubmit}>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="username">Username</FieldLabel>
-              <Input
-                id="username"
-                name="username"
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                disabled={isPending || requiresTotp}
-                required
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                disabled={isPending || requiresTotp}
-                required
-              />
-            </Field>
             {requiresTotp ? (
-              <Field>
-                <FieldLabel htmlFor="totpCode">Kode TOTP</FieldLabel>
-                <Input
-                  id="totpCode"
-                  name="totpCode"
-                  inputMode="numeric"
-                  pattern="[0-9]{6}"
-                  maxLength={6}
-                  autoComplete="one-time-code"
-                  value={totpCode}
-                  onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, ""))}
-                  disabled={isPending}
-                  required
-                />
-                <FieldDescription>Masukkan 6 digit dari authenticator.</FieldDescription>
-              </Field>
-            ) : null}
+              <>
+                <Field>
+                  <FieldLabel>Akun</FieldLabel>
+                  <p className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
+                    {username}
+                  </p>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="totpCode">Kode TOTP</FieldLabel>
+                  <Input
+                    id="totpCode"
+                    name="totpCode"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                    value={totpCode}
+                    onChange={(event) =>
+                      setTotpCode(event.target.value.replace(/\D/g, ""))
+                    }
+                    disabled={isPending}
+                    required
+                  />
+                  <FieldDescription>Masukkan 6 digit dari authenticator.</FieldDescription>
+                </Field>
+              </>
+            ) : (
+              <>
+                <Field>
+                  <FieldLabel htmlFor="username">Username</FieldLabel>
+                  <Input
+                    id="username"
+                    name="username"
+                    autoComplete="username"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    disabled={isPending}
+                    required
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => {
+                      passwordRef.current = event.target.value;
+                      setPassword(event.target.value);
+                    }}
+                    disabled={isPending}
+                    required
+                  />
+                </Field>
+              </>
+            )}
             {error ? <FieldError>{error}</FieldError> : null}
             {isPending ? (
               <FieldDescription role="status" aria-live="polite">
@@ -174,4 +204,10 @@ function getSubmitLabel({
   }
 
   return requiresTotp ? "Verifikasi" : "Masuk";
+}
+
+function getPasswordStepError(error: unknown) {
+  return typeof error === "string" && error.startsWith("Terlalu banyak percobaan")
+    ? error
+    : GENERIC_LOGIN_ERROR;
 }

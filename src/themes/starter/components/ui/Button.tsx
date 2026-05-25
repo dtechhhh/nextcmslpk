@@ -17,9 +17,9 @@ const themeButtonVariants = cva(
           "hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]",
         link: "text-[var(--color-primary)] underline-offset-4 hover:underline",
         whatsapp:
-          "bg-[#25D366] text-white hover:bg-[#20bd5a]",
+          "bg-[var(--color-cta)] text-[var(--color-cta-foreground)] hover:brightness-95",
         line:
-          "bg-[#06C755] text-white hover:bg-[#05b34b]",
+          "bg-[var(--color-cta)] text-[var(--color-cta-foreground)] hover:brightness-95",
       },
       size: {
         default: "h-9 gap-2 px-4 py-2",
@@ -43,11 +43,15 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  nativeButton,
+  render,
   ...props
 }: ThemeButtonProps) {
   return (
     <ButtonPrimitive
       data-slot="button"
+      render={render}
+      nativeButton={nativeButton ?? !render}
       className={cn(themeButtonVariants({ variant, size, className }))}
       {...props}
     />

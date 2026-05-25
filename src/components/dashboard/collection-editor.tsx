@@ -170,6 +170,10 @@ export function CollectionEditor({
 
           if (Object.keys(actionErrors).length > 0) {
             setErrors(actionErrors);
+          } else {
+            setErrors({
+              form: [getActionErrorMessage(response, "Gagal menyimpan.")],
+            });
           }
 
           setSaveState("error");
@@ -201,6 +205,9 @@ export function CollectionEditor({
 
         return response.item.id;
       } catch {
+        setErrors({
+          form: ["Gagal menyimpan. Coba lagi."],
+        });
         setSaveState("error");
         toast.error("Gagal menyimpan.");
         return null;
@@ -285,6 +292,10 @@ export function CollectionEditor({
 
         if (Object.keys(actionErrors).length > 0) {
           setErrors(actionErrors);
+        } else {
+          setErrors({
+            form: [getActionErrorMessage(response, "Gagal mempublish.")],
+          });
         }
 
         toast.error(getActionErrorMessage(response, "Gagal mempublish."));
@@ -404,6 +415,7 @@ export function CollectionEditor({
   const effectiveSlugStatus = readString(getAtPath(data, "slug"))
     ? slugStatus
     : "idle";
+  const formError = getFieldError(errors, "form");
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
@@ -459,6 +471,12 @@ export function CollectionEditor({
           ) : null}
         </div>
       </div>
+
+      {formError ? (
+        <FieldError className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+          {formError}
+        </FieldError>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <FieldGroup>
@@ -1528,6 +1546,10 @@ function isPreviewTokenSuccess(value: unknown): value is {
 }
 
 function getActionErrorMessage(value: unknown, fallback: string): string {
+  if (isRecord(value) && value.code === "VALIDATION_ERROR") {
+    return "Lengkapi field yang ditandai sebelum lanjut.";
+  }
+
   if (isRecord(value) && typeof value.error === "string") {
     return value.error;
   }

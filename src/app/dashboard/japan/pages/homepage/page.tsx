@@ -1,5 +1,7 @@
 import { PageEditorPage } from "@/components/dashboard/page-editor-page";
 
-export default function JapanHomepageEditorPage() {
-  return <PageEditorPage definitionKey="japan.homepage" />;
+export const dynamic = "force-dynamic";
+
+export default async function JapanHomepageEditorPage() {
+  return PageEditorPage({ definitionKey: "japan.homepage" });
 }
