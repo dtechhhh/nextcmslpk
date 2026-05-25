@@ -10,17 +10,18 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { AppError, NotFoundError, ValidationError } from "@/lib/errors";
+import {
+  ALLOWED_UPLOAD_MIME_TYPES,
+  GENERAL_IMAGE_MAX_BYTES,
+  GENERAL_PDF_MAX_BYTES,
+  normalizeMimeType,
+  type AllowedUploadMimeType,
+} from "@/lib/media-constraints";
 import { R2_BUCKET_NAME, R2_PUBLIC_URL, r2Client } from "@/lib/r2";
 import { prisma } from "@/server/db/client";
 
-export const ALLOWED_UPLOAD_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-] as const;
-
-export type AllowedUploadMimeType = (typeof ALLOWED_UPLOAD_MIME_TYPES)[number];
+export { ALLOWED_UPLOAD_MIME_TYPES };
+export type { AllowedUploadMimeType };
 
 export type GeneratePresignedUploadUrlResult = {
   mediaId: string;
@@ -58,8 +59,6 @@ type MediaForStorage = {
 };
 
 const PRESIGNED_UPLOAD_EXPIRES_SECONDS = 10 * 60;
-const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
-const PDF_MAX_BYTES = 10 * 1024 * 1024;
 
 const EXTENSION_BY_MIME_TYPE: Record<AllowedUploadMimeType, string> = {
   "image/jpeg": "jpeg",
@@ -132,11 +131,15 @@ export async function confirmUpload(
   const head = await headObjectOrThrow(media.storagePath);
 
   validateUploadedObjectMetadata(media, head);
-  await validateUploadedObjectSignature(media.storagePath, media.mimeType);
+  const inspection = await inspectUploadedObject(media.storagePath, media.mimeType);
 
   const activeMedia = await prisma.mediaAsset.update({
     where: { id: media.id },
-    data: { status: "ACTIVE" },
+    data: {
+      status: "ACTIVE",
+      width: inspection.dimensions?.width ?? null,
+      height: inspection.dimensions?.height ?? null,
+    },
     select: {
       id: true,
       storagePath: true,
@@ -204,7 +207,10 @@ export function validateUploadRequest(input: {
   if (!Number.isInteger(input.fileSize) || input.fileSize <= 0) {
     errors.fileSize = ["Ukuran file tidak valid."];
   } else if (isAllowedUploadMimeType(mimeType)) {
-    const maxBytes = mimeType === "application/pdf" ? PDF_MAX_BYTES : IMAGE_MAX_BYTES;
+    const maxBytes =
+      mimeType === "application/pdf"
+        ? GENERAL_PDF_MAX_BYTES
+        : GENERAL_IMAGE_MAX_BYTES;
 
     if (input.fileSize > maxBytes) {
       errors.fileSize = [
@@ -256,10 +262,6 @@ export function getTotalReferenceCount(references: MediaReferenceCounts) {
 
 function getExtensionForMimeType(contentType: AllowedUploadMimeType) {
   return EXTENSION_BY_MIME_TYPE[contentType];
-}
-
-function normalizeMimeType(contentType: string) {
-  return contentType.split(";")[0]?.trim().toLowerCase() ?? "";
 }
 
 function sanitizeFileName(fileName: string, fallback: string) {
@@ -348,7 +350,7 @@ function validateUploadedObjectMetadata(
   }
 }
 
-async function validateUploadedObjectSignature(
+async function inspectUploadedObject(
   storagePath: string,
   mimeType: string,
 ) {
@@ -359,6 +361,10 @@ async function validateUploadedObjectSignature(
       file: ["File upload tidak sesuai tipe file yang diminta."],
     });
   }
+
+  return {
+    dimensions: getImageDimensions(mimeType, bytes),
+  };
 }
 
 async function readObjectHeaderBytes(storagePath: string) {
@@ -367,7 +373,7 @@ async function readObjectHeaderBytes(storagePath: string) {
       new GetObjectCommand({
         Bucket: R2_BUCKET_NAME,
         Key: storagePath,
-        Range: "bytes=0-511",
+        Range: "bytes=0-65535",
       }),
     );
 
@@ -443,6 +449,136 @@ function matchesFileSignature(mimeType: string, bytes: Buffer) {
   }
 
   return false;
+}
+
+function getImageDimensions(mimeType: string, bytes: Buffer) {
+  if (mimeType === "application/pdf") {
+    return null;
+  }
+
+  const dimensions =
+    mimeType === "image/png"
+      ? parsePngDimensions(bytes)
+      : mimeType === "image/jpeg"
+        ? parseJpegDimensions(bytes)
+        : mimeType === "image/webp"
+          ? parseWebpDimensions(bytes)
+          : null;
+
+  if (!dimensions) {
+    throw new ValidationError({
+      file: ["Dimensi gambar tidak bisa dibaca."],
+    });
+  }
+
+  return dimensions;
+}
+
+function parsePngDimensions(bytes: Buffer) {
+  if (!matchesFileSignature("image/png", bytes) || bytes.length < 24) {
+    return null;
+  }
+
+  return {
+    width: bytes.readUInt32BE(16),
+    height: bytes.readUInt32BE(20),
+  };
+}
+
+function parseJpegDimensions(bytes: Buffer) {
+  if (!matchesFileSignature("image/jpeg", bytes)) {
+    return null;
+  }
+
+  let offset = 2;
+
+  while (offset < bytes.length) {
+    if (bytes[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+
+    while (bytes[offset] === 0xff) {
+      offset += 1;
+    }
+
+    const marker = bytes[offset];
+    offset += 1;
+
+    if (marker === 0xd8 || marker === 0xd9) {
+      continue;
+    }
+
+    if (offset + 2 > bytes.length) {
+      return null;
+    }
+
+    const segmentLength = bytes.readUInt16BE(offset);
+
+    if (segmentLength < 2 || offset + segmentLength > bytes.length) {
+      return null;
+    }
+
+    if (isJpegStartOfFrameMarker(marker)) {
+      if (offset + 7 > bytes.length) {
+        return null;
+      }
+
+      return {
+        height: bytes.readUInt16BE(offset + 3),
+        width: bytes.readUInt16BE(offset + 5),
+      };
+    }
+
+    offset += segmentLength;
+  }
+
+  return null;
+}
+
+function parseWebpDimensions(bytes: Buffer) {
+  if (!matchesFileSignature("image/webp", bytes) || bytes.length < 30) {
+    return null;
+  }
+
+  const chunkType = bytes.subarray(12, 16).toString("ascii");
+
+  if (chunkType === "VP8X") {
+    return {
+      width: 1 + bytes.readUIntLE(24, 3),
+      height: 1 + bytes.readUIntLE(27, 3),
+    };
+  }
+
+  if (chunkType === "VP8 " && bytes.length >= 30) {
+    return {
+      width: bytes.readUInt16LE(26) & 0x3fff,
+      height: bytes.readUInt16LE(28) & 0x3fff,
+    };
+  }
+
+  if (chunkType === "VP8L" && bytes.length >= 25 && bytes[20] === 0x2f) {
+    const b0 = bytes[21];
+    const b1 = bytes[22];
+    const b2 = bytes[23];
+    const b3 = bytes[24];
+
+    return {
+      width: 1 + (((b1 & 0x3f) << 8) | b0),
+      height: 1 + (((b3 & 0x0f) << 10) | (b2 << 2) | ((b1 & 0xc0) >> 6)),
+    };
+  }
+
+  return null;
+}
+
+function isJpegStartOfFrameMarker(marker: number) {
+  return (
+    (marker >= 0xc0 && marker <= 0xc3) ||
+    (marker >= 0xc5 && marker <= 0xc7) ||
+    (marker >= 0xc9 && marker <= 0xcb) ||
+    (marker >= 0xcd && marker <= 0xcf)
+  );
 }
 
 type JsonReferenceRow = {

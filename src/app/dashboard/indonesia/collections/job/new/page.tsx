@@ -1,6 +1,8 @@
 import { CollectionEditorPage } from "@/components/dashboard/collection-editor-page";
 
-export default function IndonesiaCreateJobPage() {
-  return <CollectionEditorPage variantKey="indonesia" collectionKey="job" />;
+export const dynamic = "force-dynamic";
+
+export default async function IndonesiaCreateJobPage() {
+  return CollectionEditorPage({ variantKey: "indonesia", collectionKey: "job" });
 }
 

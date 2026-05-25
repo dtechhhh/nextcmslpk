@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-
 import { auth } from "@/auth";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { canAccessTenantDashboardAccount } from "@/server/services/dashboard-account";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
+
+export const dynamic = "force-dynamic";
 
 export default async function ChangePasswordPage() {
   const session = await auth();

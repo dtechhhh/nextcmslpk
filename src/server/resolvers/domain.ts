@@ -1,5 +1,5 @@
 import type { TenantModel, VariantModel } from "@/generated/prisma/models";
-import starterTheme from "@/themes/starter/registry";
+import { starterTheme } from "@/themes/starter/registry";
 import { prisma } from "@/server/db/client";
 
 export type Theme = typeof starterTheme;

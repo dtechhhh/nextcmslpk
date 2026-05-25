@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -389,6 +389,15 @@ export async function publishItem(itemId: unknown) {
       },
     });
 
+    await revalidateTag(`collection:${item.variantId}:${item.collectionKey}`, {
+      expire: 0,
+    });
+    await revalidateTag(
+      `item:${item.variantId}:${item.collectionKey}:${scalarData.slug}`,
+      { expire: 0 },
+    );
+    await revalidateTag(`page:${item.variantId}:homepage`, { expire: 0 });
+
     await createAuditLog({
       tenantId: context.tenantId,
       userId: context.userId,
@@ -448,6 +457,14 @@ export async function unpublishItem(itemId: unknown) {
         updatedAt: true,
       },
     });
+
+    await revalidateTag(`collection:${item.variantId}:${item.collectionKey}`, {
+      expire: 0,
+    });
+    await revalidateTag(`item:${item.variantId}:${item.collectionKey}:${item.slug}`, {
+      expire: 0,
+    });
+    await revalidateTag(`page:${item.variantId}:homepage`, { expire: 0 });
 
     await createAuditLog({
       tenantId: context.tenantId,
@@ -946,6 +963,23 @@ function validatePublishRequirements(
 
   if (definition.hasExpiry && !readString(data.expired_at)) {
     errors.expired_at = ["Expired at wajib diisi sebelum publish."];
+  }
+
+  if (!readString(data.title)) {
+    errors.title = ["Title wajib diisi sebelum publish."];
+  }
+
+  if (!readString(data.slug)) {
+    errors.slug = ["Slug wajib diisi sebelum publish."];
+  }
+
+  if (
+    definition.descriptionPath &&
+    !readString(getAtPath(data, definition.descriptionPath))
+  ) {
+    errors[definition.descriptionPath] = [
+      "Ringkasan/deskripsi wajib diisi sebelum publish.",
+    ];
   }
 
   if (Object.keys(errors).length > 0) {

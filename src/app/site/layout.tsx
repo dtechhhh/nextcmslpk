@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 
-import { NotFoundPage, SuspendedPage, UnavailablePage } from "@/components/site/state-pages";
 import { LayoutIndonesia } from "@/themes/starter/components/layout/LayoutIndonesia";
 import { LayoutJapan } from "@/themes/starter/components/layout/LayoutJapan";
+import NotFoundPage from "@/themes/starter/pages/shared/NotFoundPage";
+import SuspendedPage from "@/themes/starter/pages/shared/SuspendedPage";
 import { resolveDomain } from "@/server/resolvers/domain";
 import { resolveGlobalConfig } from "@/server/resolvers/public";
-
-export const dynamic = "force-dynamic";
 
 export default async function SiteLayout({
   children,
@@ -18,7 +18,7 @@ export default async function SiteLayout({
   const result = await resolveDomain(host);
 
   if (result.type === "not_found") {
-    return <NotFoundPage />;
+    notFound();
   }
 
   if (result.type === "suspended") {
@@ -26,7 +26,7 @@ export default async function SiteLayout({
   }
 
   if (result.type === "unavailable") {
-    return <UnavailablePage />;
+    notFound();
   }
 
   const tenant = result.tenant;
@@ -54,5 +54,5 @@ export default async function SiteLayout({
     );
   }
 
-  return <UnavailablePage />;
+  return <NotFoundPage />;
 }

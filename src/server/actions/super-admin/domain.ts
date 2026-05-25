@@ -7,9 +7,11 @@ import { prisma } from "@/server/db/client";
 import {
   getRequestIpAddress,
   requireSuperAdminActionSession,
+  sensitiveActionCredentialsSchema,
   toActionError,
   toFieldErrors,
   validationError,
+  verifySensitiveSuperAdminAction,
   type SuperAdminActionResult,
 } from "@/server/actions/super-admin/_shared";
 import { revalidateTenantManagement } from "@/server/actions/super-admin/revalidate";
@@ -26,12 +28,12 @@ const createDomainSchema = z.object({
   tenantId: z.string().cuid(),
   variantId: z.string().cuid(),
   host: domainHostSchema,
-});
+}).merge(sensitiveActionCredentialsSchema);
 
 const domainActionSchema = z.object({
   tenantId: z.string().cuid(),
   domainId: z.string().cuid(),
-});
+}).merge(sensitiveActionCredentialsSchema);
 
 export async function createDomain(
   input: unknown,
@@ -47,6 +49,11 @@ export async function createDomain(
     assertAllowedHost(parsed.data.host);
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     const domain = await prisma.$transaction(
       async (tx) => {
@@ -137,6 +144,11 @@ export async function verifyDomain(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     await prisma.$transaction(
       async (tx) => {
@@ -223,6 +235,11 @@ export async function setPrimary(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     await prisma.$transaction(
       async (tx) => {
@@ -298,6 +315,11 @@ export async function disableDomain(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     await prisma.$transaction(
       async (tx) => {
@@ -395,6 +417,11 @@ export async function deleteDomain(
     }
 
     const ipAddress = await getRequestIpAddress();
+    await verifySensitiveSuperAdminAction({
+      userId: session.userId,
+      credentials: parsed.data,
+      ipAddress,
+    });
 
     await prisma.$transaction(
       async (tx) => {

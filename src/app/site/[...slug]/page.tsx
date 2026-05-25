@@ -1,6 +1,8 @@
 import { PublicPageRoute } from "@/app/site/public-page-route";
 import type { PublicPageSearchParams } from "@/server/resolvers/public";
 
+export const revalidate = 3600;
+
 type SiteCatchAllPageProps = {
   params: Promise<{
     slug: string[];

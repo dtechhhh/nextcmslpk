@@ -986,7 +986,12 @@ function resolveTags(
   tags: string[] | ((variantId: string) => string[]),
   variantId: string,
 ) {
-  return typeof tags === "function" ? tags(variantId) : tags;
+  return Array.from(
+    new Set([
+      `variant:${variantId}`,
+      ...(typeof tags === "function" ? tags(variantId) : tags),
+    ]),
+  );
 }
 
 function readFilters(params: PublicPageSearchParams) {

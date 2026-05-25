@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { AppError, AuthError, ValidationError } from "@/lib/errors";
-import { createAuditLog } from "@/server/services/audit";
 import { limitUploadAttempt } from "@/server/services/rate-limit";
 import {
   ALLOWED_UPLOAD_MIME_TYPES,
@@ -23,9 +22,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     const tenantId = session?.user?.tenantId;
-    const userId = session?.user?.userId;
 
-    if (!session?.user || !tenantId || !userId) {
+    if (!session?.user || !tenantId || !session.user.userId) {
       throw new AuthError("Sesi tidak valid.");
     }
 
@@ -64,21 +62,6 @@ export async function POST(request: NextRequest) {
       parsed.data.contentType,
       parsed.data.fileSize,
     );
-
-    await createAuditLog({
-      tenantId,
-      userId,
-      action: "media.upload.requested",
-      targetType: "MediaAsset",
-      targetId: upload.mediaId,
-      metadata: {
-        fileName: parsed.data.fileName,
-        contentType: parsed.data.contentType,
-        fileSize: parsed.data.fileSize,
-        storagePath: upload.storagePath,
-      },
-      headers: request.headers,
-    });
 
     return NextResponse.json({
       presignedUrl: upload.presignedUrl,

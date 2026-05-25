@@ -39,12 +39,14 @@ export function SuperAdminSetupForm() {
     event.preventDefault();
     setError(null);
 
+    const payload = {
+      setupSecret,
+      username,
+      password,
+    };
+
     startTransition(async () => {
-      const result = await startSuperAdminSetupAction({
-        setupSecret,
-        username,
-        password,
-      });
+      const result = await startSuperAdminSetupAction(payload);
 
       if (!result.ok) {
         setError(result.error ?? "Data setup tidak valid.");
@@ -58,6 +60,9 @@ export function SuperAdminSetupForm() {
 
       setSetupToken(result.setupToken);
       setQrCodeDataUri(result.qrCodeDataUri);
+      setSetupSecret("");
+      setUsername("");
+      setPassword("");
     });
   }
 
@@ -70,10 +75,13 @@ export function SuperAdminSetupForm() {
       return;
     }
 
+    const code = totpCode;
+    setTotpCode("");
+
     startTransition(async () => {
       const result = await completeSuperAdminSetupAction({
         setupToken,
-        totpCode,
+        totpCode: code,
       });
 
       if (!result.ok) {
@@ -81,6 +89,8 @@ export function SuperAdminSetupForm() {
         return;
       }
 
+      setSetupToken(null);
+      setQrCodeDataUri(null);
       window.location.replace(result.redirectTo ?? "/super-admin/login");
     });
   }

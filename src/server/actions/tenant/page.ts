@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -13,6 +13,7 @@ import {
 import { AppError, AuthError, ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import {
   PAGE_EDITOR_DEFINITIONS,
+  type PageEditorField,
   type PageEditorDefinitionKey,
 } from "@/lib/page-editor-definitions";
 import {
@@ -203,7 +204,25 @@ export async function publishPage(pageId: unknown) {
 
     const db = tenantDb(context.session);
     const page = await getOwnedPageForMutation(db, parsed.data);
-    const publishedDataJson = toPrismaJson(page.dataJson);
+    const schema = getContentPageSchema(page.variantKey, page.pageKey);
+
+    if (!schema) {
+      throw new ValidationError({
+        pageKey: ["Page key tidak tersedia untuk variant ini."],
+      });
+    }
+
+    const validated = schema.safeParse(page.dataJson);
+
+    if (!validated.success) {
+      throw new ValidationError(zodErrorToFieldErrors(validated.error));
+    }
+
+    const publishData = normalizePageData(validated.data);
+
+    validatePagePublishRequirements(page.variantKey, page.pageKey, publishData);
+
+    const publishedDataJson = toPrismaJson(publishData);
     const updated = await db.contentPage.update({
       where: {
         id: page.id,
@@ -221,6 +240,9 @@ export async function publishPage(pageId: unknown) {
         updatedAt: true,
       },
     });
+
+    await revalidateTag(`page:${page.variantId}:${page.pageKey}`, { expire: 0 });
+    await revalidateTag(`variant:${page.variantId}`, { expire: 0 });
 
     await createAuditLog({
       tenantId: context.tenantId,
@@ -284,6 +306,8 @@ export async function unpublishPage(pageId: unknown) {
         updatedAt: true,
       },
     });
+
+    await revalidateTag(`page:${page.variantId}:${page.pageKey}`, { expire: 0 });
 
     await createAuditLog({
       tenantId: context.tenantId,
@@ -495,6 +519,150 @@ function assertAllowedContentPageKey(variantKey: VariantKey, pageKey: PageKey) {
   return pageKey;
 }
 
+function validatePagePublishRequirements(
+  variantKey: VariantKey,
+  pageKey: PageKey,
+  data: Record<string, unknown>,
+) {
+  const definitionKey = `${variantKey}.${pageKey}` as PageEditorDefinitionKey;
+  const definition = PAGE_EDITOR_DEFINITIONS[definitionKey];
+
+  if (!definition) {
+    return;
+  }
+
+  const errors: Record<string, string[]> = {};
+
+  for (const section of definition.sections) {
+    if (section.classification !== "required") {
+      continue;
+    }
+
+    for (const field of section.fields) {
+      collectPublishFieldErrors({
+        data,
+        field,
+        defaultData: definition.defaultData,
+        errors,
+      });
+    }
+  }
+
+  if (Object.keys(errors).length > 0) {
+    throw new ValidationError(errors);
+  }
+}
+
+function collectPublishFieldErrors({
+  data,
+  field,
+  defaultData,
+  errors,
+}: {
+  data: Record<string, unknown>;
+  field: PageEditorField;
+  defaultData: Record<string, unknown>;
+  errors: Record<string, string[]>;
+}) {
+  if (field.kind === "array") {
+    const items = getAtPath(data, field.path);
+    const defaultItems = getAtPath(defaultData, field.path);
+    const minimumItems =
+      Array.isArray(defaultItems) && defaultItems.length > 0
+        ? defaultItems.length
+        : 1;
+    const completeItems = Array.isArray(items)
+      ? items.filter((item) => isPublishReadyArrayItem(item, field.fields))
+      : [];
+
+    if (completeItems.length < minimumItems) {
+      errors[field.path] = [
+        `${field.label} wajib berisi minimal ${minimumItems} item lengkap sebelum publish.`,
+      ];
+    }
+
+    return;
+  }
+
+  if (field.kind === "string-array") {
+    if (!isPublishRequiredStringArrayField(field.path)) {
+      return;
+    }
+
+    const items = getAtPath(data, field.path);
+    const hasItem = Array.isArray(items)
+      ? items.some((item) => typeof item === "string" && item.trim() !== "")
+      : false;
+
+    if (!hasItem) {
+      errors[field.path] = [
+        `${field.label} wajib berisi minimal 1 item sebelum publish.`,
+      ];
+    }
+
+    return;
+  }
+
+  if (!isPublishRequiredTextField(field)) {
+    return;
+  }
+
+  if (!readString(getAtPath(data, field.path))) {
+    errors[field.path] = [`${field.label} wajib diisi sebelum publish.`];
+  }
+}
+
+function isPublishReadyArrayItem(item: unknown, fields: PageEditorField[]) {
+  if (!isRecord(item)) {
+    return false;
+  }
+
+  if (item.is_enabled === false) {
+    return false;
+  }
+
+  const requiredFields = fields.filter(isPublishRequiredTextField);
+
+  if (requiredFields.length === 0) {
+    return true;
+  }
+
+  return requiredFields.every((field) => readString(getAtPath(item, field.path)));
+}
+
+function isPublishRequiredTextField(field: PageEditorField) {
+  if (field.kind !== "text" && field.kind !== "textarea") {
+    return false;
+  }
+
+  const path = field.path.toLowerCase();
+  const fieldName = path.split(".").pop() ?? path;
+
+  if (
+    fieldName.endsWith("_id") ||
+    path.includes("secondary_") ||
+    path.includes("message_template") ||
+    path.includes("_message") ||
+    fieldName === "eyebrow_label" ||
+    fieldName === "href" ||
+    fieldName.endsWith("_href") ||
+    fieldName === "map_url" ||
+    fieldName === "map_embed_url" ||
+    fieldName === "email_subject_template"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function isPublishRequiredStringArrayField(path: string) {
+  const normalizedPath = path.toLowerCase();
+  const fieldName = normalizedPath.split(".").pop() ?? normalizedPath;
+
+  return !fieldName.endsWith("_ids") && !normalizedPath.includes("manual_");
+}
+
 function getPublicPath(variantKey: VariantKey, pageKey: PageKey) {
   const definitionKey = `${variantKey}.${pageKey}` as PageEditorDefinitionKey;
   const definition = PAGE_EDITOR_DEFINITIONS[definitionKey];
@@ -575,6 +743,30 @@ function normalizeNullablePageData(value: unknown) {
 
 function toPrismaJson(value: unknown) {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getAtPath(source: unknown, path: string) {
+  return path.split(".").reduce<unknown>((current, segment) => {
+    if (current === null || current === undefined) {
+      return undefined;
+    }
+
+    if (Array.isArray(current)) {
+      const index = Number(segment);
+
+      return Number.isInteger(index) ? current[index] : undefined;
+    }
+
+    if (isRecord(current)) {
+      return current[segment];
+    }
+
+    return undefined;
+  }, source);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

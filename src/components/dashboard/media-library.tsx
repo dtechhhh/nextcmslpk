@@ -189,7 +189,13 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
     } catch {
       setUploads((current) =>
         current.map((u) =>
-          u.id === entry.id ? { ...u, status: "error", error: "Upload gagal." } : u,
+          u.id === entry.id
+            ? {
+                ...u,
+                status: "error",
+                error: "Upload ke storage gagal. Periksa konfigurasi CORS R2.",
+              }
+            : u,
         ),
       );
     }
