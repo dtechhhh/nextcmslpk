@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { env } from "./src/lib/env";
 
 const r2PublicUrl = env.R2_PUBLIC_URL;
+const optimizeRemoteImages = process.env.NEXT_PUBLIC_OPTIMIZE_REMOTE_IMAGES === "true";
 
 function getR2PublicHostname() {
   try {
@@ -19,6 +20,7 @@ const nextConfig: NextConfig = {
     "hit-japan.lpk.local",
   ],
   images: {
+    unoptimized: !optimizeRemoteImages,
     remotePatterns: [
       {
         protocol: "https",
