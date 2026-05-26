@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
 
 import { resolveDomain, type DomainResolution } from "@/server/resolvers/domain";
@@ -12,7 +13,11 @@ export const getSiteContext = cache(async () => {
     return { result, host } as const;
   }
 
-  const globalConfig = await resolveGlobalConfig(result.variant.id);
+  const globalConfig = await unstable_cache(
+    () => resolveGlobalConfig(result.variant.id),
+    ["public-global-config", result.variant.id],
+    { revalidate: 60, tags: [`variant:${result.variant.id}`] },
+  )();
 
   return {
     result,
