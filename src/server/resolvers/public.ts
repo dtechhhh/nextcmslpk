@@ -114,12 +114,41 @@ export async function resolveMediaUrl(mediaId: string) {
     return null;
   }
 
-  const media = await prisma.mediaAsset.findFirst({
-    where: { id: mediaId, status: "ACTIVE" },
-    select: { storagePath: true },
+  const mediaUrls = await resolveMediaUrls([mediaId]);
+  return mediaUrls.get(mediaId) ?? null;
+}
+
+export async function resolveMediaUrls(mediaIds: Array<string | null | undefined>) {
+  const uniqueMediaIds = [...new Set(mediaIds.filter((mediaId): mediaId is string => Boolean(mediaId)))];
+
+  if (!uniqueMediaIds.length) {
+    return new Map<string, string>();
+  }
+
+  const mediaAssets = await prisma.mediaAsset.findMany({
+    where: { id: { in: uniqueMediaIds }, status: "ACTIVE" },
+    select: { id: true, storagePath: true },
   });
 
-  return media ? getPublicUrl(media.storagePath) : null;
+  return new Map(mediaAssets.map((media) => [media.id, getPublicUrl(media.storagePath)]));
+}
+
+function getResolvedMediaUrl(mediaUrls: Map<string, string> | undefined, mediaId?: string | null) {
+  if (!mediaId) {
+    return null;
+  }
+
+  return mediaUrls ? (mediaUrls.get(mediaId) ?? null) : undefined;
+}
+
+async function resolveFallbackMediaUrl(mediaUrls: Map<string, string> | undefined, mediaId?: string | null) {
+  const resolved = getResolvedMediaUrl(mediaUrls, mediaId);
+
+  if (resolved !== undefined) {
+    return resolved;
+  }
+
+  return mediaId ? resolveMediaUrl(mediaId) : null;
 }
 
 export async function resolveOptionLabel(optionId: string) {
@@ -182,16 +211,20 @@ export async function resolveCollectionList(
           { publishedAt: "desc" as const },
           { updatedAt: "desc" as const },
         ];
-  const [total, rows] = await prisma.$transaction([
-    prisma.contentItem.count({ where }),
-    prisma.contentItem.findMany({
-      where,
-      orderBy,
-      skip,
-      take: pageSize,
-    }),
-  ]);
-  const items = await Promise.all(rows.map((row) => mapContentItem(row)));
+  const rows = await prisma.contentItem.findMany({
+    where,
+    orderBy,
+    skip,
+    take: pageSize,
+  });
+  const total =
+    rows.length < pageSize && (rows.length > 0 || page === 1)
+      ? skip + rows.length
+      : await prisma.contentItem.count({ where });
+  const mediaUrls = await resolveMediaUrls(
+    rows.flatMap((row) => [row.thumbnailImageId, row.heroImageId]),
+  );
+  const items = await Promise.all(rows.map((row) => mapContentItem(row, false, mediaUrls)));
 
   return {
     items,
@@ -237,7 +270,14 @@ export async function resolveCollectionItem(
   });
 
   return item && isRecord(item.publishedDataJson)
-    ? { ...(await mapContentItem(item)), isPreview: false }
+    ? {
+        ...(await mapContentItem(
+          item,
+          false,
+          await resolveMediaUrls([item.thumbnailImageId, item.heroImageId]),
+        )),
+        isPreview: false,
+      }
     : null;
 }
 
@@ -252,7 +292,13 @@ export async function resolveActiveOffer(variantId: string) {
     orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }, { publishedAt: "desc" }],
   });
 
-  return offer && isRecord(offer.publishedDataJson) ? mapContentItem(offer) : null;
+  return offer && isRecord(offer.publishedDataJson)
+    ? mapContentItem(
+        offer,
+        false,
+        await resolveMediaUrls([offer.thumbnailImageId, offer.heroImageId]),
+      )
+    : null;
 }
 
 export async function resolvePreviewToken(token: string, tenantId: string) {
@@ -294,10 +340,11 @@ async function resolvePreviewTokenForVariant(token: string, variantId: string) {
 async function mapContentItem(
   item: ContentItemModel,
   useDraftData = false,
+  mediaUrls?: Map<string, string>,
 ): Promise<PublicCollectionItem> {
   const [thumbnailSrc, heroSrc] = await Promise.all([
-    item.thumbnailImageId ? resolveMediaUrl(item.thumbnailImageId) : null,
-    item.heroImageId ? resolveMediaUrl(item.heroImageId) : null,
+    resolveFallbackMediaUrl(mediaUrls, item.thumbnailImageId),
+    resolveFallbackMediaUrl(mediaUrls, item.heroImageId),
   ]);
   const dataJson = useDraftData ? item.dataJson : item.publishedDataJson;
 

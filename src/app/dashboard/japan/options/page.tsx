@@ -1,20 +1,19 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { OptionDataManager } from "@/components/dashboard/option-data-manager";
-import { prisma } from "@/server/db/client";
+import { tenantDb } from "@/server/db/tenant-scoped";
 
 export const dynamic = "force-dynamic";
 
 export default async function JapanOptionsPage() {
   const session = await auth();
-  const tenantId = session?.user?.tenantId;
 
-  if (!tenantId) {
+  if (!session?.user?.tenantId) {
     redirect("/dashboard/login");
   }
 
-  const variant = await prisma.variant.findFirst({
-    where: { tenantId, key: "japan" },
+  const variant = await tenantDb(session).variant.findFirst({
+    where: { key: "japan" },
     select: { id: true },
   });
 

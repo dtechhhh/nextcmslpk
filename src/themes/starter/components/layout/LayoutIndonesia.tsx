@@ -1,9 +1,10 @@
 import type { TenantModel } from "@/generated/prisma/models";
 import type { ReactNode } from "react";
+import { unstable_cache } from "next/cache";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import {
   resolveCollectionList,
-  resolveMediaUrl,
+  resolveMediaUrls,
   type PublicJson,
 } from "@/server/resolvers/public";
 import { FloatingCTA } from "@/themes/starter/components/sections/FloatingCTA";
@@ -45,12 +46,16 @@ export async function LayoutIndonesia({
   const whatsappHref = whatsappNumber
     ? buildWhatsAppUrl(whatsappNumber, defaultMessage, { lpk_name: lpkName })
     : "#";
-  const [logoSrc, logoLightSrc, footerLogoSrc, programLinks] = await Promise.all([
-    resolveMediaUrl(stringValue(brand.logo_image_id)),
-    resolveMediaUrl(stringValue(brand.logo_light_image_id)),
-    resolveMediaUrl(stringValue(footerBrand.logo_image_id)),
-    resolveFooterProgramLinks(variantId, footer),
+  const logoImageId = stringValue(brand.logo_image_id);
+  const logoLightImageId = stringValue(brand.logo_light_image_id);
+  const footerLogoImageId = stringValue(footerBrand.logo_image_id);
+  const [mediaUrls, programLinks] = await Promise.all([
+    resolveMediaUrls([logoImageId, logoLightImageId, footerLogoImageId]),
+    resolveCachedFooterProgramLinks(variantId, footer),
   ]);
+  const logoSrc = mediaUrl(mediaUrls, logoImageId);
+  const logoLightSrc = mediaUrl(mediaUrls, logoLightImageId);
+  const footerLogoSrc = mediaUrl(mediaUrls, footerLogoImageId);
 
   return (
     <div
@@ -137,22 +142,36 @@ export async function LayoutIndonesia({
   );
 }
 
-async function resolveFooterProgramLinks(variantId: string, footer: PublicJson) {
+function resolveCachedFooterProgramLinks(variantId: string, footer: PublicJson) {
   const programConfig = record(footer.program_links);
+  const source = stringValue(programConfig.source);
+  const maxItems = numberValue(programConfig.max_items) || 3;
 
-  if (stringValue(programConfig.source) === "disabled") {
+  if (source === "disabled") {
     return [];
   }
 
+  return unstable_cache(
+    () => resolveFooterProgramLinks(variantId, maxItems),
+    ["public-layout-indonesia-footer-program-links", variantId, source, String(maxItems)],
+    { revalidate: 60, tags: [`collection:${variantId}:program`, `variant:${variantId}`] },
+  )();
+}
+
+async function resolveFooterProgramLinks(variantId: string, maxItems: number) {
   const collection = await resolveCollectionList(variantId, "program", {
     source: "featured",
-    pageSize: numberValue(programConfig.max_items) || 3,
+    pageSize: maxItems,
   });
 
   return collection.items.map((item) => ({
     title: item.title,
     href: `/program/${item.slug}`,
   }));
+}
+
+function mediaUrl(mediaUrls: Map<string, string>, mediaId: string) {
+  return mediaId ? mediaUrls.get(mediaId) : undefined;
 }
 
 function record(value: unknown): PublicJson {
