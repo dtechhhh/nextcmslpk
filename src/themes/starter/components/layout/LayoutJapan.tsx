@@ -2,7 +2,7 @@ import type { TenantModel } from "@/generated/prisma/models";
 import type { ReactNode } from "react";
 
 import {
-  resolveMediaUrl,
+  resolveMediaUrls,
   type PublicJson,
 } from "@/server/resolvers/public";
 import { FooterJapan } from "@/themes/starter/components/layout/FooterJapan";
@@ -41,14 +41,26 @@ export async function LayoutJapan({
   const defaultLineMessage =
     stringValue(lineContact.default_message_template) ||
     "Hello, I would like to consult with {lpk_name}.";
-  const [logoSrc, logoLightSrc, headerDocumentUrl, footerLogoSrc, footerResourceLinks] =
-    await Promise.all([
-      resolveMediaUrl(stringValue(brand.logo_image_id)),
-      resolveMediaUrl(stringValue(brand.logo_light_image_id)),
-      resolveHeaderDocumentUrl(headerSecondaryCta, documents),
-      resolveMediaUrl(stringValue(footerBrand.logo_image_id)),
-      resolveFooterResourceLinks(footer),
-    ]);
+  const logoImageId = stringValue(brand.logo_image_id);
+  const logoLightImageId = stringValue(brand.logo_light_image_id);
+  const headerDocumentId = resolveHeaderDocumentId(headerSecondaryCta, documents);
+  const footerLogoImageId = stringValue(footerBrand.logo_image_id);
+  const footerResourceItems = arrayOfRecords(footer.resource_links);
+  const footerResourceDocumentIds = footerResourceItems.map((item) =>
+    stringValue(item.document_file_id),
+  );
+  const mediaUrls = await resolveMediaUrls([
+    logoImageId,
+    logoLightImageId,
+    headerDocumentId,
+    footerLogoImageId,
+    ...footerResourceDocumentIds,
+  ]);
+  const logoSrc = mediaUrl(mediaUrls, logoImageId);
+  const logoLightSrc = mediaUrl(mediaUrls, logoLightImageId);
+  const headerDocumentUrl = mediaUrl(mediaUrls, headerDocumentId);
+  const footerLogoSrc = mediaUrl(mediaUrls, footerLogoImageId);
+  const footerResourceLinks = resolveFooterResourceLinks(footerResourceItems, mediaUrls);
 
   return (
     <div
@@ -133,27 +145,32 @@ export async function LayoutJapan({
   );
 }
 
-async function resolveHeaderDocumentUrl(
+function resolveHeaderDocumentId(
   headerSecondaryCta: PublicJson,
   documents: PublicJson,
 ) {
   const headerDocumentId = stringValue(headerSecondaryCta.document_file_id);
   const fallbackDocumentId = stringValue(documents.company_profile_file_id);
 
-  return resolveMediaUrl(headerDocumentId || fallbackDocumentId);
+  return headerDocumentId || fallbackDocumentId;
 }
 
-async function resolveFooterResourceLinks(footer: PublicJson) {
-  return Promise.all(
-    arrayOfRecords(footer.resource_links).map(async (item) => ({
+function resolveFooterResourceLinks(
+  items: PublicJson[],
+  mediaUrls: Map<string, string>,
+) {
+  return items.map((item) => ({
       label: stringValue(item.label),
       href: stringValue(item.href) || undefined,
       documentUrl:
-        (await resolveMediaUrl(stringValue(item.document_file_id))) || undefined,
+        mediaUrl(mediaUrls, stringValue(item.document_file_id)) || undefined,
       isEnabled: booleanValue(item.is_enabled, true),
       sortOrder: numberValue(item.sort_order),
-    })),
-  );
+    }));
+}
+
+function mediaUrl(mediaUrls: Map<string, string>, mediaId: string) {
+  return mediaId ? mediaUrls.get(mediaId) : undefined;
 }
 
 function record(value: unknown): PublicJson {

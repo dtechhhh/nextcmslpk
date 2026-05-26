@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
-import { prisma } from "@/server/db/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getTenantDashboardAccountState } from "@/server/services/dashboard-account";
 
 export const dynamic = "force-dynamic";
 
@@ -15,15 +15,7 @@ export default async function DashboardAccountPage() {
     redirect("/dashboard/login");
   }
 
-  const userRecord = await prisma.user.findUnique({
-    where: { id: user.userId },
-    select: {
-      username: true,
-      totpVerified: true,
-      totpSecret: true,
-      role: true,
-    },
-  });
+  const userRecord = await getTenantDashboardAccountState(user.userId);
 
   if (!userRecord) {
     redirect("/dashboard/login");

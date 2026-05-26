@@ -98,6 +98,34 @@ export async function getTenantAdminTOTPSetupState(userId: string) {
   } as const;
 }
 
+export async function getTenantDashboardAccountState(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      username: true,
+      totpVerified: true,
+      totpSecret: true,
+      role: true,
+      isActive: true,
+      tenant: {
+        select: {
+          status: true,
+        },
+      },
+    },
+  });
+
+  if (!isActiveTenantAdmin(user)) {
+    return null;
+  }
+
+  return {
+    username: user.username,
+    totpVerified: user.totpVerified,
+    hasTotpSecret: Boolean(user.totpSecret),
+  };
+}
+
 function isActiveTenantAdmin<T extends TenantAdminUser>(user: T | null): user is T {
   return (
     Boolean(user?.isActive) &&

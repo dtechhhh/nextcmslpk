@@ -41,10 +41,13 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
         const { username, password, totpCode, scope } = parsed.data;
         const expectedRole = scope === "super-admin" ? "SUPER_ADMIN" : "TENANT_ADMIN";
-        const loginRateLimit = await limitLoginAttempt({
-          ipAddress: getClientIp(request.headers),
-          username,
-        });
+        const loginRateLimit =
+          request.headers.get("x-login-rate-limit-checked") === "1"
+            ? { success: true }
+            : await limitLoginAttempt({
+                ipAddress: getClientIp(request.headers),
+                username,
+              });
 
         if (!loginRateLimit.success) {
           return null;

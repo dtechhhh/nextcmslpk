@@ -1,21 +1,19 @@
 import type { ReactNode } from "react";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { LayoutIndonesia } from "@/themes/starter/components/layout/LayoutIndonesia";
 import { LayoutJapan } from "@/themes/starter/components/layout/LayoutJapan";
+import { getSiteContext } from "@/app/site/site-context";
 import NotFoundPage from "@/themes/starter/pages/shared/NotFoundPage";
 import SuspendedPage from "@/themes/starter/pages/shared/SuspendedPage";
-import { resolveDomain } from "@/server/resolvers/domain";
-import { resolveGlobalConfig } from "@/server/resolvers/public";
 
 export default async function SiteLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const host = (await headers()).get("host") || "";
-  const result = await resolveDomain(host);
+  const context = await getSiteContext();
+  const result = context.result;
 
   if (result.type === "not_found") {
     notFound();
@@ -32,7 +30,7 @@ export default async function SiteLayout({
   const tenant = result.tenant;
   const variant = result.variant;
   const variantKey = variant.variantKey;
-  const globalConfig = await resolveGlobalConfig(variant.id);
+  const globalConfig = context.globalConfig ?? {};
 
   if (variantKey === "indonesia") {
     return (
