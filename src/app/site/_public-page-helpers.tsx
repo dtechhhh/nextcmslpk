@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { unstable_cache, unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { Check } from "lucide-react";
 
 import { getSiteContext } from "@/app/site/site-context";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -10,6 +12,8 @@ import {
   resolveCollectionItem,
   resolveCollectionList,
   resolveMediaUrl,
+  resolveMediaUrls,
+  resolveOptionLabel,
   resolveOptionSet,
   resolvePageData,
   resolvePreviewToken,
@@ -29,6 +33,7 @@ import {
   JapanSectorListPage,
   JapanTrainingMethodPage,
 } from "@/themes/starter/pages/japan/JapanPublicPages";
+import { Badge } from "@/themes/starter/components/ui/Badge";
 import { Button } from "@/themes/starter/components/ui/Button";
 import { Container } from "@/themes/starter/components/ui/Container";
 import { Card, CardContent } from "@/themes/starter/components/ui/Card";
@@ -337,6 +342,62 @@ export async function renderDetailPage(options: DetailPageOptions) {
 
   if (preview.isPreview) {
     noStore();
+  }
+
+  if (options.collectionKey === "program") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <ProgramDetailHero item={item} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Program", href: "/program" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <ProgramDetailMain item={item} globalConfig={context.globalConfig} lpkName={lpkName} />
+          }
+          sidebar={
+            <ProgramDetailSidebar
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+            />
+          }
+        />
+      </>
+    );
+  }
+
+  if (options.collectionKey === "job") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <JobDetailHero item={item} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Lowongan", href: "/job" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <JobDetailMain item={item} globalConfig={context.globalConfig} lpkName={lpkName} />
+          }
+          sidebar={
+            <JobDetailSidebar
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+            />
+          }
+        />
+      </>
+    );
   }
 
   return (
@@ -841,6 +902,643 @@ function PreviewBanner({ isPreview }: { isPreview: boolean }) {
   ) : null;
 }
 
+type NormalizedItem = { title: string; description: string };
+
+function NormalizedCardSet({
+  title,
+  items,
+}: {
+  title: string;
+  items: NormalizedItem[];
+}) {
+  const visible = items.filter((item) => item.title || item.description);
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        {visible.map((item, index) => (
+          <Card key={`${title}-${index}`} className="p-5">
+            <CardContent className="p-0">
+              <h3 className="font-semibold text-neutral-900">{item.title}</h3>
+              {item.description ? (
+                <p className="mt-2 whitespace-pre-line text-sm leading-6 text-neutral-600">
+                  {item.description}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+async function ProgramDetailMain({
+  item,
+  globalConfig,
+  lpkName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+}) {
+  const data = item.dataJson;
+
+  const optionIds = [
+    stringValue(data.program_type_option_id),
+    stringValue(data.gender_option_id),
+    stringValue(data.education_level_option_id),
+    stringValue(data.language_level_option_id),
+  ].filter(Boolean);
+
+  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const optLabel = (id: string) => {
+    const index = optionIds.indexOf(id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+
+  const classificationLabels = [
+    optLabel(stringValue(data.program_type_option_id)),
+    optLabel(stringValue(data.gender_option_id)),
+    stringValue(data.duration_label),
+    stringValue(data.contract_label),
+    stringValue(data.salary_range_label),
+    stringValue(data.target_language_label),
+    stringValue(data.visa_path_label),
+    optLabel(stringValue(data.education_level_option_id)),
+    optLabel(stringValue(data.language_level_option_id)),
+    stringValue(data.highlight_label),
+  ].filter(Boolean);
+
+  const whatsappHref = getProgramWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h1 className="sr-only">{item.title}</h1>
+        {stringValue(data.subtitle) ? (
+          <p className="text-lg font-medium text-primary-500">{stringValue(data.subtitle)}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {stringValue(data.overview) ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">
+            {stringValue(data.overview)}
+          </div>
+        ) : null}
+      </section>
+
+      <NormalizedCardSet
+        title="Mengapa Memilih Program Ini"
+        items={normalizeMixedList(data.why_choose_items)}
+      />
+      <NormalizedCardSet
+        title="Kurikulum"
+        items={normalizeMixedList(data.curriculum_items)}
+      />
+
+      {(() => {
+        const timelineItems = parseTimelineItems(data.timeline_items);
+        if (timelineItems.length === 0) {
+          return null;
+        }
+        return (
+          <StepFlow
+            title="Alur Program"
+            items={timelineItems.map((step) => ({
+              iconKey: "check",
+              title: step.title,
+              description: step.description,
+              sortOrder: step.sortOrder,
+              isEnabled: step.isEnabled,
+            }))}
+          />
+        );
+      })()}
+
+      {renderRequirementList(data.requirements)}
+
+      {(() => {
+        const costItems = parseCostItems(data.cost_items);
+        if (costItems.length === 0) {
+          return null;
+        }
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Biaya</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {costItems.map((cost, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="font-semibold text-neutral-900">{cost.title}</h3>
+                    {cost.amount ? (
+                      <p className="mt-2 text-xl font-bold text-primary-500">{cost.amount}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      <NormalizedCardSet
+        title="Peluang Karir"
+        items={normalizeMixedList(data.career_opportunity_items)}
+      />
+      <NormalizedCardSet
+        title="Legalitas &amp; Partner"
+        items={normalizeMixedList(data.legality_partner_items)}
+      />
+
+      {sortedRecords(data.testimonials).length > 0 ? (
+        <TestimonialCarousel
+          title="Testimoni"
+          items={sortedRecords(data.testimonials).map((t) => ({
+            name: stringValue(t.name),
+            roleOrProgram: stringValue(t.role_or_program),
+            quote: stringValue(t.quote),
+            isEnabled: booleanValue(t.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {whatsappHref !== "#" ? (
+        <CTABanner
+          headline={stringValue(data.primary_cta_label) || "Tertarik dengan program ini?"}
+          description="Hubungi kami untuk informasi lebih lanjut dan pendaftaran."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
+            href: whatsappHref,
+            variant: "whatsapp",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function ProgramDetailSidebar({
+  item,
+  globalConfig,
+  lpkName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+}) {
+  const data = item.dataJson;
+  const whatsappHref = getProgramWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Program</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.duration_label) ? (
+            <MetaRow label="Durasi" value={stringValue(data.duration_label)} />
+          ) : null}
+          {stringValue(data.contract_label) ? (
+            <MetaRow label="Kontrak" value={stringValue(data.contract_label)} />
+          ) : null}
+          {stringValue(data.salary_range_label) ? (
+            <MetaRow label="Gaji" value={stringValue(data.salary_range_label)} />
+          ) : null}
+          {stringValue(data.target_language_label) ? (
+            <MetaRow label="Bahasa" value={stringValue(data.target_language_label)} />
+          ) : null}
+          {stringValue(data.visa_path_label) ? (
+            <MetaRow label="Jalur Visa" value={stringValue(data.visa_path_label)} />
+          ) : null}
+          {stringValue(data.highlight_label) ? (
+            <MetaRow label="Highlight" value={stringValue(data.highlight_label)} />
+          ) : null}
+        </dl>
+        <Button
+          render={<a href={whatsappHref} />}
+          variant="whatsapp"
+          className="mt-6 w-full"
+        >
+          {stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProgramDetailHero({ item }: { item: PublicCollectionItem }) {
+  const imageSrc = item.heroSrc;
+  const data = item.dataJson;
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={
+        item.excerpt ||
+        stringValue(data.subtitle) ||
+        stringValue(data.short_description)
+      }
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {(item.excerpt ||
+          stringValue(data.subtitle) ||
+          stringValue(data.short_description)) ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">
+            {item.excerpt ||
+              stringValue(data.subtitle) ||
+              stringValue(data.short_description)}
+          </p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function JobDetailMain({
+  item,
+  globalConfig,
+  lpkName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+}) {
+  const data = item.dataJson;
+
+  const optionIds = [
+    stringValue(data.job_type_option_id),
+    stringValue(data.job_field_option_id),
+    stringValue(data.gender_option_id),
+    stringValue(data.language_level_option_id),
+    stringValue(data.education_level_option_id),
+  ].filter(Boolean);
+
+  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const optLabel = (id: string) => {
+    const index = optionIds.indexOf(id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+
+  const classificationLabels = [
+    optLabel(stringValue(data.job_type_option_id)),
+    optLabel(stringValue(data.job_field_option_id)),
+    optLabel(stringValue(data.gender_option_id)),
+    optLabel(stringValue(data.language_level_option_id)),
+    optLabel(stringValue(data.education_level_option_id)),
+    stringValue(data.contract_label),
+  ].filter(Boolean);
+
+  const subtitle = stringValue(data.subtitle);
+  const shortDescription = stringValue(data.short_description);
+  const overview = stringValue(data.overview);
+  const jobDescription = stringValue(data.job_description);
+
+  const whatsappHref = getJobWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  const galleryMediaIds = flatStringList(data.gallery_media_ids);
+  const galleryUrls = galleryMediaIds.length > 0
+    ? await resolveMediaUrls(galleryMediaIds)
+    : new Map<string, string>();
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-2 text-lg font-medium text-primary-500">{subtitle}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {item.isExpired ? (
+          <ExpiredBadge type="job" ctaLabel={stringValue(data.primary_cta_label)} />
+        ) : null}
+        {shortDescription ? (
+          <p className="mt-4 text-lg leading-8 text-neutral-600">{shortDescription}</p>
+        ) : null}
+        {overview ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+        ) : null}
+      </section>
+
+      {arrayOfRecords(data.overview_items).filter((v) => stringValue(v.title) || stringValue(v.description)).length >
+      0 ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Sekilas Lowongan</h2>
+          <dl className="mt-5 grid gap-4 md:grid-cols-2">
+            {sortedRecords(data.overview_items)
+              .filter((v) => stringValue(v.title) || stringValue(v.description))
+              .map((item, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <dt className="font-semibold text-neutral-900">{stringValue(item.title)}</dt>
+                    {stringValue(item.description) ? (
+                      <dd className="mt-1 text-sm leading-6 text-neutral-600">
+                        {stringValue(item.description)}
+                      </dd>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+          </dl>
+        </section>
+      ) : null}
+
+      {jobDescription ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Deskripsi Pekerjaan</h2>
+          <div className="mt-5 whitespace-pre-line leading-7 text-neutral-700">{jobDescription}</div>
+        </section>
+      ) : null}
+
+      {(() => {
+        const benefitRecords = sortedRecords(data.benefit_items).filter((v) => stringValue(v.title));
+        const stringBenefits = flatStringList(data.benefit_items);
+        const benefitItems: NormalizedItem[] =
+          benefitRecords.length > 0
+            ? benefitRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
+            : stringBenefits.map((s) => ({ title: s, description: "" }));
+        if (benefitItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Benefit</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {benefitItems.map((benefit, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                      {benefit.title}
+                    </h3>
+                    {benefit.description ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {renderRequirementList(data.qualification_items)}
+
+      {(() => {
+        const steps = parseTimelineItems(data.recruitment_steps);
+        if (steps.length === 0) return null;
+        return (
+          <StepFlow
+            title="Alur Rekrutmen"
+            items={steps.map((step) => ({
+              iconKey: "check",
+              title: step.title,
+              description: step.description,
+              sortOrder: step.sortOrder,
+              isEnabled: step.isEnabled,
+            }))}
+          />
+        );
+      })()}
+
+      {galleryMediaIds.length > 0 ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Galeri</h2>
+          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3">
+            {galleryMediaIds.map((mediaId) => {
+              const src = galleryUrls.get(mediaId);
+              return src ? (
+                <div key={mediaId} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 33vw, 50vw"
+                    className="object-cover"
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {!item.isExpired && whatsappHref !== "#" ? (
+        <CTABanner
+          headline={stringValue(data.primary_cta_label) || "Tertarik dengan lowongan ini?"}
+          description="Hubungi kami untuk informasi lebih lanjut dan pendaftaran."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
+            href: whatsappHref,
+            variant: "whatsapp",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function JobDetailSidebar({
+  item,
+  globalConfig,
+  lpkName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+}) {
+  const data = item.dataJson;
+  const whatsappHref = getJobWhatsappHref(data, globalConfig, lpkName, item.title);
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+  const ageLabel = minAge && maxAge ? `${minAge} - ${maxAge} tahun` : minAge ? `Min ${minAge} tahun` : maxAge ? `Max ${maxAge} tahun` : "";
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Lowongan</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.location_label) ? (
+            <MetaRow label="Lokasi" value={stringValue(data.location_label)} />
+          ) : null}
+          {stringValue(data.salary_range_label) ? (
+            <MetaRow label="Gaji" value={stringValue(data.salary_range_label)} />
+          ) : null}
+          {stringValue(data.contract_label) ? (
+            <MetaRow label="Jenis Kontrak" value={stringValue(data.contract_label)} />
+          ) : null}
+          {stringValue(data.deadline_label) ? (
+            <MetaRow label="Batas Pendaftaran" value={stringValue(data.deadline_label)} />
+          ) : null}
+          {item.expiredAt ? (
+            <MetaRow label="Berlaku Sampai" value={formatDate(item.expiredAt)} />
+          ) : null}
+          {stringValue(data.quota_label) ? (
+            <MetaRow label="Kuota" value={stringValue(data.quota_label)} />
+          ) : null}
+          {ageLabel ? <MetaRow label="Usia" value={ageLabel} /> : null}
+          {stringValue(data.certificate_required_label) ? (
+            <MetaRow label="Sertifikat" value={stringValue(data.certificate_required_label)} />
+          ) : null}
+          {stringValue(data.experience_required_label) ? (
+            <MetaRow label="Pengalaman" value={stringValue(data.experience_required_label)} />
+          ) : null}
+          {booleanValue(data.ex_japan_required, false) ? (
+            <MetaRow label="Eks Jepang" value="Diutamakan" />
+          ) : null}
+          {item.publishedAt ? (
+            <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
+          ) : null}
+        </dl>
+
+        {flatStringList(data.required_documents).length > 0 ? (
+          <div className="mt-4 border-t border-neutral-200 pt-4">
+            <h3 className="text-sm font-semibold text-neutral-900">Dokumen Diperlukan</h3>
+            <ul className="mt-2 space-y-1 text-sm text-neutral-600">
+              {flatStringList(data.required_documents).map((doc, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary-500" />
+                  {doc}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        <Button
+          render={<a href={item.isExpired ? "#" : whatsappHref} />}
+          disabled={item.isExpired}
+          variant="whatsapp"
+          className="mt-6 w-full"
+          title={item.isExpired ? "Lowongan ini sudah tidak tersedia" : undefined}
+        >
+          {item.isExpired ? "Pendaftaran Ditutup" : stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function JobDetailHero({ item }: { item: PublicCollectionItem }) {
+  const imageSrc = item.heroSrc;
+  const data = item.dataJson;
+  const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={subtitle}
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+function getJobWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  jobTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const jobTemplate = stringValue(data.whatsapp_message_template);
+  const globalTemplate =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+  const template = jobTemplate || globalTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    job_title: jobTitle,
+  });
+}
+
+function getProgramWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  programTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const programTemplate = stringValue(data.whatsapp_message_template);
+  const globalTemplate =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+  const template = programTemplate || globalTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    program_name: programTitle,
+  });
+}
+
 function FallbackDataView({ data }: { data: PublicJson }) {
   const entries = Object.entries(data).filter(([, value]) => Boolean(value));
 
@@ -1064,4 +1762,149 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime())
     ? value
     : date.toLocaleDateString("id-ID", { dateStyle: "medium" });
+}
+
+function sortedRecords(value: unknown) {
+  return arrayOfRecords(value).sort(
+    (a, b) => (numberValue(a.sort_order) ?? 0) - (numberValue(b.sort_order) ?? 0),
+  );
+}
+
+function flatStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => item.trim());
+  }
+
+  return [];
+}
+
+function normalizeMixedList(value: unknown): NormalizedItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item): NormalizedItem | null => {
+      if (typeof item === "string" && item.trim().length > 0) {
+        return { title: item.trim(), description: "" };
+      }
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        const title = stringValue(item.title);
+        const description = stringValue(item.description);
+        if (title || description) {
+          return { title, description };
+        }
+      }
+      return null;
+    })
+    .filter((item): item is NormalizedItem => item !== null);
+}
+
+type TimelineItem = {
+  title: string;
+  description: string;
+  sortOrder: number;
+  isEnabled: boolean;
+};
+
+function parseTimelineItems(value: unknown): TimelineItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item, index): TimelineItem | null => {
+      if (typeof item === "string" && item.trim().length > 0) {
+        const separatorMatch = item.match(/[:→]|->/);
+        if (separatorMatch && separatorMatch.index !== undefined && separatorMatch.index > 0) {
+          const sepIndex = separatorMatch.index;
+          const sepLen = separatorMatch[0].length;
+          return {
+            title: item.slice(0, sepIndex).trim(),
+            description: item.slice(sepIndex + sepLen).trim(),
+            sortOrder: index,
+            isEnabled: true,
+          };
+        }
+        return { title: item.trim(), description: "", sortOrder: index, isEnabled: true };
+      }
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        const title = stringValue(item.title);
+        const description = stringValue(item.description);
+        if (title || description) {
+          return {
+            title,
+            description,
+            sortOrder: numberValue(item.sort_order) ?? index,
+            isEnabled: booleanValue(item.is_enabled, true),
+          };
+        }
+      }
+      return null;
+    })
+    .filter((item): item is TimelineItem => item !== null);
+}
+
+type CostItem = { title: string; amount: string };
+
+function parseCostItems(value: unknown): CostItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item): CostItem | null => {
+      if (typeof item === "string" && item.trim().length > 0) {
+        const colonIndex = item.indexOf(":");
+        if (colonIndex > 0) {
+          return {
+            title: item.slice(0, colonIndex).trim(),
+            amount: item.slice(colonIndex + 1).trim(),
+          };
+        }
+        return { title: item.trim(), amount: "" };
+      }
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        const title = stringValue(item.title);
+        const amount =
+          stringValue(item.amount_label) ||
+          stringValue(item.amount) ||
+          stringValue(item.detail);
+        if (title || amount) {
+          return { title, amount };
+        }
+      }
+      return null;
+    })
+    .filter((item): item is CostItem => item !== null);
+}
+
+function renderRequirementList(value: unknown) {
+  const items = flatStringList(value);
+  const recordItems = arrayOfRecords(value);
+
+  const allItems = [
+    ...items,
+    ...recordItems.map((rec) => stringValue(rec.text) || stringValue(rec.title) || stringValue(rec.requirement)),
+  ].filter(Boolean);
+
+  if (allItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-900">Persyaratan</h2>
+      <ul className="mt-5 grid gap-3 md:grid-cols-2">
+        {allItems.map((text, index) => (
+          <li key={index} className="flex gap-3 rounded-xl border border-neutral-200 p-4">
+            <Check aria-hidden="true" className="mt-1 size-5 shrink-0 text-primary-500" />
+            <span className="text-sm leading-6 text-neutral-700">{text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
