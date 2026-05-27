@@ -460,6 +460,34 @@ export async function renderDetailPage(options: DetailPageOptions) {
     );
   }
 
+  if (options.collectionKey === "karir") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <KarirDetailHero item={item} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Karir", href: "/karir" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <KarirDetailMain item={item} globalConfig={context.globalConfig} lpkName={lpkName} />
+          }
+          sidebar={
+            <KarirDetailSidebar
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+            />
+          }
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <PreviewBanner isPreview={preview.isPreview} />
@@ -1846,6 +1874,301 @@ function getJobWhatsappHref(
   });
 }
 
+function getKarirWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  karirTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const karirTemplate = stringValue(data.whatsapp_message_template);
+  const globalTemplate =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+  const template = karirTemplate || globalTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    karir_title: karirTitle,
+  });
+}
+
+function KarirDetailHero({ item }: { item: PublicCollectionItem }) {
+  const imageSrc = item.heroSrc;
+  const data = item.dataJson;
+  const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={subtitle}
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function KarirDetailMain({
+  item,
+  globalConfig,
+  lpkName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+}) {
+  const data = item.dataJson;
+
+  const optionIds = [
+    stringValue(data.department_option_id),
+    stringValue(data.employment_type_option_id),
+    stringValue(data.work_arrangement_option_id),
+  ].filter(Boolean);
+
+  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const optLabel = (id: string) => {
+    const index = optionIds.indexOf(id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+
+  const classificationLabels = [
+    optLabel(stringValue(data.department_option_id)),
+    optLabel(stringValue(data.employment_type_option_id)),
+    optLabel(stringValue(data.work_arrangement_option_id)),
+  ].filter(Boolean);
+
+  const subtitle = stringValue(data.subtitle);
+  const shortDescription = stringValue(data.short_description);
+  const overview = stringValue(data.overview);
+  const roleDescription = stringValue(data.role_description);
+
+  const whatsappHref = getKarirWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-2 text-lg font-medium text-primary-500">{subtitle}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {item.isExpired ? (
+          <ExpiredBadge type="karir" ctaLabel={stringValue(data.primary_cta_label)} />
+        ) : null}
+        {shortDescription ? (
+          <p className="mt-4 text-lg leading-8 text-neutral-600">{shortDescription}</p>
+        ) : null}
+        {overview ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+        ) : null}
+      </section>
+
+      {arrayOfRecords(data.overview_items).filter((v) => stringValue(v.title) || stringValue(v.description)).length >
+      0 ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Sekilas Posisi</h2>
+          <dl className="mt-5 grid gap-4 md:grid-cols-2">
+            {sortedRecords(data.overview_items)
+              .filter((v) => stringValue(v.title) || stringValue(v.description))
+              .map((ov, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <dt className="font-semibold text-neutral-900">{stringValue(ov.title)}</dt>
+                    {stringValue(ov.description) ? (
+                      <dd className="mt-1 text-sm leading-6 text-neutral-600">
+                        {stringValue(ov.description)}
+                      </dd>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+          </dl>
+        </section>
+      ) : null}
+
+      {roleDescription ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Deskripsi Peran</h2>
+          <div className="mt-5 whitespace-pre-line leading-7 text-neutral-700">{roleDescription}</div>
+        </section>
+      ) : null}
+
+      {(() => {
+        const items = flatStringList(data.responsibilities);
+        const recordItems = arrayOfRecords(data.responsibilities);
+        const allItems = [
+          ...items,
+          ...recordItems.map((rec) => stringValue(rec.text) || stringValue(rec.title)),
+        ].filter(Boolean);
+        if (allItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Tanggung Jawab</h2>
+            <ul className="mt-5 grid gap-3 md:grid-cols-2">
+              {allItems.map((text, index) => (
+                <li key={index} className="flex gap-3 rounded-xl border border-neutral-200 p-4">
+                  <Check aria-hidden="true" className="mt-1 size-5 shrink-0 text-primary-500" />
+                  <span className="text-sm leading-6 text-neutral-700">{text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })()}
+
+      {renderRequirementList(data.requirements)}
+
+      {(() => {
+        const benefitRecords = sortedRecords(data.benefits).filter((v) => stringValue(v.title));
+        const stringBenefits = flatStringList(data.benefits);
+        const benefitItems: NormalizedItem[] =
+          benefitRecords.length > 0
+            ? benefitRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
+            : stringBenefits.map((s) => ({ title: s, description: "" }));
+        if (benefitItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Benefit</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {benefitItems.map((benefit, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                      {benefit.title}
+                    </h3>
+                    {benefit.description ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {(() => {
+        const steps = parseTimelineItems(data.recruitment_steps);
+        if (steps.length === 0) return null;
+        return (
+          <StepFlow
+            title="Alur Rekrutmen"
+            items={steps.map((step) => ({
+              iconKey: "check",
+              title: step.title,
+              description: step.description,
+              sortOrder: step.sortOrder,
+              isEnabled: step.isEnabled,
+            }))}
+          />
+        );
+      })()}
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {!item.isExpired && whatsappHref !== "#" ? (
+        <CTABanner
+          headline={stringValue(data.primary_cta_label) || "Tertarik dengan posisi ini?"}
+          description="Hubungi kami untuk informasi lebih lanjut dan pendaftaran."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
+            href: whatsappHref,
+            variant: "whatsapp",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function KarirDetailSidebar({
+  item,
+  globalConfig,
+  lpkName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+}) {
+  const data = item.dataJson;
+  const whatsappHref = getKarirWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Posisi</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.location_label) ? (
+            <MetaRow label="Lokasi" value={stringValue(data.location_label)} />
+          ) : null}
+          {stringValue(data.salary_label) ? (
+            <MetaRow label="Gaji" value={stringValue(data.salary_label)} />
+          ) : null}
+          {stringValue(data.experience_label) ? (
+            <MetaRow label="Pengalaman" value={stringValue(data.experience_label)} />
+          ) : null}
+          {stringValue(data.education_label) ? (
+            <MetaRow label="Pendidikan" value={stringValue(data.education_label)} />
+          ) : null}
+          {stringValue(data.deadline_label) ? (
+            <MetaRow label="Batas Pendaftaran" value={stringValue(data.deadline_label)} />
+          ) : null}
+          {item.expiredAt ? (
+            <MetaRow label="Berlaku Sampai" value={formatDate(item.expiredAt)} />
+          ) : null}
+          {item.publishedAt ? (
+            <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
+          ) : null}
+        </dl>
+
+        <Button
+          render={<a href={item.isExpired ? "#" : whatsappHref} />}
+          disabled={item.isExpired}
+          variant="whatsapp"
+          className="mt-6 w-full"
+          title={item.isExpired ? "Posisi ini sudah tidak tersedia" : undefined}
+        >
+          {item.isExpired ? "Pendaftaran Ditutup" : stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function getProgramWhatsappHref(
   data: PublicJson,
   globalConfig: Record<string, PublicJson>,
@@ -2213,7 +2536,7 @@ function parseCostItems(value: unknown): CostItem[] {
     .filter((item): item is CostItem => item !== null);
 }
 
-function renderRequirementList(value: unknown) {
+function renderRequirementList(value: unknown, title = "Persyaratan") {
   const items = flatStringList(value);
   const recordItems = arrayOfRecords(value);
 
@@ -2228,7 +2551,7 @@ function renderRequirementList(value: unknown) {
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-neutral-900">Persyaratan</h2>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
       <ul className="mt-5 grid gap-3 md:grid-cols-2">
         {allItems.map((text, index) => (
           <li key={index} className="flex gap-3 rounded-xl border border-neutral-200 p-4">
