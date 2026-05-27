@@ -45,11 +45,14 @@ import { ContentBlocks, type ContentBlock, type ContentBlockType } from "@/theme
 import { CTABanner } from "@/themes/starter/components/sections/CTABanner";
 import { ExpiredBadge } from "@/themes/starter/components/sections/ExpiredBadge";
 import { FAQ } from "@/themes/starter/components/sections/FAQ";
+import { DocumentDownload } from "@/themes/starter/components/sections/DocumentDownload";
+import { FacilityGallery } from "@/themes/starter/components/sections/FacilityGallery";
 import { HeroSection } from "@/themes/starter/components/sections/HeroSection";
 import { OfferBanner } from "@/themes/starter/components/sections/OfferBanner";
 import { RelatedItems } from "@/themes/starter/components/sections/RelatedItems";
 import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
 import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
+import { TeamGrid } from "@/themes/starter/components/sections/TeamGrid";
 import { TestimonialCarousel } from "@/themes/starter/components/sections/TestimonialCarousel";
 
 export type PageSearchParams = Promise<PublicPageSearchParams>;
@@ -962,6 +965,374 @@ export async function renderJapanDetailPage(options: JapanDetailPageOptions) {
   });
 
   return <JapanNewsDetailPage {...commonProps} relatedItems={relatedItems.items} />;
+}
+
+export async function renderTentangKami({ searchParams }: { searchParams: PageSearchParams }) {
+  const { context, page, isPreview } = await loadPublicPage({
+    pageKey: "tentang_kami",
+    path: "/tentang-kami",
+    cacheTags: (variantId) => [`page:${variantId}:tentang_kami`],
+    revalidate: 3600,
+    searchParams,
+  });
+
+  if (!page) {
+    notFound();
+  }
+
+  if (context.variantKey !== "indonesia") {
+    redirect("/about");
+  }
+
+  const data = page.dataJson;
+  const hero = record(data.hero);
+  const story = record(data.story);
+  const visionMission = record(data.vision_mission);
+  const contactSection = record(data.contact_section);
+  const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+  const defaultWhatsappHref = getWhatsappHref(context.globalConfig, lpkName);
+  const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
+  const heroWhatsappHref = heroWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
+    : defaultWhatsappHref;
+
+  const heroImageId = stringValue(hero.media_id) || stringValue(hero.image_id);
+  const heroImage = await resolveMediaUrl(heroImageId);
+
+  const galleryMediaIds = flatStringList(record(data.gallery).media_ids);
+  const [galleryUrls, teamMembers, partnerCards] = await Promise.all([
+    galleryMediaIds.length > 0
+      ? resolveMediaUrls(galleryMediaIds)
+      : Promise.resolve(new Map<string, string>()),
+    resolveTeamMemberCards(sortedRecords(data.team_members)),
+    resolvePartnerCards(sortedRecords(data.partners)),
+  ]);
+
+  return (
+    <>
+      <PreviewBanner isPreview={isPreview} />
+      {heroImage ? (
+        <HeroSection
+          mediaType={stringValue(hero.media_type) === "video" ? "video" : "image"}
+          mediaSrc={heroImage}
+          mediaAlt={stringValue(hero.headline) || page.title}
+          headline={stringValue(hero.headline) || page.title}
+          subheadline={stringValue(hero.subheadline)}
+          primaryCTA={
+            stringValue(hero.primary_cta_label)
+              ? {
+                  label: stringValue(hero.primary_cta_label),
+                  href: heroWhatsappHref,
+                  variant: "whatsapp" as const,
+                }
+              : undefined
+          }
+          secondaryCTA={
+            stringValue(hero.secondary_cta_label)
+              ? {
+                  label: stringValue(hero.secondary_cta_label),
+                  href: stringValue(hero.secondary_cta_href) || "/program",
+                }
+              : undefined
+          }
+          priority
+        />
+      ) : (
+        <PlainHero
+          title={stringValue(hero.headline) || page.title}
+          subtitle={stringValue(hero.subheadline)}
+        />
+      )}
+      <StatsBar
+        items={sortedRecords(data.proof_stats).map((item) => ({
+          iconKey: "check",
+          value: stringValue(item.value),
+          label: stringValue(item.label),
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <TentangKamiStorySection
+        imageId={stringValue(story.image_id)}
+        badgeLabel={stringValue(story.badge_label)}
+        headline={stringValue(story.headline)}
+        body={stringValue(story.body)}
+      />
+      <TentangKamiVisionMissionSection
+        visionHeadline={stringValue(visionMission.vision_headline)}
+        visionDescription={stringValue(visionMission.vision_description)}
+        missionHeadline={stringValue(visionMission.mission_headline)}
+        missionDescription={stringValue(visionMission.mission_description)}
+      />
+      <CardGrid
+        title="Nilai-Nilai Kami"
+        items={sortedRecords(data.values).map((item, index) => ({
+          id: `value-${index}`,
+          title: stringValue(item.title) || stringValue(item.headline),
+          description: stringValue(item.description),
+          iconKey: stringValue(item.icon_key),
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <TeamGrid title="Tim Kami" members={teamMembers} />
+      <CardGrid
+        title="Partner Kami"
+        items={partnerCards}
+      />
+      <FacilityGallery
+        title="Galeri"
+        items={galleryMediaIds
+          .map((mediaId, index) => ({
+            mediaSrc: galleryUrls.get(mediaId) || "",
+            sortOrder: index,
+            isEnabled: true,
+          }))
+          .filter((item) => item.mediaSrc)}
+      />
+      <TentangKamiLegalitiesSection items={sortedRecords(data.legalities)} />
+      <TentangKamiContactSection
+        headline={stringValue(contactSection.headline)}
+        description={stringValue(contactSection.description)}
+        globalConfig={context.globalConfig}
+        whatsappHref={defaultWhatsappHref}
+      />
+      <CTABanner
+        headline="Siap memulai perjalanan Anda?"
+        description="Hubungi kami untuk informasi lebih lanjut dan konsultasi gratis."
+        primaryCTA={{
+          label: "Chat WhatsApp",
+          href: defaultWhatsappHref,
+          variant: "whatsapp",
+        }}
+      />
+    </>
+  );
+}
+
+async function TentangKamiStorySection({
+  imageId,
+  badgeLabel,
+  headline,
+  body,
+}: {
+  imageId: string;
+  badgeLabel: string;
+  headline: string;
+  body: string;
+}) {
+  const imageSrc = await resolveMediaUrl(imageId);
+
+  if (!headline && !body) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+          {imageSrc ? (
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-100">
+              <Image
+                src={imageSrc}
+                alt={headline || "Cerita Kami"}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          ) : null}
+          <div>
+            {badgeLabel ? (
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary-500">
+                {badgeLabel}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {body ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {body}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiVisionMissionSection({
+  visionHeadline,
+  visionDescription,
+  missionHeadline,
+  missionDescription,
+}: {
+  visionHeadline: string;
+  visionDescription: string;
+  missionHeadline: string;
+  missionDescription: string;
+}) {
+  if (!visionHeadline && !visionDescription && !missionHeadline && !missionDescription) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <h2 className="text-2xl font-bold text-neutral-900">
+                {visionHeadline || "Visi"}
+              </h2>
+              {visionDescription ? (
+                <p className="mt-4 leading-7 text-neutral-600">
+                  {visionDescription}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <h2 className="text-2xl font-bold text-neutral-900">
+                {missionHeadline || "Misi"}
+              </h2>
+              {missionDescription ? (
+                <p className="mt-4 leading-7 text-neutral-600">
+                  {missionDescription}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiLegalitiesSection({
+  items,
+}: {
+  items: PublicJson[];
+}) {
+  const visible = items.filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) || stringValue(item.description)),
+  );
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <h2 className="mb-10 text-center text-3xl font-bold text-neutral-900 md:text-4xl">
+          Legalitas
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((item, index) => (
+            <Card key={index} className="p-6">
+              <CardContent className="flex flex-1 flex-col p-0">
+                {stringValue(item.title) ? (
+                  <h3 className="text-lg font-semibold text-neutral-900">
+                    {stringValue(item.title)}
+                  </h3>
+                ) : null}
+                {stringValue(item.description) ? (
+                  <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">
+                    {stringValue(item.description)}
+                  </p>
+                ) : null}
+                {stringValue(item.document_label) && stringValue(item.document_url) ? (
+                  <div className="mt-6">
+                    <DocumentDownload
+                      label={stringValue(item.document_label)}
+                      fileUrl={stringValue(item.document_url)}
+                      size="sm"
+                      variant="outline"
+                    />
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiContactSection({
+  headline,
+  description,
+  globalConfig,
+  whatsappHref,
+}: {
+  headline: string;
+  description: string;
+  globalConfig: Record<string, PublicJson>;
+  whatsappHref: string;
+}) {
+  const whatsappContact = record(globalConfig.whatsapp_contact);
+  const contact = record(whatsappContact.contact);
+  const socialLinks = record(whatsappContact.social_links);
+
+  return (
+    <ContactInfo
+      headline={headline || "Hubungi Kami"}
+      description={description}
+      phone={stringValue(contact.phone_label)}
+      email={stringValue(contact.email)}
+      address={stringValue(contact.address)}
+      mapUrl={stringValue(contact.map_url)}
+      operationalHours={stringValue(contact.operational_hours)}
+      socialLinks={{
+        instagram: stringValue(socialLinks.instagram),
+        youtube: stringValue(socialLinks.youtube),
+        tiktok: stringValue(socialLinks.tiktok),
+        facebook: stringValue(socialLinks.facebook),
+        line: stringValue(socialLinks.line),
+      }}
+      ctaLabel="Chat WhatsApp"
+      ctaHref={whatsappHref}
+      ctaVariant="whatsapp"
+    />
+  );
+}
+
+async function resolveTeamMemberCards(items: PublicJson[]) {
+  return Promise.all(
+    items.map(async (item, index) => ({
+      name: stringValue(item.name),
+      role: stringValue(item.role),
+      bio: stringValue(item.bio),
+      imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
+      sortOrder: numberValue(item.sort_order) ?? index,
+      isEnabled: booleanValue(item.is_enabled, true),
+    })),
+  );
+}
+
+async function resolvePartnerCards(items: PublicJson[]) {
+  const resolved = await Promise.all(
+    items.map(async (item, index) => {
+      const logoUrl = await resolveMediaUrl(stringValue(item.logo_image_id));
+      return {
+        id: `partner-${index}`,
+        title: stringValue(item.name),
+        description: stringValue(item.description),
+        imageSrc: logoUrl || undefined,
+        imageAlt: stringValue(item.name),
+        isEnabled: booleanValue(item.is_enabled, true),
+      };
+    }),
+  );
+
+  return resolved.filter((card) => card.isEnabled && (card.title || card.imageSrc));
 }
 
 export async function generatePublicMetadata({
@@ -2286,6 +2657,21 @@ function getWhatsappHref(
   return number
     ? buildWhatsAppUrl(number, template, { lpk_name: lpkName, ...replacements })
     : "#";
+}
+
+function buildHeroWhatsappHref(
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  messageTemplate: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  return buildWhatsAppUrl(number, messageTemplate, { lpk_name: lpkName });
 }
 
 function getLpkName(globalConfig: Record<string, PublicJson>, fallback: string) {
