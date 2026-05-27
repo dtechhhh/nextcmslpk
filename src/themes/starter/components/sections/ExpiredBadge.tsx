@@ -12,6 +12,12 @@ const expiredText: Record<ExpiredBadgeProps["type"], string> = {
   karir: "Posisi Sudah Ditutup",
 }
 
+const disabledTooltip: Record<ExpiredBadgeProps["type"], string> = {
+  job: "Lowongan ini sudah tidak tersedia",
+  offer: "Penawaran ini sudah tidak tersedia",
+  karir: "Posisi ini sudah tidak tersedia",
+}
+
 function ExpiredBadge({ type, ctaLabel }: ExpiredBadgeProps) {
   return (
     <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -22,7 +28,7 @@ function ExpiredBadge({ type, ctaLabel }: ExpiredBadgeProps) {
       {ctaLabel ? (
         <Button
           disabled
-          title="Lowongan ini sudah tidak tersedia"
+          title={disabledTooltip[type]}
           className="pointer-events-none cursor-not-allowed opacity-50"
         >
           {ctaLabel}
