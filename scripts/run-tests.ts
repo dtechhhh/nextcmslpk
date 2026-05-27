@@ -320,7 +320,7 @@ async function runDraftProtectionTests(hit: HitContext) {
         status: "DRAFT",
         excerpt: "Draft item created by Task 8 test runner.",
         dataJson: toJson({ short_description: "Draft item created by Task 8." }),
-        publishedDataJson: null,
+        publishedDataJson: Prisma.JsonNull,
       },
     });
 
@@ -365,7 +365,7 @@ async function runDraftProtectionTests(hit: HitContext) {
         status: "DRAFT",
         excerpt: "Null published data test item.",
         dataJson: toJson({ short_description: "Null published data test item." }),
-        publishedDataJson: null,
+        publishedDataJson: Prisma.JsonNull,
       },
     });
 
@@ -692,7 +692,7 @@ async function testExistingDraftPage(hit: HitContext) {
         slug: TEST_DRAFT_PAGE_SLUG,
         status: "DRAFT",
         dataJson: toJson({ hero: { headline: TEST_DRAFT_PAGE_TITLE } }),
-        publishedDataJson: null,
+        publishedDataJson: Prisma.JsonNull,
       },
       select: {
         title: true,
