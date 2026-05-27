@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 
 import type { PublicPageSearchParams } from "@/server/resolvers/public";
@@ -7,8 +8,7 @@ type PublicPageRouteProps = {
   searchParams: Promise<PublicPageSearchParams>;
 };
 
-export async function PublicPageRoute(_props: PublicPageRouteProps) {
+export async function PublicPageRoute(_props: PublicPageRouteProps): Promise<ReactNode> {
   void _props;
   notFound();
-  return null;
 }
