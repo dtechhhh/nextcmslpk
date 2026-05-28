@@ -33,8 +33,11 @@ interface CollectionListProps {
   totalPages: number
   currentFilters?: Record<string, string>
   filters?: FilterBarFilter[]
+  title?: string
   emptyMessage?: string
   detailPathPrefix: string
+  ctaLabel?: string
+  ctaHref?: string
   onPageChange?: (page: number) => void
 }
 
@@ -57,8 +60,11 @@ function CollectionList({
   totalPages,
   currentFilters = {},
   filters,
+  title,
   emptyMessage,
   detailPathPrefix,
+  ctaLabel,
+  ctaHref,
   onPageChange,
 }: CollectionListProps) {
   const safePage = Math.min(Math.max(page, 1), Math.max(totalPages, 1))
@@ -69,6 +75,19 @@ function CollectionList({
   return (
     <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
       <Container>
+        {title ? (
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              {title}
+            </h2>
+            {ctaLabel && ctaHref ? (
+              <Button render={<a href={ctaHref} />} variant="outline">
+                {ctaLabel}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
         {filters && filters.length > 0 ? (
           <FilterBar filters={filters} currentValues={currentFilters} />
         ) : null}
