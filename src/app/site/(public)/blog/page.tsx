@@ -22,6 +22,7 @@ export default function BlogPage({ searchParams }: { searchParams: PageSearchPar
     path: "/blog",
     detailPathPrefix: "/blog",
     optionSetKeys: ["category", "tag"],
+    cardLabelOptionKeys: ["category"],
     cacheTags: (variantId) => [
       `page:${variantId}:blog_page`,
       `collection:${variantId}:blog`,
