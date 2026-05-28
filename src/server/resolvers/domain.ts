@@ -108,3 +108,44 @@ export async function resolvePublicDomainByHost(
 function normalizeHost(value: string) {
   return value.trim().replace(/\.$/, "").toLowerCase();
 }
+
+export function getDomainProtocol(host: string): "http" | "https" {
+  const h = host.toLowerCase();
+  if (
+    h === "localhost" ||
+    h === "127.0.0.1" ||
+    h === "[::1]" ||
+    h.includes(".local")
+  ) {
+    return "http";
+  }
+  return "https";
+}
+
+export async function resolveVariantHomepageUrl(
+  tenantId: string,
+  targetVariantKey: string,
+): Promise<string | null> {
+  const variant = await prisma.variant.findFirst({
+    where: {
+      tenantId,
+      key: targetVariantKey,
+      status: "ACTIVE",
+    },
+    include: {
+      domains: {
+        where: { status: "ACTIVE" },
+        orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+        take: 1,
+      },
+    },
+  });
+
+  if (!variant || variant.domains.length === 0) {
+    return null;
+  }
+
+  const domain = variant.domains[0];
+  const protocol = getDomainProtocol(domain.host);
+  return `${protocol}://${domain.host}`;
+}
