@@ -2734,7 +2734,7 @@ function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
       ? [
           {
             key: "sector_category",
-            label: "Sector category",
+            label: "業種カテゴリ",
             optionSetKey: "japan_sector_category",
           },
         ]
@@ -2745,14 +2745,14 @@ function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
     booleanValue(filterConfig.enable_category_filter, true)
       ? {
           key: "category",
-          label: "Category",
+          label: "カテゴリ",
           optionSetKey: "japan_news_category",
         }
       : null,
     booleanValue(filterConfig.enable_tag_filter, true)
       ? {
           key: "tag",
-          label: "Tag",
+          label: "タグ",
           optionSetKey: "japan_news_tag",
         }
       : null,
