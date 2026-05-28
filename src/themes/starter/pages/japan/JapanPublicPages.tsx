@@ -96,7 +96,7 @@ export async function JapanHomepage({
       />
       <StatsBar items={sortedRecords(data.stats).map(toStatItem)} />
       <JapanDocumentCardGrid
-        title="Achievements"
+        title="実績"
         items={sortedRecords(data.achievements).map((item, index) => ({
           id: `achievement-${index}`,
           title: stringValue(item.title),
@@ -116,7 +116,7 @@ export async function JapanHomepage({
         ctaHref="/candidate-profile"
       />
       <CardGrid
-        title="Why Us"
+        title="HITが選ばれる理由"
         variant="japan"
         items={sortedRecords(data.why_us_cards).map((item, index) => ({
           id: stringValue(item.key) || `why-us-${index}`,
@@ -128,14 +128,14 @@ export async function JapanHomepage({
         }))}
       />
       <CardGrid
-        title="Latest News"
+        title="最新ニュース"
         variant="japan"
         items={latestNews.map((item) => newsCard(item))}
-        ctaLabel="View all news"
+        ctaLabel="ニュース一覧を見る"
         ctaHref="/news"
       />
       <JapanDocumentCardGrid
-        title="Legalities"
+        title="許認可・法的情報"
         items={sortedRecords(data.legalities).map((item, index) => ({
           id: `legality-${index}`,
           title: stringValue(item.title),
@@ -149,7 +149,7 @@ export async function JapanHomepage({
         finalCta={record(data.final_cta)}
         globalConfig={globalConfig}
         tenantName={tenantName}
-        defaultHeadline="Ready to discuss recruitment from Indonesia?"
+        defaultHeadline="インドネシアからの人材採用についてご相談ください"
         darkVariant
       />
     </>
@@ -178,7 +178,7 @@ export async function JapanAboutPage(props: JapanPageProps) {
         body={stringValue(story.body)}
       />
       <Timeline
-        title="Timeline"
+        title="沿革"
         items={sortedRecords(data.timeline).map((item, index) => ({
           yearLabel: stringValue(item.year_label),
           title: stringValue(item.title),
@@ -194,20 +194,20 @@ export async function JapanAboutPage(props: JapanPageProps) {
         missionDescription={stringValue(visionMission.mission_description)}
       />
       <CardGrid
-        title="Values"
+        title="大切にしている価値観"
         variant="japan"
         items={sortedRecords(data.values).map(iconCard)}
       />
       <FacilityGallery
-        title="Facilities"
+        title="研修施設"
         items={await resolveGalleryItems(sortedRecords(data.facilities), "image_id")}
       />
       <TeamGrid
-        title="Team"
+        title="チーム"
         members={await resolveTeamMembers(sortedRecords(data.team_members))}
       />
       <JapanDocumentCardGrid
-        title="Legal Overview"
+        title="許認可・法的概要"
         items={sortedRecords(data.legal_overview).map((item, index) => ({
           id: `legal-overview-${index}`,
           title: stringValue(item.title),
@@ -221,7 +221,7 @@ export async function JapanAboutPage(props: JapanPageProps) {
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Talk with our partnership team"
+        defaultHeadline="パートナーシップチームとお話ししましょう"
       />
     </>
   );
@@ -241,33 +241,33 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
       />
       <DocumentSection config={record(data.curriculum_download)} />
       <CardGrid
-        title="Training Pillars"
+        title="研修の柱"
         variant="japan"
         items={sortedRecords(data.training_pillars).map(iconCard)}
       />
       <StepFlow
-        title="Training Flow"
+        title="研修の流れ"
         items={sortedRecords(data.training_flow).map(toStepItem)}
       />
       <CardGrid
-        title="Curriculum Areas"
+        title="カリキュラム領域"
         variant="japan"
         items={sortedRecords(data.curriculum_areas).map(iconCard)}
       />
       <CardGrid
-        title="Evaluation"
+        title="評価項目"
         variant="japan"
         items={sortedRecords(data.evaluation_items).map(iconCard)}
       />
       <FacilityGallery
-        title="Training Gallery"
+        title="研修ギャラリー"
         items={await resolveGalleryItems(sortedRecords(data.training_gallery), "media_id")}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Review our curriculum with the team"
+        defaultHeadline="カリキュラムについてチームでご相談ください"
         secondaryDocumentId={stringValue(record(data.final_cta).secondary_document_file_id)}
       />
     </>
@@ -296,12 +296,12 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         bullets={arrayOfStrings(whyIndonesia.bullet_items)}
       />
       <CardGrid
-        title="Candidate Strengths"
+        title="候補者の強み"
         variant="japan"
         items={sortedRecords(data.candidate_strengths).map(iconCard)}
       />
       <CardGrid
-        title="Supported Pathways"
+        title="対応可能な在留資格"
         variant="japan"
         items={sortedRecords(data.supported_pathways).map((item, index) => ({
           id: `pathway-${index}`,
@@ -312,11 +312,11 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         }))}
       />
       <TeamGrid
-        title="Candidate Examples"
+        title="候補者例"
         members={await resolveCandidateExamples(sortedRecords(data.candidate_examples))}
       />
       <CardGrid
-        title="Readiness Framework"
+        title="就労準備フレームワーク"
         variant="japan"
         items={sortedRecords(data.readiness_framework).map(iconCard)}
       />
@@ -329,7 +329,7 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Meet candidates prepared for Japanese workplaces"
+        defaultHeadline="日本の職場に備えた候補者とお会いください"
       />
     </>
   );
@@ -355,7 +355,7 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         description={stringValue(networkOverview.description)}
       />
       <CardGrid
-        title="Coverage Regions"
+        title="対応地域"
         variant="japan"
         items={sortedRecords(data.coverage_regions).map((item, index) => ({
           id: `region-${index}`,
@@ -365,21 +365,21 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         }))}
       />
       <CardGrid
-        title="Recruitment Sources"
+        title="採用チャネル"
         variant="japan"
         items={sortedRecords(data.recruitment_sources).map(iconCard)}
       />
       <StepFlow
-        title="Screening Flow"
+        title="選考フロー"
         items={sortedRecords(data.screening_flow).map(toStepItem)}
       />
       <CardGrid
-        title="Network Nodes"
+        title="ネットワーク拠点"
         variant="japan"
         items={await resolveNetworkNodeCards(sortedRecords(data.network_nodes))}
       />
       <CardGrid
-        title="Quality Control"
+        title="品質管理"
         variant="japan"
         items={sortedRecords(data.quality_control_items).map(iconCard)}
       />
@@ -387,7 +387,7 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Build a stable recruitment channel from Indonesia"
+        defaultHeadline="インドネシアから安定した採用チャネルを構築しましょう"
       />
     </>
   );
@@ -424,7 +424,7 @@ export async function JapanSectorListPage({
         finalCta={record(data.final_cta)}
         globalConfig={globalConfig}
         tenantName={tenantName}
-        defaultHeadline="Find the right sector for your workforce plan"
+        defaultHeadline="採用計画に最適な業種を見つけましょう"
         secondaryDocumentId={stringValue(record(data.final_cta).secondary_document_file_id)}
       />
     </>
@@ -462,7 +462,7 @@ export async function JapanNewsListPage({
         finalCta={record(data.final_cta)}
         globalConfig={globalConfig}
         tenantName={tenantName}
-        defaultHeadline="Stay connected with our latest updates"
+        defaultHeadline="最新情報をお届けします"
       />
     </>
   );
@@ -492,8 +492,8 @@ export async function JapanSectorDetailPage({
       <DetailHero item={item} />
       <CollectionDetail
         breadcrumb={[
-          { label: "Home", href: "/" },
-          { label: "Sectors", href: "/sectors" },
+          { label: "ホーム", href: "/" },
+          { label: "セクター", href: "/sectors" },
           { label: item.title },
         ]}
         mainContent={<SectorDetailMain item={item} />}
@@ -531,8 +531,8 @@ export async function JapanNewsDetailPage({
       <DetailHero item={item} />
       <CollectionDetail
         breadcrumb={[
-          { label: "Home", href: "/" },
-          { label: "News", href: "/news" },
+          { label: "ホーム", href: "/" },
+          { label: "ニュース", href: "/news" },
           { label: item.title },
         ]}
         mainContent={
@@ -546,7 +546,7 @@ export async function JapanNewsDetailPage({
                 <span>{stringValue(item.dataJson.reading_time_label)}</span>
               ) : null}
               {isNewItem(item.publishedAt) ? (
-                <Badge variant="new_badge">New</Badge>
+                <Badge variant="new_badge">新着</Badge>
               ) : null}
             </div>
             {item.excerpt ? (
@@ -559,7 +559,7 @@ export async function JapanNewsDetailPage({
         }
       />
       <RelatedItems
-        title="Related News"
+        title="関連ニュース"
         variant="japan"
         items={relatedItems
           .filter((related) => related.slug !== item.slug)
@@ -610,13 +610,13 @@ export async function JapanContactPage(props: JapanPageProps) {
       />
       <ContactChannels
         lineHref={lineHref}
-        lineLabel={stringValue(channels.line_cta_label) || "Contact via LINE"}
+        lineLabel={stringValue(channels.line_cta_label) || "LINEで問い合わせ"}
         email={contactEmail}
         emailSubject={stringValue(channels.email_subject_template)}
       />
       <PartnershipPic config={partnershipPic} />
       <ContactInfo
-        headline="Business Information"
+        headline="事業情報"
         phone={stringValue(globalBusinessInfo.phone_label)}
         email={contactEmail}
         address={stringValue(businessInfo.address) || stringValue(globalBusinessInfo.address)}
@@ -629,12 +629,12 @@ export async function JapanContactPage(props: JapanPageProps) {
           stringValue(businessInfo.business_hours) ||
           stringValue(globalBusinessInfo.operational_hours)
         }
-        ctaLabel="Contact via LINE"
+        ctaLabel="LINEで問い合わせ"
         ctaHref={lineHref}
         ctaVariant="line"
       />
       <StepFlow
-        title="Inquiry Flow"
+        title="お問い合わせの流れ"
         items={sortedRecords(data.inquiry_flow).map((item, index) => ({
           iconKey: stringValue(item.icon_key) || "check",
           title: stringValue(item.title),
@@ -647,7 +647,7 @@ export async function JapanContactPage(props: JapanPageProps) {
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Start a partnership conversation"
+        defaultHeadline="パートナーシップのお問い合わせを開始しましょう"
         secondaryDocumentId={stringValue(record(data.final_cta).secondary_document_file_id)}
       />
     </>
@@ -673,7 +673,7 @@ async function JapanHero({
   const mediaType = stringValue(hero.media_type);
   const primaryCTA = withLineCTA
     ? {
-        label: "Contact via LINE",
+        label: "LINEで問い合わせ",
         href: getLineHref(globalConfig, tenantName),
         variant: "line" as const,
       }
@@ -844,7 +844,7 @@ function VisionMission({
         <div className="grid gap-6 lg:grid-cols-2">
           <Card variant="japan" className="p-6">
             <CardContent className="p-0">
-              <h2 className="text-2xl font-bold text-neutral-900">{visionHeadline || "Vision"}</h2>
+              <h2 className="text-2xl font-bold text-neutral-900">{visionHeadline || "ビジョン"}</h2>
               {visionDescription ? (
                 <p className="mt-4 leading-7 text-neutral-600">{visionDescription}</p>
               ) : null}
@@ -852,7 +852,7 @@ function VisionMission({
           </Card>
           <Card variant="japan" className="p-6">
             <CardContent className="p-0">
-              <h2 className="text-2xl font-bold text-neutral-900">{missionHeadline || "Mission"}</h2>
+              <h2 className="text-2xl font-bold text-neutral-900">{missionHeadline || "ミッション"}</h2>
               {missionDescription ? (
                 <p className="mt-4 leading-7 text-neutral-600">{missionDescription}</p>
               ) : null}
@@ -882,7 +882,7 @@ async function DocumentSection({ config }: { config: PublicJson }) {
           <CardContent className="flex flex-col gap-5 p-0 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-neutral-900">
-                {stringValue(config.headline) || "Curriculum"}
+                {stringValue(config.headline) || "カリキュラム"}
               </h2>
               {stringValue(config.description) ? (
                 <p className="mt-2 leading-7 text-neutral-600">
@@ -891,7 +891,7 @@ async function DocumentSection({ config }: { config: PublicJson }) {
               ) : null}
             </div>
             <DocumentDownload
-              label={stringValue(config.button_label) || "Download"}
+              label={stringValue(config.button_label) || "ダウンロード"}
               fileUrl={fileUrl}
               variant="outline"
             />
@@ -989,7 +989,7 @@ async function FinalCTA({
       headline={stringValue(finalCta.headline) || defaultHeadline}
       description={stringValue(finalCta.description)}
       primaryCTA={{
-        label: stringValue(finalCta.primary_cta_label) || "Contact via LINE",
+        label: stringValue(finalCta.primary_cta_label) || "LINEで問い合わせ",
         href: getLineHref(
           globalConfig,
           tenantName,
@@ -1097,10 +1097,10 @@ function JapanCollectionList({
     <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
       <Container>
         {filters.length > 0 ? (
-          <FilterBar filters={filters} currentValues={currentFilters} />
+          <FilterBar filters={filters} currentValues={currentFilters} variant="japan" />
         ) : null}
         <div className="mb-6 text-sm text-neutral-500">
-          Showing {startItem}-{endItem} of {collection.total}
+          {collection.total}件中{startItem}〜{endItem}件を表示
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {collection.items.map((item) => (
@@ -1124,9 +1124,9 @@ function JapanCollectionList({
                 <CardContent className="flex flex-1 flex-col p-5">
                   <div className="mb-3 flex flex-wrap gap-2">
                     {kind === "news" && isNewItem(item.publishedAt) ? (
-                      <Badge variant="new_badge">New</Badge>
+                      <Badge variant="new_badge">新着</Badge>
                     ) : null}
-                    {item.isFeatured ? <Badge variant="outline">Featured</Badge> : null}
+                    {item.isFeatured ? <Badge variant="outline">注目</Badge> : null}
                   </div>
                   <h3 className="text-lg font-semibold leading-snug text-neutral-900">
                     {item.title}
@@ -1143,7 +1143,7 @@ function JapanCollectionList({
                   ) : null}
                 </CardContent>
                 <CardFooter className="p-5">
-                  <Button className="w-full">{kind === "news" ? "Read" : "View sector"}</Button>
+                  <Button className="w-full">{kind === "news" ? "読む" : "詳細を見る"}</Button>
                 </CardFooter>
               </Card>
             </a>
@@ -1207,13 +1207,13 @@ function SectorDetailMain({ item }: { item: PublicCollectionItem }) {
           </p>
         ) : null}
       </section>
-      <InlineCardSet title="Suitability" items={sortedRecords(data.suitability_items)} />
-      <InlineCardSet title="Example Positions" items={sortedRecords(data.example_positions)} />
-      <InlineCardSet title="Training Alignment" items={sortedRecords(data.training_alignment_items)} />
+      <InlineCardSet title="適性" items={sortedRecords(data.suitability_items)} />
+      <InlineCardSet title="募集職種例" items={sortedRecords(data.example_positions)} />
+      <InlineCardSet title="研修との連携" items={sortedRecords(data.training_alignment_items)} />
       <RequirementList items={arrayOfStrings(data.candidate_requirements)} />
-      <StepFlow title="Process" items={sortedRecords(data.process_items).map(toStepItem)} />
+      <StepFlow title="プロセス" items={sortedRecords(data.process_items).map(toStepItem)} />
       <FAQ
-        title="FAQ"
+        title="よくある質問"
         items={sortedRecords(data.faqs).map((faq, index) => ({
           question: stringValue(faq.question),
           answer: stringValue(faq.answer),
@@ -1239,18 +1239,18 @@ function SectorSidebar({
   return (
     <Card variant="japan" className="p-5">
       <CardContent className="p-0">
-        <h2 className="text-lg font-semibold text-neutral-900">Partnership Inquiry</h2>
+        <h2 className="text-lg font-semibold text-neutral-900">パートナーシップのお問い合わせ</h2>
         <p className="mt-3 text-sm leading-6 text-neutral-600">
-          Discuss candidate availability, training alignment, and documentation for this sector.
+          このセクターにおける候補者の充足状況、研修の連携、および必要書類についてご相談ください。
         </p>
         <Button render={<a href={lineHref} />} variant="line" className="mt-6 w-full">
           <MessageCircle aria-hidden="true" className="size-4" />
-          {stringValue(data.primary_cta_label) || "Contact via LINE"}
+          {stringValue(data.primary_cta_label) || "LINEで問い合わせ"}
         </Button>
         {documentUrl ? (
           <div className="mt-3">
             <DocumentDownload
-              label={stringValue(data.secondary_cta_label) || "Download document"}
+              label={stringValue(data.secondary_cta_label) || "資料ダウンロード"}
               fileUrl={documentUrl}
               variant="outline"
             />
@@ -1296,7 +1296,7 @@ function RequirementList({ items }: { items: string[] }) {
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-neutral-900">Candidate Requirements</h2>
+      <h2 className="text-2xl font-bold text-neutral-900">候補者の要件</h2>
       <ul className="mt-5 grid gap-3 md:grid-cols-2">
         {items.map((item) => (
           <li key={item} className="flex gap-3 rounded-xl border border-neutral-200 bg-white p-4">
@@ -1467,7 +1467,7 @@ async function resolveJapanContentBlocks(
           type,
           sortOrder,
           data: {
-            label: stringValue(data.label) || "Contact via LINE",
+            label: stringValue(data.label) || "LINEで問い合わせ",
             href: getLineHref(
               globalConfig,
               tenantName,
@@ -1497,7 +1497,7 @@ async function resolveJapanContentBlocks(
               data: {
                 title: sector.title,
                 description: sector.excerpt || stringValue(sector.dataJson.short_description),
-                ctaLabel: "View sector",
+                ctaLabel: "詳細を見る",
                 ctaHref: `/sectors/${sector.slug}`,
               },
             }
@@ -1626,7 +1626,7 @@ function newsCard(item: PublicCollectionItem) {
     description: item.excerpt,
     href: `/news/${item.slug}`,
     imageSrc: item.thumbnailSrc,
-    badge: isNewItem(item.publishedAt) ? "New" : undefined,
+    badge: isNewItem(item.publishedAt) ? "新着" : undefined,
     badgeVariant: isNewItem(item.publishedAt) ? ("new" as const) : undefined,
     meta: item.publishedAt ? formatDate(item.publishedAt) : undefined,
     isEnabled: true,
@@ -1659,7 +1659,7 @@ function getDefaultLineTemplate(globalConfig: Record<string, PublicJson>) {
     stringValue(
       record(record(globalConfig.line_business_contact).line_contact)
         .default_message_template,
-    ) || "Hello, I would like to consult with {lpk_name}."
+    ) || "こんにちは。{lpk_name}について相談したいです。"
   );
 }
 
