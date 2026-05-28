@@ -16,6 +16,7 @@ type LayoutIndonesiaProps = {
   globalConfig: Record<string, PublicJson>;
   tenant: TenantModel;
   variantId: string;
+  variantSwitchUrl?: string;
   children: ReactNode;
 };
 
@@ -23,6 +24,7 @@ export async function LayoutIndonesia({
   globalConfig,
   tenant,
   variantId,
+  variantSwitchUrl,
   children,
 }: LayoutIndonesiaProps) {
   const brandHeader = record(globalConfig.brand_header);
@@ -75,8 +77,10 @@ export async function LayoutIndonesia({
           sortOrder: numberValue(item.sort_order),
         }))}
         variantSwitch={{
-          isEnabled: booleanValue(record(brandHeader.variant_switch).is_enabled, false),
-          targetHref: "/",
+          isEnabled:
+            booleanValue(record(brandHeader.variant_switch).is_enabled, false) &&
+            !!variantSwitchUrl,
+          targetHref: variantSwitchUrl ?? "/",
           label: "Japan",
         }}
         headerCTA={{
