@@ -22,6 +22,7 @@ interface CollectionListItem {
   isExpired?: boolean
   isFeatured?: boolean
   badge?: string
+  labels?: string[]
 }
 
 interface CollectionListProps {
@@ -36,13 +37,6 @@ interface CollectionListProps {
   detailPathPrefix: string
   onPageChange?: (page: number) => void
 }
-
-const statusVariantMap = {
-  DRAFT: "draft",
-  PUBLISHED: "published",
-  CLOSED: "closed",
-  FILLED: "filled",
-} as const
 
 function buildPageHref(page: number, currentFilters?: Record<string, string>) {
   const params = new URLSearchParams()
@@ -110,13 +104,17 @@ function CollectionList({
                     ) : null}
                     <CardContent className="flex flex-1 flex-col p-5">
                       <div className="mb-3 flex flex-wrap gap-2">
-                        <Badge variant={statusVariantMap[item.status]}>
-                          {item.status}
-                        </Badge>
-                        {item.isFeatured ? <Badge>Featured</Badge> : null}
+                        {item.isFeatured ? <Badge>Unggulan</Badge> : null}
                         {item.badge ? (
                           <Badge variant="outline">{item.badge}</Badge>
                         ) : null}
+                        {item.labels
+                          ?.filter((label) => label.trim() !== "")
+                          .map((label) => (
+                            <Badge key={label} variant="outline">
+                              {label}
+                            </Badge>
+                          ))}
                       </div>
                       <h3 className="text-lg font-semibold leading-snug text-neutral-900">
                         {item.title}
