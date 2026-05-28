@@ -22,6 +22,7 @@ export default function KarirPage({ searchParams }: { searchParams: PageSearchPa
     path: "/karir",
     detailPathPrefix: "/karir",
     optionSetKeys: ["department", "employment_type", "work_arrangement"],
+    cardLabelOptionKeys: ["department", "employment_type", "work_arrangement"],
     cacheTags: (variantId) => [
       `page:${variantId}:karir_page`,
       `collection:${variantId}:karir`,
