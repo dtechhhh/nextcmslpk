@@ -22,6 +22,7 @@ export default function ProgramPage({ searchParams }: { searchParams: PageSearch
     path: "/program",
     detailPathPrefix: "/program",
     optionSetKeys: ["program_type", "gender", "education_level", "language_level"],
+    cardLabelOptionKeys: ["program_type"],
     cacheTags: (variantId) => [
       `page:${variantId}:program_page`,
       `collection:${variantId}:program`,

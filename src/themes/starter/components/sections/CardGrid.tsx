@@ -45,6 +45,7 @@ interface CardGridItem {
   imageAlt?: string
   badge?: string
   badgeVariant?: "default" | "promo" | "new"
+  labels?: string[]
   meta?: string
   iconKey?: string
   isEnabled?: boolean
@@ -153,9 +154,18 @@ function CardGridCard({
       ) : null}
 
       <CardContent className="flex flex-1 flex-col pt-5">
-        {item.badge ? (
-          <div className="mb-3">
-            <Badge variant={badgeVariant || "default"}>{item.badge}</Badge>
+        {(item.badge || (item.labels && item.labels.length > 0)) ? (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {item.badge ? (
+              <Badge variant={badgeVariant || "default"}>{item.badge}</Badge>
+            ) : null}
+            {item.labels
+              ?.filter((label) => label.trim() !== "")
+              .map((label) => (
+                <Badge key={label} variant="outline">
+                  {label}
+                </Badge>
+              ))}
           </div>
         ) : null}
         <h3 className="text-lg font-semibold leading-snug text-neutral-900">

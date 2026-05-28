@@ -22,6 +22,8 @@ export default function JobPage({ searchParams }: { searchParams: PageSearchPara
     path: "/job",
     detailPathPrefix: "/job",
     optionSetKeys: ["job_type", "job_field", "gender", "language_level"],
+    cardLabelOptionKeys: ["job_field", "job_type"],
+    cardMetaKeys: ["location_label"],
     cacheTags: (variantId) => [
       `page:${variantId}:job_page`,
       `collection:${variantId}:job`,

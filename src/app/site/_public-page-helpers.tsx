@@ -72,6 +72,8 @@ type ListPageOptions = {
   path: string;
   detailPathPrefix: string;
   optionSetKeys: string[];
+  cardLabelOptionKeys?: string[];
+  cardMetaKeys?: string[];
   cacheTags: string[] | ((variantId: string) => string[]);
   revalidate: number;
   searchParams: PageSearchParams;
@@ -220,12 +222,15 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       />
       <CardGrid
         title="Program Unggulan"
-        items={programs.items.map((item) => collectionCard(item, "/program"))}
+        items={await Promise.all(programs.items.map((item) => collectionCard(item, "/program", ["program_type"])))}
         ctaLabel="Lihat Semua Program"
         ctaHref="/program"
       />
       <CollectionList
-        items={jobs.items.map(toListItem)}
+        items={await Promise.all(jobs.items.map(async (item) => {
+          const labels = await resolveItemLabels(item, ["job_field", "job_type"]);
+          return toListItem(item, labels, ["location_label"]);
+        }))}
         total={jobs.total}
         page={jobs.page}
         pageSize={jobs.pageSize}
@@ -254,7 +259,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       <FAQ title="Pertanyaan Umum" items={arrayOfRecords(data.faqs).map(toFaqItem)} />
       <CardGrid
         title="Artikel Terbaru"
-        items={blogs.items.map((item) => collectionCard(item, "/blog"))}
+        items={await Promise.all(blogs.items.map((item) => collectionCard(item, "/blog", ["category"])))}
         ctaLabel="Lihat Semua Artikel"
         ctaHref="/blog"
       />
@@ -297,12 +302,21 @@ export async function renderListPage(options: ListPageOptions) {
   ]);
   const hero = record(page.dataJson.hero);
 
+  const itemsWithLabels = options.cardLabelOptionKeys?.length
+    ? await Promise.all(
+        collection.items.map(async (item) => {
+          const labels = await resolveItemLabels(item, options.cardLabelOptionKeys!);
+          return toListItem(item, labels, options.cardMetaKeys);
+        }),
+      )
+    : collection.items.map((item) => toListItem(item, undefined, options.cardMetaKeys));
+
   return (
     <>
       <PreviewBanner isPreview={isPreview} />
       <PlainHero title={stringValue(hero.headline) || page.title} subtitle={stringValue(hero.subheadline)} />
       <CollectionList
-        items={collection.items.map(toListItem)}
+        items={itemsWithLabels}
         total={collection.total}
         page={collection.page}
         pageSize={collection.pageSize}
@@ -2597,7 +2611,17 @@ function MetaRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function toListItem(item: PublicCollectionItem) {
+function toListItem(item: PublicCollectionItem, labels?: string[], metaKeys?: string[]) {
+  let meta: string | undefined;
+  if (metaKeys?.length) {
+    const values = metaKeys
+      .map((key) => stringValue(item.dataJson[key]))
+      .filter((v) => v !== "");
+    meta = values.length > 0 ? values.join(" · ") : undefined;
+  }
+  if (!meta) {
+    meta = item.publishedAt ? formatDate(item.publishedAt) : undefined;
+  }
   return {
     id: item.id,
     title: item.title,
@@ -2605,15 +2629,33 @@ function toListItem(item: PublicCollectionItem) {
     slug: item.slug,
     thumbnailSrc: item.thumbnailSrc,
     status: item.status,
-    meta: item.publishedAt ? formatDate(item.publishedAt) : undefined,
+    meta,
     expiredAt: item.expiredAt ? `Berakhir ${formatDate(item.expiredAt)}` : undefined,
     isExpired: item.isExpired,
     isFeatured: item.isFeatured,
     badge: stringValue(item.dataJson.highlight_label),
+    labels,
   };
 }
 
-function collectionCard(item: PublicCollectionItem, pathPrefix: string) {
+async function resolveItemLabels(
+  item: PublicCollectionItem,
+  optionKeys: string[],
+): Promise<string[]> {
+  const ids = optionKeys
+    .map((key) => stringValue(item.dataJson[`${key}_option_id`]) || stringValue(item.dataJson[key]))
+    .filter(Boolean);
+  if (ids.length === 0) return [];
+  const resolved = await Promise.all(ids.map((id) => resolveOptionLabel(id)));
+  return resolved.map((r) => r?.label ?? "").filter(Boolean);
+}
+
+async function collectionCard(
+  item: PublicCollectionItem,
+  pathPrefix: string,
+  optionKeys?: string[],
+) {
+  const labels = optionKeys?.length ? await resolveItemLabels(item, optionKeys) : [];
   return {
     id: item.id,
     title: item.title,
@@ -2621,6 +2663,7 @@ function collectionCard(item: PublicCollectionItem, pathPrefix: string) {
     href: `${pathPrefix}/${item.slug}`,
     imageSrc: item.thumbnailSrc,
     badge: stringValue(item.dataJson.highlight_label),
+    labels,
     isEnabled: true,
   };
 }
