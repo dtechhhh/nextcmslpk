@@ -227,6 +227,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
         ctaHref="/program"
       />
       <CollectionList
+        title="Lowongan Terbaru"
         items={await Promise.all(jobs.items.map(async (item) => {
           const labels = await resolveItemLabels(item, ["job_field", "job_type"]);
           return toListItem(item, labels, ["location_label"]);
@@ -236,6 +237,8 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
         pageSize={jobs.pageSize}
         totalPages={jobs.totalPages}
         detailPathPrefix="/job"
+        ctaLabel="Lihat Semua Lowongan"
+        ctaHref="/job"
       />
       <StepFlow
         title="Alur Pendaftaran"
