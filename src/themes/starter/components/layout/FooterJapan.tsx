@@ -33,6 +33,11 @@ type FooterJapanProps = {
     operationalHours?: string;
     email?: string;
   };
+  lineContact?: {
+    href: string;
+    displayLabel: string;
+    isEnabled: boolean;
+  };
   social: {
     line?: string;
     linkedin?: string;
@@ -50,6 +55,7 @@ export function FooterJapan({
   resourceLinks,
   contact,
   contactData,
+  lineContact,
   social,
   legal,
 }: FooterJapanProps) {
@@ -119,10 +125,15 @@ export function FooterJapan({
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wide">Contact</h2>
           <div className="mt-4 space-y-3 text-sm leading-6 text-neutral-300">
-            {contact.usedFromGlobal && contactData.phone ? (
-              <a href={`tel:${contactData.phone}`} className="flex gap-3 hover:text-white">
-                <Phone aria-hidden="true" className="mt-1 size-4 shrink-0" />
-                <span>{contactData.phone}</span>
+            {contact.usedFromGlobal && lineContact?.isEnabled && lineContact.href ? (
+              <a
+                href={lineContact.href}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 font-semibold text-[#06C755] hover:text-white"
+              >
+                <MessageCircle aria-hidden="true" className="size-4 shrink-0" />
+                <span>{lineContact.displayLabel}</span>
               </a>
             ) : null}
             {contact.usedFromGlobal && contactData.email ? (
@@ -132,6 +143,12 @@ export function FooterJapan({
               >
                 <Mail aria-hidden="true" className="mt-1 size-4 shrink-0" />
                 <span>{contactData.email}</span>
+              </a>
+            ) : null}
+            {contact.usedFromGlobal && contactData.phone ? (
+              <a href={`tel:${contactData.phone}`} className="flex gap-3 hover:text-white">
+                <Phone aria-hidden="true" className="mt-1 size-4 shrink-0" />
+                <span>{contactData.phone}</span>
               </a>
             ) : null}
             {contact.usedFromGlobal && contactData.address ? (
