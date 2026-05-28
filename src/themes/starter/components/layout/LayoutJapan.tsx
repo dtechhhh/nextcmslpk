@@ -1,6 +1,7 @@
 import type { TenantModel } from "@/generated/prisma/models";
 import type { ReactNode } from "react";
 
+import { buildLineUrl } from "@/lib/line";
 import {
   resolveMediaUrls,
   type PublicJson,
@@ -128,6 +129,19 @@ export async function LayoutJapan({
           operationalHours: stringValue(businessInfo.operational_hours),
           email: stringValue(businessEmail.email),
         }}
+        lineContact={
+          booleanValue(lineContact.is_enabled, false) && lineAccountId
+            ? {
+                href: buildLineUrl(lineAccountId, defaultLineMessage, {
+                  lpk_name: lpkName,
+                }),
+                displayLabel:
+                  stringValue(lineContact.line_display_label) ||
+                  "LINEで相談する",
+                isEnabled: true,
+              }
+            : undefined
+        }
         social={{
           line: stringValue(socialLinks.line),
           linkedin: stringValue(socialLinks.linkedin),
