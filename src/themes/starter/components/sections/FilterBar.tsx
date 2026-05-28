@@ -20,11 +20,14 @@ interface FilterBarProps {
   filters: FilterBarFilter[]
   currentValues: Record<string, string>
   onFilterChange?: (key: string, value: string) => void
+  variant?: "indonesia" | "japan"
 }
 
-function FilterBar({ filters, currentValues, onFilterChange }: FilterBarProps) {
+function FilterBar({ filters, currentValues, onFilterChange, variant = "indonesia" }: FilterBarProps) {
   const enabledFilters = filters.filter((filter) => filter.isEnabled)
   const hasActiveFilters = Object.values(currentValues).some(Boolean)
+  const allLabel = variant === "japan" ? "すべて" : "Semua"
+  const clearLabel = variant === "japan" ? "クリア" : "Clear all"
 
   function updateFilter(key: string, value: string) {
     if (onFilterChange) {
@@ -76,7 +79,7 @@ function FilterBar({ filters, currentValues, onFilterChange }: FilterBarProps) {
                 currentValues[filter.key] && "bg-primary-500 text-white"
               )}
             >
-              <option value="">Semua</option>
+              <option value="">{allLabel}</option>
               {filter.options.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -93,7 +96,7 @@ function FilterBar({ filters, currentValues, onFilterChange }: FilterBarProps) {
             className="mt-6 shrink-0"
           >
             <X aria-hidden="true" className="size-4" />
-            Clear all
+            {clearLabel}
           </Button>
         ) : null}
       </div>
