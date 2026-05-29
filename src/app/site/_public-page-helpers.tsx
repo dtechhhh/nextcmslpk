@@ -145,9 +145,16 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     );
   }
 
-  const whatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
+  const hero = record(data.hero);
+  const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+  const defaultWhatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
+  const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
+  const whatsappHref = heroWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
+    : defaultWhatsappHref;
+  const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
   const [heroImage, programs, jobs, blogs, activeOffer] = await Promise.all([
-    resolveMediaUrl(stringValue(record(data.hero).image_id)),
+    resolveMediaUrl(heroMediaId),
     resolveCollectionList(context.variantId, "program", {
       source: "featured",
       pageSize: numberValue(record(data.featured_programs).max_items) || 3,
@@ -163,7 +170,6 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     }),
     resolveActiveOffer(context.variantId),
   ]);
-  const hero = record(data.hero);
   const offerSection = record(data.offer_section);
   const offerData = activeOffer?.dataJson ?? {};
 
@@ -179,7 +185,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           subheadline={stringValue(hero.subheadline)}
           eyebrowLabel={stringValue(hero.eyebrow_label)}
           primaryCTA={{
-            label: stringValue(hero.primary_cta_label) || "Konsultasi Gratis",
+            label: stringValue(hero.primary_cta_label) || "Konsultasi Gratis via WhatsApp",
             href: whatsappHref,
             variant: "whatsapp",
           }}
@@ -194,7 +200,23 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           priority
         />
       ) : (
-        <PlainHero title={stringValue(hero.headline) || page.title} subtitle={stringValue(hero.subheadline)} />
+        <PlainHero
+          title={stringValue(hero.headline) || page.title}
+          subtitle={stringValue(hero.subheadline)}
+          primaryCTA={{
+            label: stringValue(hero.primary_cta_label) || "Konsultasi Gratis via WhatsApp",
+            href: whatsappHref,
+            variant: "whatsapp",
+          }}
+          secondaryCTA={
+            stringValue(hero.secondary_cta_label)
+              ? {
+                  label: stringValue(hero.secondary_cta_label),
+                  href: stringValue(hero.secondary_cta_href) || "/program",
+                }
+              : undefined
+          }
+        />
       )}
       <OfferBanner
         isEnabled={booleanValue(offerSection.is_enabled, Boolean(activeOffer))}
@@ -286,7 +308,17 @@ export async function renderListPage(options: ListPageOptions) {
   const params = await options.searchParams;
   const filters = readFilters(params);
   const currentPage = numberFromParam(params.page) || 1;
-  const [collection, filterDefs] = await Promise.all([
+  const hero = record(page.dataJson.hero);
+  const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
+  const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+  const defaultWhatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
+  const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
+  const whatsappHref = heroWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
+    : defaultWhatsappHref;
+
+  const [heroImage, collection, filterDefs] = await Promise.all([
+    heroMediaId ? resolveMediaUrl(heroMediaId) : Promise.resolve(null),
     unstable_cache(
       () =>
         resolveCollectionList(context.variantId, options.collectionKey, {
@@ -303,7 +335,6 @@ export async function renderListPage(options: ListPageOptions) {
     )(),
     Promise.all(options.optionSetKeys.map((key) => resolveOptionSet(context.variantId, key))),
   ]);
-  const hero = record(page.dataJson.hero);
 
   const itemsWithLabels = options.cardLabelOptionKeys?.length
     ? await Promise.all(
@@ -314,10 +345,37 @@ export async function renderListPage(options: ListPageOptions) {
       )
     : collection.items.map((item) => toListItem(item, undefined, options.cardMetaKeys));
 
+  const heroHeadline = stringValue(hero.headline) || page.title;
+  const heroSubheadline = stringValue(hero.subheadline);
+  const heroPrimaryCTA = stringValue(hero.primary_cta_label)
+    ? { label: stringValue(hero.primary_cta_label), href: whatsappHref, variant: "whatsapp" as const }
+    : undefined;
+  const heroSecondaryCTA = stringValue(hero.secondary_cta_label)
+    ? { label: stringValue(hero.secondary_cta_label), href: stringValue(hero.secondary_cta_href) || "/program" }
+    : undefined;
+
   return (
     <>
       <PreviewBanner isPreview={isPreview} />
-      <PlainHero title={stringValue(hero.headline) || page.title} subtitle={stringValue(hero.subheadline)} />
+      {heroImage ? (
+        <HeroSection
+          mediaType="image"
+          mediaSrc={heroImage}
+          mediaAlt={stringValue(hero.media_alt) || heroHeadline}
+          headline={heroHeadline}
+          subheadline={heroSubheadline}
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
+          priority
+        />
+      ) : (
+        <PlainHero
+          title={heroHeadline}
+          subtitle={heroSubheadline}
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
+        />
+      )}
       <CollectionList
         items={itemsWithLabels}
         total={collection.total}
@@ -1631,12 +1689,46 @@ function ContactSection({
   );
 }
 
-function PlainHero({ title, subtitle }: { title: string; subtitle?: string }) {
+function PlainHero({
+  title,
+  subtitle,
+  primaryCTA,
+  secondaryCTA,
+}: {
+  title: string;
+  subtitle?: string;
+  primaryCTA?: { label: string; href: string; variant: "whatsapp" | "line" | "default" };
+  secondaryCTA?: { label: string; href: string };
+}) {
   return (
     <section className="bg-neutral-950 py-20 text-white md:py-24">
       <Container>
         <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{title}</h1>
         {subtitle ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p> : null}
+        {primaryCTA || secondaryCTA ? (
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            {primaryCTA ? (
+              <Button
+                render={<a href={primaryCTA.href} />}
+                size="lg"
+                variant={primaryCTA.variant}
+                className="w-full sm:w-auto"
+              >
+                {primaryCTA.label}
+              </Button>
+            ) : null}
+            {secondaryCTA ? (
+              <Button
+                render={<a href={secondaryCTA.href} />}
+                size="lg"
+                variant="outline"
+                className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+              >
+                {secondaryCTA.label}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </Container>
     </section>
   );
