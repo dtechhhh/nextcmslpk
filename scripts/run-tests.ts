@@ -85,6 +85,8 @@ async function main() {
   await runAuthFlowTests();
   await runPerformanceTests();
   await runContentCountVerification(hit);
+  await runIndonesiaHeroRegressionTests();
+  await runJapanRouteRegressionTests();
 }
 
 async function runPublicRenderingIndonesiaTests() {
@@ -636,6 +638,197 @@ async function runContentCountVerification(hit: HitContext) {
     status: mediaCount >= 25 ? "pass" : "fail",
     details: `media_assets count=${mediaCount}`,
   });
+}
+
+async function runIndonesiaHeroRegressionTests() {
+  const homepage = await timedFetch(`${INDONESIA_BASE}/`);
+
+  addResult({
+    id: "T9.1",
+    group: "Test Group 9: Indonesia Hero CTA Regression",
+    label: "Homepage hero headline present",
+    status: homepage.status === 200 && homepage.body.includes("Wujudkan Impianmu Bekerja di Jepang") ? "pass" : "fail",
+    responseTimeMs: homepage.responseTimeMs,
+    details: `HTTP ${homepage.status} | contains "Wujudkan Impianmu Bekerja di Jepang"=${homepage.body.includes("Wujudkan Impianmu Bekerja di Jepang")}`,
+  });
+
+  addResult({
+    id: "T9.2",
+    group: "Test Group 9: Indonesia Hero CTA Regression",
+    label: "Homepage hero primary CTA (WhatsApp) present",
+    status: homepage.status === 200 && homepage.body.includes("Konsultasi Gratis via WhatsApp") ? "pass" : "fail",
+    responseTimeMs: homepage.responseTimeMs,
+    details: `HTTP ${homepage.status} | contains "Konsultasi Gratis via WhatsApp"=${homepage.body.includes("Konsultasi Gratis via WhatsApp")}`,
+    critical: true,
+  });
+
+  addResult({
+    id: "T9.3",
+    group: "Test Group 9: Indonesia Hero CTA Regression",
+    label: "Homepage hero secondary CTA (Lihat Program) present",
+    status: homepage.status === 200 && homepage.body.includes("Lihat Program") ? "pass" : "fail",
+    responseTimeMs: homepage.responseTimeMs,
+    details: `HTTP ${homepage.status} | contains "Lihat Program"=${homepage.body.includes("Lihat Program")}`,
+  });
+
+  addResult({
+    id: "T9.4",
+    group: "Test Group 9: Indonesia Hero CTA Regression",
+    label: "Homepage contains WhatsApp link (wa.me)",
+    status: homepage.status === 200 && /wa\.me/i.test(homepage.body) ? "pass" : "fail",
+    responseTimeMs: homepage.responseTimeMs,
+    details: `HTTP ${homepage.status} | matches wa.me pattern=${/wa\.me/i.test(homepage.body)}`,
+    critical: true,
+  });
+
+  addResult({
+    id: "T9.5",
+    group: "Test Group 9: Indonesia Hero CTA Regression",
+    label: "Homepage contains /program link",
+    status: homepage.status === 200 && homepage.body.includes("/program") ? "pass" : "fail",
+    responseTimeMs: homepage.responseTimeMs,
+    details: `HTTP ${homepage.status} | contains "/program"=${homepage.body.includes("/program")}`,
+  });
+
+  const rawLeaks = ["hero.title", "hero.headline", "hero.subheadline", "[object Object]"];
+  const leakedPatterns = rawLeaks.filter((pattern) => homepage.body.includes(pattern));
+  const visibleLeaks = />\s*undefined\s*</.test(homepage.body) || />\s*null\s*</.test(homepage.body);
+  const allLeaks = [...leakedPatterns, ...(visibleLeaks ? ["visible undefined/null"] : [])];
+  addResult({
+    id: "T9.6",
+    group: "Test Group 9: Indonesia Hero CTA Regression",
+    label: "Homepage has no raw template leaks",
+    status: homepage.status === 200 && allLeaks.length === 0 ? "pass" : "fail",
+    responseTimeMs: homepage.responseTimeMs,
+    details: `HTTP ${homepage.status} | leaked patterns: ${allLeaks.length === 0 ? "none" : allLeaks.join(", ")}`,
+    critical: allLeaks.length > 0,
+  });
+
+  await runUrlTests([
+    {
+      id: "T9.7",
+      group: "Test Group 9: Indonesia Hero CTA Regression",
+      label: "Program listing has WhatsApp CTA",
+      url: `${INDONESIA_BASE}/program`,
+      expectedStatus: 200,
+      checks: [contains("Tanya Program via WhatsApp")],
+    },
+    {
+      id: "T9.8",
+      group: "Test Group 9: Indonesia Hero CTA Regression",
+      label: "Job listing has WhatsApp CTA",
+      url: `${INDONESIA_BASE}/job`,
+      expectedStatus: 200,
+      checks: [contains("Tanya Lowongan via WhatsApp")],
+    },
+    {
+      id: "T9.9",
+      group: "Test Group 9: Indonesia Hero CTA Regression",
+      label: "Career listing has WhatsApp CTA",
+      url: `${INDONESIA_BASE}/karir`,
+      expectedStatus: 200,
+      checks: [contains("Lamar via WhatsApp")],
+    },
+  ]);
+}
+
+async function runJapanRouteRegressionTests() {
+  const canonicalTests: UrlTest[] = [
+    {
+      id: "T10.1",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /about renders Japanese content",
+      url: `${JAPAN_BASE}/about`,
+      expectedStatus: 200,
+      checks: [contains("会社概要")],
+    },
+    {
+      id: "T10.2",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /training-method renders Japanese content",
+      url: `${JAPAN_BASE}/training-method`,
+      expectedStatus: 200,
+      checks: [contains("研修")],
+    },
+    {
+      id: "T10.3",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /candidate-profile renders Japanese content",
+      url: `${JAPAN_BASE}/candidate-profile`,
+      expectedStatus: 200,
+      checks: [contains("人材")],
+    },
+    {
+      id: "T10.4",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /recruitment-network renders Japanese content",
+      url: `${JAPAN_BASE}/recruitment-network`,
+      expectedStatus: 200,
+      checks: [contains("採用")],
+    },
+    {
+      id: "T10.5",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /sectors renders Japanese content",
+      url: `${JAPAN_BASE}/sectors`,
+      expectedStatus: 200,
+      checks: [contains("業種")],
+    },
+    {
+      id: "T10.6",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /news renders Japanese content",
+      url: `${JAPAN_BASE}/news`,
+      expectedStatus: 200,
+      checks: [contains("ニュース")],
+    },
+    {
+      id: "T10.7",
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: "Canonical /contact renders Japanese content",
+      url: `${JAPAN_BASE}/contact`,
+      expectedStatus: 200,
+      checks: [contains("お問い合わせ")],
+    },
+  ];
+
+  await runUrlTests(canonicalTests);
+
+  const aliases = [
+    { id: "T10.8", alias: "/metode-pelatihan", canonical: "/training-method", sampleContent: "研修" },
+    { id: "T10.9", alias: "/profil-kandidat", canonical: "/candidate-profile", sampleContent: "人材" },
+    { id: "T10.10", alias: "/jaringan-rekrutmen", canonical: "/recruitment-network", sampleContent: "採用" },
+    { id: "T10.11", alias: "/sector-page", canonical: "/sectors", sampleContent: "業種" },
+    { id: "T10.12", alias: "/news-page", canonical: "/news", sampleContent: "ニュース" },
+  ];
+
+  for (const { id, alias, canonical, sampleContent } of aliases) {
+    const response = await timedFetch(`${JAPAN_BASE}${alias}`);
+    const location = response.headers.get("location") ?? "";
+    const isRedirect = [301, 302, 303, 307, 308].includes(response.status);
+    const redirectsToCanonical = location.includes(canonical);
+
+    addResult({
+      id,
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: `Alias ${alias} redirects to ${canonical}`,
+      status: isRedirect && redirectsToCanonical ? "pass" : "fail",
+      responseTimeMs: response.responseTimeMs,
+      details: `HTTP ${response.status} | location=${location || "(none)"}`,
+    });
+
+    const followResponse = await timedFetch(`${JAPAN_BASE}${alias}`, { redirect: "follow" });
+    const finalHasContent = followResponse.body.includes(sampleContent);
+
+    addResult({
+      id: `${id}.1`,
+      group: "Test Group 10: Japan Route & Alias Regression",
+      label: `Alias ${alias} final content is Japanese`,
+      status: followResponse.status === 200 && finalHasContent ? "pass" : "fail",
+      responseTimeMs: followResponse.responseTimeMs,
+      details: `HTTP ${followResponse.status} | contains "${sampleContent}"=${finalHasContent}`,
+    });
+  }
 }
 
 async function runUrlTests(tests: UrlTest[]) {
