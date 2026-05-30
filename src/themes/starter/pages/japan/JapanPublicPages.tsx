@@ -1173,11 +1173,13 @@ function JapanCollectionList({
 }
 
 function DetailHero({ item }: { item: PublicCollectionItem }) {
-  if (item.heroSrc) {
+  const imageSrc = item.heroSrc || item.thumbnailSrc;
+
+  if (imageSrc) {
     return (
       <HeroSection
         mediaType="image"
-        mediaSrc={item.heroSrc}
+        mediaSrc={imageSrc}
         mediaAlt={item.title}
         headline={item.title}
         subheadline={item.excerpt}

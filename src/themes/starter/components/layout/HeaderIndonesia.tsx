@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Globe2, Menu } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import {
   Sheet,
@@ -42,10 +42,7 @@ export function HeaderIndonesia({
   variantSwitch,
   headerCTA,
   sticky,
-  headerStyle,
 }: HeaderIndonesiaProps) {
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const isTransparent = headerStyle === "transparent_on_hero" && !hasScrolled;
   const visibleNavItems = useMemo(
     () =>
       navItems
@@ -53,33 +50,20 @@ export function HeaderIndonesia({
         .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
     [navItems],
   );
-  const activeLogo = isTransparent && logoLightSrc ? logoLightSrc : logoSrc;
-
-  useEffect(() => {
-    function handleScroll() {
-      setHasScrolled(window.scrollY > 80);
-    }
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const logo = logoSrc || logoLightSrc;
 
   return (
     <header
       className={cn(
-        "top-0 z-40 transition-all duration-300",
-        sticky && "sticky",
-        isTransparent
-          ? "bg-transparent text-white"
-          : "bg-white text-neutral-900 shadow-sm",
+        "z-40 border-b border-neutral-200 bg-white text-neutral-900 shadow-sm",
+        sticky && "sticky top-0",
       )}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-3">
-          {activeLogo ? (
+          {logo ? (
             <Image
-              src={activeLogo}
+              src={logo}
               alt={lpkName}
               width={160}
               height={40}
@@ -107,11 +91,7 @@ export function HeaderIndonesia({
           {variantSwitch.isEnabled ? (
             <Button
               render={<a href={variantSwitch.targetHref} />}
-              variant={isTransparent ? "outline" : "ghost"}
-              className={cn(
-                isTransparent &&
-                  "border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900",
-              )}
+              variant="ghost"
             >
               <Globe2 aria-hidden="true" className="size-4" />
               {variantSwitch.label || "Japan"}
@@ -124,10 +104,7 @@ export function HeaderIndonesia({
 
         <Sheet>
           <SheetTrigger
-            className={cn(
-              "inline-flex size-10 items-center justify-center rounded-lg lg:hidden",
-              isTransparent ? "text-white" : "text-neutral-900",
-            )}
+            className="inline-flex size-10 items-center justify-center rounded-lg text-neutral-900 lg:hidden"
             aria-label="Buka menu"
           >
             <Menu aria-hidden="true" className="size-6" />

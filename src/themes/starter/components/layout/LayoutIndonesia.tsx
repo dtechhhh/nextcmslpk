@@ -133,7 +133,7 @@ export async function LayoutIndonesia({
           href={whatsappHref}
           iconOnlyLabel={stringValue(whatsapp.floating_icon_only_label) || "WhatsApp"}
           labelAfterScroll={
-            stringValue(whatsapp.floating_label_after_scroll) || "Chat WhatsApp"
+            stringValue(whatsapp.floating_label_after_scroll) || "Konsultasi Sekarang"
           }
           position={
             stringValue(whatsapp.floating_position) === "bottom_left"
