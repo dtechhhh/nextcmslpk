@@ -2,12 +2,12 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import {
   Download,
-  ExternalLink,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
 } from "lucide-react";
+import { SocialIcon } from "@/themes/starter/components/icons/SocialIcon";
 
 type FooterJapanProps = {
   lpkName: string;
@@ -62,11 +62,11 @@ export function FooterJapan({
   const company = sortEnabled(companyLinks);
   const resources = sortEnabled(resourceLinks);
   const socialLinks = [
-    { key: "line", href: social.line, icon: MessageCircle },
-    { key: "linkedin", href: social.linkedin, icon: ExternalLink },
-    { key: "youtube", href: social.youtube, icon: ExternalLink },
-    { key: "instagram", href: social.instagram, icon: ExternalLink },
-  ].filter((item): item is { key: string; href: string; icon: typeof ExternalLink } =>
+    { key: "line", href: social.line },
+    { key: "linkedin", href: social.linkedin },
+    { key: "youtube", href: social.youtube },
+    { key: "instagram", href: social.instagram },
+  ].filter((item): item is { key: string; href: string } =>
     Boolean(item.href),
   );
 
@@ -164,7 +164,7 @@ export function FooterJapan({
 
           {socialLinks.length > 0 ? (
             <div className="mt-5 flex flex-wrap gap-3">
-              {socialLinks.map(({ key, href, icon: Icon }) => (
+              {socialLinks.map(({ key, href }) => (
                 <a
                   key={key}
                   href={href}
@@ -173,7 +173,7 @@ export function FooterJapan({
                   aria-label={key}
                   className="flex size-9 items-center justify-center rounded-full bg-neutral-800 text-neutral-200 transition hover:bg-primary-500 hover:text-white"
                 >
-                  <Icon aria-hidden="true" className="size-4" />
+                  <SocialIcon iconKey={key} aria-hidden="true" className="size-4" />
                 </a>
               ))}
             </div>

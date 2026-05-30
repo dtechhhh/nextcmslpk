@@ -1,10 +1,10 @@
 import {
   Clock,
-  ExternalLink,
   Mail,
   MapPin,
   Phone,
 } from "lucide-react"
+import { SocialIcon } from "@/themes/starter/components/icons/SocialIcon"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Container } from "@/themes/starter/components/ui/Container"
 
@@ -29,15 +29,6 @@ interface ContactInfoProps {
   ctaLabel?: string
   ctaHref?: string
   ctaVariant?: "whatsapp" | "line" | "default"
-}
-
-const socialIconMap = {
-  instagram: ExternalLink,
-  youtube: ExternalLink,
-  tiktok: ExternalLink,
-  facebook: ExternalLink,
-  line: ExternalLink,
-  linkedin: ExternalLink,
 }
 
 function ContactInfo({
@@ -107,22 +98,18 @@ function ContactInfo({
 
             {links.length > 0 ? (
               <div className="mt-6 flex gap-3">
-                {links.map(([key, href]) => {
-                  const Icon = socialIconMap[key]
-
-                  return (
-                    <a
-                      key={key}
-                      href={href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={key}
-                      className="flex size-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 transition hover:bg-primary-500 hover:text-white"
-                    >
-                      <Icon aria-hidden="true" className="size-5" />
-                    </a>
-                  )
-                })}
+                {links.map(([key, href]) => (
+                  <a
+                    key={key}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={key}
+                    className="flex size-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 transition hover:bg-primary-500 hover:text-white"
+                  >
+                    <SocialIcon iconKey={key} aria-hidden="true" className="size-5" />
+                  </a>
+                ))}
               </div>
             ) : null}
 
