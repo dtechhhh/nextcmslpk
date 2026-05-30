@@ -153,12 +153,12 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
     : defaultWhatsappHref;
   const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
-  const [heroImage, programs, jobs, blogs, activeOffer] = await Promise.all([
+  const featuredProgramsConfig = record(data.featured_programs);
+  const offerSection = record(data.offer_section);
+  const contactSection = record(data.contact_section);
+  const [heroImage, programs, jobs, blogs, offerPayload] = await Promise.all([
     resolveMediaUrl(heroMediaId),
-    resolveCollectionList(context.variantId, "program", {
-      source: "featured",
-      pageSize: numberValue(record(data.featured_programs).max_items) || 3,
-    }),
+    resolveFeaturedPrograms(context.variantId, featuredProgramsConfig),
     resolveCollectionList(context.variantId, "job", {
       source: "latest_active",
       pageSize: numberValue(record(data.latest_jobs).max_items) || 5,
@@ -168,10 +168,10 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       source: "latest_published",
       pageSize: numberValue(record(data.latest_blogs).max_items) || 5,
     }),
-    resolveActiveOffer(context.variantId),
+    resolveOfferSectionPayload(context.variantId, offerSection),
   ]);
-  const offerSection = record(data.offer_section);
-  const offerData = activeOffer?.dataJson ?? {};
+  const offerItem = offerPayload.item;
+  const offerData = offerItem?.dataJson ?? {};
 
   return (
     <>
@@ -219,17 +219,23 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
         />
       )}
       <OfferBanner
-        isEnabled={booleanValue(offerSection.is_enabled, Boolean(activeOffer))}
+        isEnabled={
+          !offerPayload.isDisabled &&
+          booleanValue(
+            offerSection.is_enabled,
+            Boolean(offerItem || stringValue(offerSection.fallback_headline)),
+          )
+        }
         badgeLabel={stringValue(offerData.badge_label) || stringValue(offerSection.fallback_badge_label)}
         headline={
-          activeOffer?.title ||
+          offerItem?.title ||
           stringValue(offerSection.fallback_headline) ||
           "Promo Program"
         }
-        description={activeOffer?.excerpt || stringValue(offerSection.fallback_description)}
-        imageSrc={activeOffer?.thumbnailSrc}
+        description={offerItem?.excerpt || stringValue(offerSection.fallback_description)}
+        imageSrc={offerItem?.thumbnailSrc || offerPayload.fallbackImageSrc || undefined}
         ctaLabel="Lihat Penawaran"
-        ctaHref={activeOffer ? `/offer/${activeOffer.slug}` : undefined}
+        ctaHref={offerItem ? `/offer/${offerItem.slug}` : undefined}
       />
       <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
       <CardGrid
@@ -288,7 +294,13 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
         ctaLabel="Lihat Semua Artikel"
         ctaHref="/blog"
       />
-      <ContactSection globalConfig={context.globalConfig} whatsappHref={whatsappHref} />
+      <ContactSection
+        headline={stringValue(contactSection.headline) || "Hubungi Kami"}
+        description={stringValue(contactSection.description)}
+        globalConfig={context.globalConfig}
+        whatsappHref={whatsappHref}
+        showGlobalContact={booleanValue(contactSection.use_global_contact, true)}
+      />
       <CTABanner
         headline="Siap mulai perjalanan kerja ke Jepang?"
         description="Tim kami siap membantu memilih program yang sesuai."
@@ -306,9 +318,11 @@ export async function renderListPage(options: ListPageOptions) {
   }
 
   const params = await options.searchParams;
-  const filters = readFilters(params);
   const currentPage = numberFromParam(params.page) || 1;
-  const hero = record(page.dataJson.hero);
+  const data = page.dataJson;
+  const enabledOptionSetKeys = getEnabledIndonesiaFilterKeys(data, options.optionSetKeys);
+  const filters = pickFilters(readFilters(params), enabledOptionSetKeys);
+  const hero = record(data.hero);
   const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
   const lpkName = getLpkName(context.globalConfig, context.tenant.name);
   const defaultWhatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
@@ -316,8 +330,20 @@ export async function renderListPage(options: ListPageOptions) {
   const whatsappHref = heroWhatsappMessage
     ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
     : defaultWhatsappHref;
+  const finalCta = record(data.final_cta);
+  const finalCtaHeadline = stringValue(finalCta.headline);
+  const finalCtaDescription = stringValue(finalCta.description);
+  const finalCtaLabel = stringValue(finalCta.cta_label);
+  const finalCtaMessage = stringValue(finalCta.whatsapp_message_template);
+  const finalCtaHref = finalCtaMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, finalCtaMessage)
+    : defaultWhatsappHref;
 
-  const [heroImage, collection, filterDefs] = await Promise.all([
+  const listOfferSection = record(data.offer_section);
+  const shouldResolveOffer =
+    options.pageKey === "blog_page" &&
+    booleanValue(listOfferSection.is_enabled, stringValue(listOfferSection.source) !== "disabled");
+  const [heroImage, collection, filterDefs, offerPayload] = await Promise.all([
     heroMediaId ? resolveMediaUrl(heroMediaId) : Promise.resolve(null),
     unstable_cache(
       () =>
@@ -333,8 +359,13 @@ export async function renderListPage(options: ListPageOptions) {
         tags: resolveTags(options.cacheTags, context.variantId),
       },
     )(),
-    Promise.all(options.optionSetKeys.map((key) => resolveOptionSet(context.variantId, key))),
+    Promise.all(enabledOptionSetKeys.map((key) => resolveOptionSet(context.variantId, key))),
+    shouldResolveOffer
+      ? resolveOfferSectionPayload(context.variantId, listOfferSection)
+      : Promise.resolve({ item: null, fallbackImageSrc: null, isDisabled: false }),
   ]);
+  const offerItem = offerPayload.item;
+  const offerData = offerItem?.dataJson ?? {};
 
   const itemsWithLabels = options.cardLabelOptionKeys?.length
     ? await Promise.all(
@@ -376,6 +407,18 @@ export async function renderListPage(options: ListPageOptions) {
           secondaryCTA={heroSecondaryCTA}
         />
       )}
+      {shouldResolveOffer ? (
+        <OfferBanner
+          isEnabled={Boolean(offerItem)}
+          badgeLabel={stringValue(offerData.badge_label)}
+          headline={offerItem?.title || "Promo Program"}
+          description={offerItem?.excerpt || stringValue(offerData.short_description)}
+          imageSrc={offerItem?.thumbnailSrc}
+          ctaLabel="Lihat Penawaran"
+          ctaHref={offerItem ? `/offer/${offerItem.slug}` : undefined}
+        />
+      ) : null}
+      <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
       <CollectionList
         items={itemsWithLabels}
         total={collection.total}
@@ -383,7 +426,7 @@ export async function renderListPage(options: ListPageOptions) {
         pageSize={collection.pageSize}
         totalPages={collection.totalPages}
         currentFilters={filters}
-        filters={options.optionSetKeys.map((key, index) => ({
+        filters={enabledOptionSetKeys.map((key, index) => ({
           key,
           label: formatLabel(key),
           isEnabled: true,
@@ -394,6 +437,18 @@ export async function renderListPage(options: ListPageOptions) {
         }))}
         detailPathPrefix={options.detailPathPrefix}
       />
+      <FAQ title="Pertanyaan Umum" items={arrayOfRecords(data.faq).map(toFaqItem)} />
+      {finalCtaHeadline || finalCtaDescription || finalCtaLabel ? (
+        <CTABanner
+          headline={finalCtaHeadline || "Siap mulai perjalanan kerja ke Jepang?"}
+          description={finalCtaDescription}
+          primaryCTA={{
+            label: finalCtaLabel || "Chat WhatsApp",
+            href: finalCtaHref,
+            variant: "whatsapp",
+          }}
+        />
+      ) : null}
     </>
   );
 }
@@ -424,11 +479,14 @@ export async function renderDetailPage(options: DetailPageOptions) {
 
   if (options.collectionKey === "program") {
     const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const fallbackHeroImage = getDetailHeroSrc(item)
+      ? undefined
+      : await resolveDetailPageHeroSrc(context.variantId, "program_page");
 
     return (
       <>
         <PreviewBanner isPreview={preview.isPreview} />
-        <ProgramDetailHero item={item} />
+        <ProgramDetailHero item={item} fallbackImageSrc={fallbackHeroImage ?? undefined} />
         <CollectionDetail
           breadcrumb={[
             { label: "Beranda", href: "/" },
@@ -452,11 +510,14 @@ export async function renderDetailPage(options: DetailPageOptions) {
 
   if (options.collectionKey === "job") {
     const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const fallbackHeroImage = getDetailHeroSrc(item)
+      ? undefined
+      : await resolveDetailPageHeroSrc(context.variantId, "job_page");
 
     return (
       <>
         <PreviewBanner isPreview={preview.isPreview} />
-        <JobDetailHero item={item} />
+        <JobDetailHero item={item} fallbackImageSrc={fallbackHeroImage ?? undefined} />
         <CollectionDetail
           breadcrumb={[
             { label: "Beranda", href: "/" },
@@ -540,11 +601,14 @@ export async function renderDetailPage(options: DetailPageOptions) {
 
   if (options.collectionKey === "karir") {
     const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const fallbackHeroImage = getDetailHeroSrc(item)
+      ? undefined
+      : await resolveDetailPageHeroSrc(context.variantId, "karir_page");
 
     return (
       <>
         <PreviewBanner isPreview={preview.isPreview} />
-        <KarirDetailHero item={item} />
+        <KarirDetailHero item={item} fallbackImageSrc={fallbackHeroImage ?? undefined} />
         <CollectionDetail
           breadcrumb={[
             { label: "Beranda", href: "/" },
@@ -566,16 +630,51 @@ export async function renderDetailPage(options: DetailPageOptions) {
     );
   }
 
+  if (options.collectionKey === "offer") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const whatsappHref = getOfferWhatsappHref(item.dataJson, context.globalConfig, lpkName, item.title);
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <OfferDetailHero item={item} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Penawaran" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <OfferDetailMain item={item} />
+          }
+          sidebar={
+            <OfferDetailSidebar
+              item={item}
+              whatsappHref={whatsappHref}
+            />
+          }
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <PreviewBanner isPreview={preview.isPreview} />
+      <GenericDetailHero item={item} />
       <CollectionDetail
         breadcrumb={[
           { label: "Home", href: "/" },
           { label: formatLabel(options.collectionKey), href: options.pathPrefix },
           { label: item.title },
         ]}
-        mainContent={<DetailMain item={item} collectionKey={options.collectionKey} />}
+        mainContent={
+          <DetailMain
+            item={item}
+            collectionKey={options.collectionKey}
+            showHeading={!getDetailHeroSrc(item)}
+          />
+        }
         sidebar={<DetailSidebar item={item} globalConfig={context.globalConfig} tenantName={context.tenant.name} />}
       />
     </>
@@ -698,16 +797,17 @@ function BlogDetailHero({
   tagLabels: string[];
   authorImageUrl?: string | null;
 }) {
+  const imageSrc = coverImageUrl || getDetailHeroSrc(item);
   const authorName = stringValue(item.dataJson.author_name);
   const authorTitle = stringValue(item.dataJson.author_title);
   const readingTimeLabel = stringValue(item.dataJson.reading_time_label);
 
   return (
     <section>
-      {coverImageUrl ? (
+      {imageSrc ? (
         <div className="relative aspect-[21/9] overflow-hidden bg-neutral-200">
           <Image
-            src={coverImageUrl}
+            src={imageSrc}
             alt={item.title}
             fill
             className="object-cover"
@@ -937,9 +1037,9 @@ export async function renderJapanListPage(options: JapanListPageOptions) {
   }
 
   const params = await options.searchParams;
-  const filters = readFilters(params);
   const currentPage = numberFromParam(params.page) || 1;
   const filterConfigs = getJapanFilterConfigs(options.kind, page.dataJson);
+  const filters = pickFilters(readFilters(params), filterConfigs.map((config) => config.key));
   const [collection, filterDefs] = await Promise.all([
     unstable_cache(
       () =>
@@ -1116,6 +1216,23 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
         <PlainHero
           title={stringValue(hero.headline) || page.title}
           subtitle={stringValue(hero.subheadline)}
+          primaryCTA={
+            stringValue(hero.primary_cta_label)
+              ? {
+                  label: stringValue(hero.primary_cta_label),
+                  href: heroWhatsappHref,
+                  variant: "whatsapp" as const,
+                }
+              : undefined
+          }
+          secondaryCTA={
+            stringValue(hero.secondary_cta_label)
+              ? {
+                  label: stringValue(hero.secondary_cta_label),
+                  href: stringValue(hero.secondary_cta_href) || "/program",
+                }
+              : undefined
+          }
         />
       )}
       <StatsBar
@@ -1562,19 +1679,25 @@ async function resolveDefaultOgImage(globalConfig: Record<string, PublicJson>) {
 function DetailMain({
   item,
   collectionKey,
+  showHeading = true,
 }: {
   item: PublicCollectionItem;
   collectionKey: string;
+  showHeading?: boolean;
 }) {
   const blocks = arrayOfRecords(item.dataJson.blocks);
 
   return (
     <article>
-      <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+      {showHeading ? (
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+      ) : null}
       {item.isExpired ? <ExpiredBadge type={collectionKey === "job" ? "job" : "offer"} /> : null}
-      {item.excerpt ? <p className="mt-4 text-lg leading-8 text-neutral-600">{item.excerpt}</p> : null}
+      {showHeading && item.excerpt ? (
+        <p className="mt-4 text-lg leading-8 text-neutral-600">{item.excerpt}</p>
+      ) : null}
       {blocks.length > 0 ? (
-        <div className="mt-8">
+        <div className={showHeading ? "mt-8" : undefined}>
           <ContentBlocks
             variant="indonesia"
             blocks={blocks.map((block, index) => ({
@@ -1588,6 +1711,25 @@ function DetailMain({
         <FallbackDataView data={item.dataJson} />
       )}
     </article>
+  );
+}
+
+function GenericDetailHero({ item }: { item: PublicCollectionItem }) {
+  const imageSrc = getDetailHeroSrc(item);
+
+  if (!imageSrc) {
+    return null;
+  }
+
+  return (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={item.excerpt}
+      priority
+    />
   );
 }
 
@@ -1657,11 +1799,17 @@ async function RelatedForBlog({
 }
 
 function ContactSection({
+  headline = "Hubungi Kami",
+  description,
   globalConfig,
   whatsappHref,
+  showGlobalContact = true,
 }: {
+  headline?: string;
+  description?: string;
   globalConfig: Record<string, PublicJson>;
   whatsappHref: string;
+  showGlobalContact?: boolean;
 }) {
   const whatsappContact = record(globalConfig.whatsapp_contact);
   const contact = record(whatsappContact.contact);
@@ -1669,19 +1817,22 @@ function ContactSection({
 
   return (
     <ContactInfo
-      headline="Hubungi Kami"
-      phone={stringValue(contact.phone_label)}
-      email={stringValue(contact.email)}
-      address={stringValue(contact.address)}
-      mapUrl={stringValue(contact.map_url)}
-      operationalHours={stringValue(contact.operational_hours)}
-      socialLinks={{
-        instagram: stringValue(socialLinks.instagram),
-        youtube: stringValue(socialLinks.youtube),
-        tiktok: stringValue(socialLinks.tiktok),
-        facebook: stringValue(socialLinks.facebook),
-        line: stringValue(socialLinks.line),
-      }}
+      headline={headline}
+      description={description}
+      phone={showGlobalContact ? stringValue(contact.phone_label) : undefined}
+      email={showGlobalContact ? stringValue(contact.email) : undefined}
+      address={showGlobalContact ? stringValue(contact.address) : undefined}
+      mapUrl={showGlobalContact ? stringValue(contact.map_url) : undefined}
+      operationalHours={showGlobalContact ? stringValue(contact.operational_hours) : undefined}
+      socialLinks={showGlobalContact
+        ? {
+            instagram: stringValue(socialLinks.instagram),
+            youtube: stringValue(socialLinks.youtube),
+            tiktok: stringValue(socialLinks.tiktok),
+            facebook: stringValue(socialLinks.facebook),
+            line: stringValue(socialLinks.line),
+          }
+        : undefined}
       ctaLabel="Chat WhatsApp"
       ctaHref={whatsappHref}
       ctaVariant="whatsapp"
@@ -1988,8 +2139,14 @@ function ProgramDetailSidebar({
   );
 }
 
-function ProgramDetailHero({ item }: { item: PublicCollectionItem }) {
-  const imageSrc = item.heroSrc;
+function ProgramDetailHero({
+  item,
+  fallbackImageSrc,
+}: {
+  item: PublicCollectionItem;
+  fallbackImageSrc?: string;
+}) {
+  const imageSrc = getDetailHeroSrc(item, fallbackImageSrc);
   const data = item.dataJson;
 
   return imageSrc ? (
@@ -2303,8 +2460,14 @@ function JobDetailSidebar({
   );
 }
 
-function JobDetailHero({ item }: { item: PublicCollectionItem }) {
-  const imageSrc = item.heroSrc;
+function JobDetailHero({
+  item,
+  fallbackImageSrc,
+}: {
+  item: PublicCollectionItem;
+  fallbackImageSrc?: string;
+}) {
+  const imageSrc = getDetailHeroSrc(item, fallbackImageSrc);
   const data = item.dataJson;
   const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
 
@@ -2379,8 +2542,14 @@ function getKarirWhatsappHref(
   });
 }
 
-function KarirDetailHero({ item }: { item: PublicCollectionItem }) {
-  const imageSrc = item.heroSrc;
+function KarirDetailHero({
+  item,
+  fallbackImageSrc,
+}: {
+  item: PublicCollectionItem;
+  fallbackImageSrc?: string;
+}) {
+  const imageSrc = getDetailHeroSrc(item, fallbackImageSrc);
   const data = item.dataJson;
   const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
 
@@ -2649,6 +2818,253 @@ function KarirDetailSidebar({
   );
 }
 
+function OfferDetailHero({ item }: { item: PublicCollectionItem }) {
+  const imageSrc = getDetailHeroSrc(item);
+  const data = item.dataJson;
+  const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={subtitle}
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function OfferDetailMain({ item }: { item: PublicCollectionItem }) {
+  const data = item.dataJson;
+
+  const optionIds = [
+    stringValue(data.offer_type_option_id),
+    stringValue(data.target_audience_option_id),
+  ].filter(Boolean);
+
+  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const optLabel = (id: string) => {
+    const index = optionIds.indexOf(id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+
+  const classificationLabels = [
+    optLabel(stringValue(data.offer_type_option_id)),
+    optLabel(stringValue(data.target_audience_option_id)),
+  ].filter(Boolean);
+
+  const overview = stringValue(data.overview);
+  const detailDescription = stringValue(data.detail_description);
+  const termsConditions = stringValue(data.terms_conditions);
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+        {stringValue(data.subtitle) ? (
+          <p className="mt-2 text-lg font-medium text-primary-500">{stringValue(data.subtitle)}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {item.isExpired ? <ExpiredBadge type="offer" /> : null}
+        {stringValue(data.short_description) ? (
+          <p className="mt-4 text-lg leading-8 text-neutral-600">{stringValue(data.short_description)}</p>
+        ) : null}
+        {overview ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+        ) : null}
+      </section>
+
+      {(() => {
+        const benefitRecords = sortedRecords(data.benefit_items).filter((v) => stringValue(v.title));
+        const stringBenefits = flatStringList(data.benefit_items);
+        const benefitItems: NormalizedItem[] =
+          benefitRecords.length > 0
+            ? benefitRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
+            : stringBenefits.map((s) => ({ title: s, description: "" }));
+        if (benefitItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Keuntungan</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {benefitItems.map((benefit, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                      {benefit.title}
+                    </h3>
+                    {benefit.description ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {renderRequirementList(data.detail_checklist, "Detail Penawaran")}
+
+      {detailDescription ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Deskripsi Penawaran</h2>
+          <div className="mt-5 whitespace-pre-line leading-7 text-neutral-700">{detailDescription}</div>
+        </section>
+      ) : null}
+
+      {(() => {
+        const bonusRecords = sortedRecords(data.bonus_items).filter((v) => stringValue(v.title));
+        const stringBonuses = flatStringList(data.bonus_items);
+        const bonusItems: NormalizedItem[] =
+          bonusRecords.length > 0
+            ? bonusRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
+            : stringBonuses.map((s) => ({ title: s, description: "" }));
+        if (bonusItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Bonus</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {bonusItems.map((bonus, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                      {bonus.title}
+                    </h3>
+                    {bonus.description ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{bonus.description}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      <NormalizedCardSet
+        title="Cocok Untuk"
+        items={normalizeMixedList(data.suitable_for_items)}
+      />
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {termsConditions ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Syarat &amp; Ketentuan</h2>
+          <div className="mt-5 whitespace-pre-line text-sm leading-6 text-neutral-600">{termsConditions}</div>
+        </section>
+      ) : null}
+    </article>
+  );
+}
+
+function OfferDetailSidebar({
+  item,
+  whatsappHref,
+}: {
+  item: PublicCollectionItem;
+  whatsappHref: string;
+}) {
+  const data = item.dataJson;
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Penawaran</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.price_label) ? (
+            <MetaRow label="Harga" value={stringValue(data.price_label)} />
+          ) : null}
+          {stringValue(data.original_price_label) ? (
+            <MetaRow label="Harga Asli" value={stringValue(data.original_price_label)} />
+          ) : null}
+          {stringValue(data.urgency_label) ? (
+            <MetaRow label="Ketersediaan" value={stringValue(data.urgency_label)} />
+          ) : null}
+          {stringValue(data.schedule_label) ? (
+            <MetaRow label="Jadwal" value={stringValue(data.schedule_label)} />
+          ) : null}
+          {stringValue(data.duration_label) ? (
+            <MetaRow label="Durasi" value={stringValue(data.duration_label)} />
+          ) : null}
+          {stringValue(data.format_label) ? (
+            <MetaRow label="Format" value={stringValue(data.format_label)} />
+          ) : null}
+          {stringValue(data.quota_label) ? (
+            <MetaRow label="Kuota" value={stringValue(data.quota_label)} />
+          ) : null}
+          {item.expiredAt ? (
+            <MetaRow label="Berlaku Sampai" value={formatDate(item.expiredAt)} />
+          ) : null}
+          {item.startAt ? (
+            <MetaRow label="Mulai" value={formatDate(item.startAt)} />
+          ) : null}
+        </dl>
+        <Button
+          render={<a href={item.isExpired ? "#" : whatsappHref} />}
+          disabled={item.isExpired}
+          variant="whatsapp"
+          className="mt-6 w-full"
+          title={item.isExpired ? "Penawaran ini sudah tidak tersedia" : undefined}
+        >
+          {item.isExpired ? "Penawaran Berakhir" : stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getOfferWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  offerTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const offerTemplate = stringValue(data.whatsapp_message_template);
+  const fallbackTemplate = `Halo {lpk_name}, saya tertarik dengan penawaran {offer_title}.`;
+  const template = offerTemplate || fallbackTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    offer_title: offerTitle,
+  });
+}
+
 function getProgramWhatsappHref(
   data: PublicJson,
   globalConfig: Record<string, PublicJson>,
@@ -2761,6 +3177,82 @@ async function collectionCard(
     labels,
     isEnabled: true,
   };
+}
+
+function getDetailHeroSrc(item: PublicCollectionItem, fallbackImageSrc?: string) {
+  return item.heroSrc || item.thumbnailSrc || fallbackImageSrc;
+}
+
+async function resolveDetailPageHeroSrc(variantId: string, pageKey: string) {
+  const page = await resolvePageData(variantId, pageKey);
+  const hero = record(page?.dataJson.hero);
+  const mediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
+
+  return mediaId ? resolveMediaUrl(mediaId) : null;
+}
+
+async function resolveFeaturedPrograms(variantId: string, config: PublicJson) {
+  const pageSize = numberValue(config.max_items) || 3;
+  const source = stringValue(config.source) || "featured";
+
+  if (source !== "manual") {
+    return resolveCollectionList(variantId, "program", {
+      source: "featured",
+      pageSize,
+    });
+  }
+
+  const manualIds = flatStringList(config.manual_program_ids).slice(0, pageSize);
+
+  if (manualIds.length === 0) {
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize,
+      totalPages: 1,
+    };
+  }
+
+  const result = await resolveCollectionList(variantId, "program", {
+    source: "manual",
+    manualIds,
+    pageSize,
+  });
+  const byId = new Map(result.items.map((item) => [item.id, item]));
+
+  return {
+    ...result,
+    items: manualIds.map((id) => byId.get(id)).filter((item): item is PublicCollectionItem => Boolean(item)),
+  };
+}
+
+async function resolveOfferSectionPayload(variantId: string, config: PublicJson) {
+  const source = stringValue(config.source) || "active_featured_offer";
+  const fallbackImageSrc = await resolveMediaUrl(stringValue(config.fallback_image_id));
+
+  if (source === "disabled") {
+    return { item: null, fallbackImageSrc, isDisabled: true };
+  }
+
+  if (source === "manual") {
+    const manualOfferId = stringValue(config.manual_offer_id);
+
+    if (!manualOfferId) {
+      return { item: null, fallbackImageSrc, isDisabled: false };
+    }
+
+    const result = await resolveCollectionList(variantId, "offer", {
+      source: "manual",
+      manualIds: [manualOfferId],
+      pageSize: 1,
+      activeOnly: true,
+    });
+
+    return { item: result.items[0] ?? null, fallbackImageSrc, isDisabled: false };
+  }
+
+  return { item: await resolveActiveOffer(variantId), fallbackImageSrc, isDisabled: false };
 }
 
 function toStatItem(item: PublicJson) {
@@ -2883,6 +3375,35 @@ function readFilters(params: PublicPageSearchParams) {
 
     return filters;
   }, {});
+}
+
+function pickFilters(filters: Record<string, string>, enabledKeys: string[]) {
+  const allowedKeys = new Set(enabledKeys);
+
+  return Object.entries(filters).reduce<Record<string, string>>((picked, [key, value]) => {
+    if (allowedKeys.has(key)) {
+      picked[key] = value;
+    }
+
+    return picked;
+  }, {});
+}
+
+function getEnabledIndonesiaFilterKeys(data: PublicJson, optionSetKeys: string[]) {
+  const filterConfig = record(data.filter_config);
+
+  return optionSetKeys.filter((key) =>
+    booleanValue(filterConfig[getIndonesiaFilterConfigField(key)], true),
+  );
+}
+
+function getIndonesiaFilterConfigField(key: string) {
+  const filterConfigFields: Record<string, string> = {
+    education_level: "enable_education_filter",
+    language_level: "enable_language_filter",
+  };
+
+  return filterConfigFields[key] ?? `enable_${key}_filter`;
 }
 
 function readParam(value: string | string[] | undefined) {

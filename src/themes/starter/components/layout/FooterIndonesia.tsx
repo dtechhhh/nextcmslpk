@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { SocialIcon } from "@/themes/starter/components/icons/SocialIcon";
 
 type FooterIndonesiaProps = {
   lpkName: string;
@@ -113,7 +114,7 @@ export function FooterIndonesia({
                   aria-label={key}
                   className="flex size-9 items-center justify-center rounded-full bg-neutral-800 text-neutral-200 hover:bg-primary-500 hover:text-white"
                 >
-                  <ExternalLink aria-hidden="true" className="size-4" />
+                  <SocialIcon iconKey={key} aria-hidden="true" className="size-4" />
                 </a>
               ))}
             </div>

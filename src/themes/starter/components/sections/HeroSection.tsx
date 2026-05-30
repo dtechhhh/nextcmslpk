@@ -37,8 +37,8 @@ function HeroSection({
   priority = false,
 }: HeroSectionProps) {
   return (
-    <section className="relative flex min-h-[60vh] items-center overflow-hidden md:min-h-[80vh]">
-      <div className="absolute inset-0 -z-20">
+    <section className="relative flex min-h-[60vh] items-center overflow-hidden bg-neutral-900 md:min-h-[80vh]">
+      <div className="absolute inset-0 z-0">
         {mediaType === "image" ? (
           <Image
             src={mediaSrc}
@@ -62,10 +62,10 @@ function HeroSection({
       </div>
 
       {overlay ? (
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-black/60 via-black/30 to-transparent" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/60 via-black/30 to-transparent" />
       ) : null}
 
-      <Container className="py-16 md:py-20 lg:py-24">
+      <Container className="relative z-20 py-16 md:py-20 lg:py-24">
         <div className="max-w-3xl">
           {eyebrowLabel ? (
             <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary-300">
