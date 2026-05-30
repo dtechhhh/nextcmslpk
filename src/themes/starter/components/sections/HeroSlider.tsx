@@ -64,12 +64,48 @@ function HeroSlider({
   }
 
   if (!hasSlides) {
-    return null
+    return (
+      <section className="bg-neutral-900 py-20 text-white md:py-24">
+        <Container>
+          {eyebrowLabel ? (
+            <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-white/70">
+              {eyebrowLabel}
+            </p>
+          ) : null}
+          <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{headline}</h1>
+          {subheadline ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subheadline}</p> : null}
+          {primaryCTA || secondaryCTA ? (
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              {primaryCTA ? (
+                <Button
+                  render={<a href={primaryCTA.href} />}
+                  size="lg"
+                  variant={primaryCTA.variant}
+                  className="w-full sm:w-auto"
+                >
+                  {primaryCTA.label}
+                </Button>
+              ) : null}
+              {secondaryCTA ? (
+                <Button
+                  render={<a href={secondaryCTA.href} />}
+                  size="lg"
+                  variant="outline"
+                  className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                >
+                  {secondaryCTA.label}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </Container>
+      </section>
+    )
   }
 
   return (
     <section
-      className="relative flex min-h-[60vh] items-center overflow-hidden md:min-h-[80vh]"
+      className="relative flex min-h-[60vh] items-center overflow-hidden bg-neutral-900 md:min-h-[80vh]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onKeyDown={(event) => {
@@ -84,7 +120,7 @@ function HeroSlider({
       aria-roledescription="carousel"
       aria-label={headline}
     >
-      <div className="absolute inset-0 -z-20">
+      <div className="absolute inset-0 z-0">
         {slides.map((slide, index) => (
           <Image
             key={`${slide.mediaSrc}-${index}`}
@@ -100,9 +136,9 @@ function HeroSlider({
           />
         ))}
       </div>
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-black/60 via-black/30 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/60 via-black/30 to-transparent" />
 
-      <Container className="py-16 md:py-20 lg:py-24">
+      <Container className="relative z-20 py-16 md:py-20 lg:py-24">
         <div className="max-w-3xl">
           {eyebrowLabel ? (
             <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary-300">
