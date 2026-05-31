@@ -67,6 +67,7 @@ config_key: `brand_header`
 ```text
 brand
   lpk_name               String, required
+  tagline                String
   logo_image_id           MediaAsset ref
   logo_light_image_id     MediaAsset ref (untuk header transparent)
 

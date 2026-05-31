@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { FileText, Menu, MessageCircle } from "lucide-react";
 import { useMemo } from "react";
 
@@ -14,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { buildLineUrl } from "@/lib/line";
 import { cn } from "@/lib/utils";
+import { HeaderBrand } from "@/themes/starter/components/layout/HeaderBrand";
 import { DocumentDownload } from "@/themes/starter/components/sections/DocumentDownload";
 import { Button } from "@/themes/starter/components/ui/Button";
 
@@ -91,25 +90,7 @@ export function HeaderJapan({
 
       <div className="border-b border-neutral-200 bg-white text-neutral-900">
         <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            {logo ? (
-              <Image
-                src={logo}
-                alt={lpkName}
-                width={168}
-                height={48}
-                priority
-                className="h-11 w-auto object-contain"
-              />
-            ) : (
-              <span className="truncate text-lg font-bold">{lpkName}</span>
-            )}
-            {tagline ? (
-              <span className="hidden max-w-44 text-xs leading-5 text-neutral-500 xl:block">
-                {tagline}
-              </span>
-            ) : null}
-          </Link>
+          <HeaderBrand lpkName={lpkName} tagline={tagline} logoSrc={logo} />
 
           <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
             {visibleNavItems.map((item) => (

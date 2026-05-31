@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { Globe2, Menu } from "lucide-react";
 import { useMemo } from "react";
 
@@ -13,6 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { HeaderBrand } from "@/themes/starter/components/layout/HeaderBrand";
 import { Button } from "@/themes/starter/components/ui/Button";
 
 type NavItem = {
@@ -25,6 +24,7 @@ type NavItem = {
 
 type HeaderIndonesiaProps = {
   lpkName: string;
+  tagline?: string;
   logoSrc?: string;
   logoLightSrc?: string;
   navItems: NavItem[];
@@ -36,6 +36,7 @@ type HeaderIndonesiaProps = {
 
 export function HeaderIndonesia({
   lpkName,
+  tagline,
   logoSrc,
   logoLightSrc,
   navItems,
@@ -60,20 +61,7 @@ export function HeaderIndonesia({
       )}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-w-0 items-center gap-3">
-          {logo ? (
-            <Image
-              src={logo}
-              alt={lpkName}
-              width={160}
-              height={40}
-              priority
-              className="h-10 w-auto object-contain"
-            />
-          ) : (
-            <span className="truncate text-lg font-bold">{lpkName}</span>
-          )}
-        </Link>
+        <HeaderBrand lpkName={lpkName} tagline={tagline} logoSrc={logo} />
 
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
           {visibleNavItems.map((item) => (

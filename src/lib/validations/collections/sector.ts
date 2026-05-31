@@ -8,6 +8,7 @@ import {
   optionalString,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
+import { emptyOrUrl } from "@/lib/validations/global/_shared";
 
 const sortFields = {
   is_enabled: z.boolean().default(true),
@@ -42,6 +43,7 @@ export const sectorSchema = z
     primary_cta_label: optionalString(120),
     line_message_template: optionalString(600),
     secondary_cta_label: optionalString(120),
+    secondary_document_url: emptyOrUrl("Secondary document URL"),
     secondary_document_file_id: contentIdSchema,
   })
   .passthrough();
@@ -68,5 +70,6 @@ export const sectorDefaults: SectorData = {
   primary_cta_label: "",
   line_message_template: "",
   secondary_cta_label: "",
+  secondary_document_url: "",
   secondary_document_file_id: "",
 };
