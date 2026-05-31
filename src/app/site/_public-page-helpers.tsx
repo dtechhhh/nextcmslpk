@@ -343,7 +343,7 @@ export async function renderListPage(options: ListPageOptions) {
   const shouldResolveOffer =
     options.pageKey === "blog_page" &&
     booleanValue(listOfferSection.is_enabled, stringValue(listOfferSection.source) !== "disabled");
-  const [heroImage, collection, filterDefs, offerPayload] = await Promise.all([
+  const [resolvedHeroImage, collection, filterDefs, offerPayload] = await Promise.all([
     heroMediaId ? resolveMediaUrl(heroMediaId) : Promise.resolve(null),
     unstable_cache(
       () =>
@@ -364,6 +364,8 @@ export async function renderListPage(options: ListPageOptions) {
       ? resolveOfferSectionPayload(context.variantId, listOfferSection)
       : Promise.resolve({ item: null, fallbackImageSrc: null, isDisabled: false }),
   ]);
+  const heroImage =
+    resolvedHeroImage ?? getListPageFallbackHeroImage(options.pageKey, collection.items);
   const offerItem = offerPayload.item;
   const offerData = offerItem?.dataJson ?? {};
 
@@ -3181,6 +3183,16 @@ async function collectionCard(
 
 function getDetailHeroSrc(item: PublicCollectionItem, fallbackImageSrc?: string) {
   return item.heroSrc || item.thumbnailSrc || fallbackImageSrc;
+}
+
+function getListPageFallbackHeroImage(pageKey: string, items: PublicCollectionItem[]) {
+  if (pageKey !== "program_page") {
+    return null;
+  }
+
+  const fallbackItem = items.find((item) => item.heroSrc || item.thumbnailSrc);
+
+  return fallbackItem?.heroSrc || fallbackItem?.thumbnailSrc || null;
 }
 
 async function resolveDetailPageHeroSrc(variantId: string, pageKey: string) {

@@ -88,9 +88,7 @@ header_primary_cta
 
 header_secondary_cta
   label                   String
-  type                    "document" | "internal_link"
-  document_file_id        MediaAsset ref
-  href                    String
+  href                    String (download URL)
   is_enabled              Boolean
 
 header_behavior
@@ -98,7 +96,7 @@ header_behavior
   header_style            "solid" | "transparent_on_hero"
 ```
 
-Rules: Header tidak memiliki dropdown pada MVP. CTA utama header adalah LINE. CTA sekunder dapat berupa Download Profile atau Curriculum.
+Rules: Header tidak memiliki dropdown pada MVP. CTA utama header adalah LINE. CTA sekunder adalah download URL (company profile / curriculum). Document publik menggunakan URL-only, bukan upload PDF.
 
 ## Global - LINE & Business Contact
 
@@ -127,8 +125,10 @@ business_info
   language_support[]        String[]
 
 documents
-  company_profile_file_id   MediaAsset ref
-  curriculum_file_id        MediaAsset ref
+  company_profile_file_id   MediaAsset ref (legacy fallback)
+  curriculum_file_id        MediaAsset ref (legacy fallback)
+  company_profile_url       String (URL-only, primary)
+  curriculum_url            String (URL-only, primary)
 
 social_links
   line                      String
@@ -155,7 +155,7 @@ company_links[]
 
 resource_links[]
   key                     candidate_profile | sectors | news | curriculum
-  label, href, document_file_id, is_enabled, sort_order
+  label, href, is_enabled, sort_order
 
 contact
   use_global_contact      Boolean, default true
@@ -260,7 +260,7 @@ hero
   media_type, media_id, headline, subheadline, eyebrow_label
 
 curriculum_download                     [optional]
-  headline, description, file_id, button_label, is_enabled
+  headline, description, file_url, button_label, is_enabled
 
 training_pillars[]                      [required, min 3, max 6]
   icon_key, title, description, sort_order, is_enabled
@@ -280,7 +280,7 @@ training_gallery[]                      [optional]
 final_cta
   headline, description
   primary_cta_label, primary_line_message_template
-  secondary_cta_label, secondary_document_file_id
+  secondary_cta_label, secondary_document_url
 ```
 
 ## Page - Profil Kandidat
@@ -369,7 +369,7 @@ filter_config
 final_cta
   headline, description
   primary_cta_label, primary_line_message_template
-  secondary_cta_label, secondary_document_file_id
+  secondary_cta_label, secondary_document_url
 ```
 
 Data: published sectors, sorted: featured → sort_order → terbaru.
@@ -417,7 +417,7 @@ inquiry_flow[]                          [recommended]
 final_cta
   headline, description
   primary_cta_label, primary_line_message_template
-  secondary_cta_label, secondary_document_file_id
+  secondary_cta_label, secondary_document_url
 ```
 
 Rules: Tidak ada public contact form. LINE menjadi contact utama.
@@ -443,7 +443,7 @@ SECTOR CONTENT
 
 CTA
   primary_cta_label, line_message_template
-  secondary_cta_label, secondary_document_file_id
+  secondary_cta_label, secondary_document_url
 ```
 
 Rules: Sector bukan lowongan aktif — ini katalog kapasitas LPK. Tidak ada expired_at.
@@ -563,5 +563,5 @@ Contact              | final_cta            | required
 ```text
 Public inquiry form, lead inbox, LINE Messaging API backend, newsletter,
 comment system, SEO manual, page builder, HTML/script, icon input bebas,
-pilihan "Lainnya", job listing variant Jepang, upload dokumen kandidat publik.
+pilihan "Lainnya", job listing variant Jepang, upload dokumen publik (URL-only).
 ```
