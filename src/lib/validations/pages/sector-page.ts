@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  emptyOrUrl,
   mediaIdSchema,
   optionalString,
 } from "@/lib/validations/pages/_shared";
@@ -22,6 +23,7 @@ const japanFinalCtaWithDocSchema = z
     primary_cta_label: optionalString(120),
     primary_line_message_template: optionalString(600),
     secondary_cta_label: optionalString(120),
+    secondary_document_url: emptyOrUrl("Secondary document URL"),
     secondary_document_file_id: mediaIdSchema,
   })
   .passthrough();
@@ -49,6 +51,7 @@ export const sectorPageSchema = z
       primary_cta_label: "",
       primary_line_message_template: "",
       secondary_cta_label: "",
+      secondary_document_url: "",
       secondary_document_file_id: "",
     }),
   })

@@ -44,7 +44,10 @@ export async function LayoutJapan({
     "Hello, I would like to consult with {lpk_name}.";
   const logoImageId = stringValue(brand.logo_image_id);
   const logoLightImageId = stringValue(brand.logo_light_image_id);
+  const companyProfileUrl = stringValue(documents.company_profile_url);
+  const curriculumFileId = stringValue(documents.curriculum_file_id);
   const headerDocumentId = resolveHeaderDocumentId(headerSecondaryCta, documents);
+  const headerHref = stringValue(headerSecondaryCta.href);
   const footerLogoImageId = stringValue(footerBrand.logo_image_id);
   const footerResourceItems = arrayOfRecords(footer.resource_links);
   const footerResourceDocumentIds = footerResourceItems.map((item) =>
@@ -54,14 +57,16 @@ export async function LayoutJapan({
     logoImageId,
     logoLightImageId,
     headerDocumentId,
+    curriculumFileId,
     footerLogoImageId,
     ...footerResourceDocumentIds,
   ]);
   const logoSrc = mediaUrl(mediaUrls, logoImageId);
   const logoLightSrc = mediaUrl(mediaUrls, logoLightImageId);
-  const headerDocumentUrl = mediaUrl(mediaUrls, headerDocumentId);
+  const headerFallbackDocUrl = mediaUrl(mediaUrls, headerDocumentId);
+  const headerDownloadUrl = headerHref || companyProfileUrl || headerFallbackDocUrl || undefined;
   const footerLogoSrc = mediaUrl(mediaUrls, footerLogoImageId);
-  const footerResourceLinks = resolveFooterResourceLinks(footerResourceItems, mediaUrls);
+  const footerResourceLinks = resolveFooterResourceLinks(footerResourceItems, mediaUrls, documents);
 
   return (
     <div
@@ -98,11 +103,8 @@ export async function LayoutJapan({
         }}
         secondaryCTA={{
           label: stringValue(headerSecondaryCta.label) || "Company Profile",
-          type:
-            stringValue(headerSecondaryCta.type) === "document"
-              ? "document"
-              : "internal_link",
-          documentUrl: headerDocumentUrl ?? undefined,
+          type: headerDownloadUrl ? "document" : "internal_link",
+          documentUrl: headerDownloadUrl,
           href: stringValue(headerSecondaryCta.href) || "/contact",
           isEnabled: booleanValue(headerSecondaryCta.is_enabled, true),
         }}
@@ -172,15 +174,29 @@ function resolveHeaderDocumentId(
 function resolveFooterResourceLinks(
   items: PublicJson[],
   mediaUrls: Map<string, string>,
+  documents: PublicJson,
 ) {
-  return items.map((item) => ({
+  const curriculumUrl = stringValue(documents.curriculum_url);
+  const curriculumFileId = stringValue(documents.curriculum_file_id);
+  const curriculumFallbackDocUrl =
+    curriculumUrl || mediaUrl(mediaUrls, curriculumFileId) || undefined;
+
+  return items.map((item) => {
+    const key = stringValue(item.key);
+    const href = stringValue(item.href);
+    const docFileId = stringValue(item.document_file_id);
+    const itemFallbackDocUrl = mediaUrl(mediaUrls, docFileId) || undefined;
+    const fallbackDocUrl =
+      itemFallbackDocUrl || (key === "curriculum" ? curriculumFallbackDocUrl : undefined);
+    const effectiveUrl = href || fallbackDocUrl;
+    return {
       label: stringValue(item.label),
-      href: stringValue(item.href) || undefined,
-      documentUrl:
-        mediaUrl(mediaUrls, stringValue(item.document_file_id)) || undefined,
+      href: effectiveUrl || undefined,
+      documentUrl: !href ? fallbackDocUrl : undefined,
       isEnabled: booleanValue(item.is_enabled, true),
       sortOrder: numberValue(item.sort_order),
-    }));
+    };
+  });
 }
 
 function mediaUrl(mediaUrls: Map<string, string>, mediaId: string) {

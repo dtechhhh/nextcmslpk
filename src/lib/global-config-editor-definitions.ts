@@ -263,6 +263,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
     defaultData: {
       brand: {
         lpk_name: "",
+        tagline: "",
         logo_image_id: "",
         logo_light_image_id: "",
       },
@@ -288,6 +289,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         title: "Brand",
         fields: [
           { kind: "text", path: "brand.lpk_name", label: "LPK name" },
+          { kind: "text", path: "brand.tagline", label: "Tagline" },
           {
             kind: "media",
             path: "brand.logo_image_id",
@@ -737,20 +739,11 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
           { kind: "switch", path: "header_secondary_cta.is_enabled", label: "Enabled" },
           { kind: "text", path: "header_secondary_cta.label", label: "Label" },
           {
-            kind: "select",
-            path: "header_secondary_cta.type",
-            label: "Type",
-            options: [
-              { value: "document", label: "Document" },
-              { value: "internal_link", label: "Internal link" },
-            ],
+            kind: "text",
+            path: "header_secondary_cta.href",
+            label: "Download URL",
+            inputType: "url",
           },
-          {
-            kind: "document",
-            path: "header_secondary_cta.document_file_id",
-            label: "Document file",
-          },
-          { kind: "text", path: "header_secondary_cta.href", label: "Href" },
         ],
       },
       {
@@ -827,6 +820,8 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
       documents: {
         company_profile_file_id: "",
         curriculum_file_id: "",
+        company_profile_url: "",
+        curriculum_url: "",
       },
       social_links: {
         line: "",
@@ -908,14 +903,16 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         title: "Documents",
         fields: [
           {
-            kind: "document",
-            path: "documents.company_profile_file_id",
-            label: "Company profile file",
+            kind: "text",
+            path: "documents.company_profile_url",
+            label: "Company profile URL",
+            inputType: "url",
           },
           {
-            kind: "document",
-            path: "documents.curriculum_file_id",
-            label: "Curriculum file",
+            kind: "text",
+            path: "documents.curriculum_url",
+            label: "Curriculum URL",
+            inputType: "url",
           },
         ],
       },
@@ -1012,7 +1009,6 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
               key: "candidate_profile",
               label: "",
               href: "",
-              document_file_id: "",
               is_enabled: true,
               sort_order: 0,
             },
@@ -1020,8 +1016,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
             fields: [
               { kind: "select", path: "key", label: "Key", options: japanResourceLinkKeyOptions },
               { kind: "text", path: "label", label: "Label" },
-              { kind: "text", path: "href", label: "Href" },
-              { kind: "document", path: "document_file_id", label: "Document file" },
+              { kind: "text", path: "href", label: "URL", inputType: "url" },
               { kind: "switch", path: "is_enabled", label: "Enabled" },
               { kind: "number", path: "sort_order", label: "Sort order", min: 0 },
             ],

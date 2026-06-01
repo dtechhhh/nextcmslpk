@@ -70,6 +70,7 @@ export const indonesiaBrandHeaderSchema = z
     brand: z
       .object({
         lpk_name: requiredString("Nama LPK", 160),
+        tagline: optionalString(180),
         logo_image_id: mediaIdSchema,
         logo_light_image_id: mediaIdSchema,
       })

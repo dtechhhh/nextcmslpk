@@ -268,7 +268,6 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
         defaultHeadline="カリキュラムについてチームでご相談ください"
-        secondaryDocumentId={stringValue(record(data.final_cta).secondary_document_file_id)}
       />
     </>
   );
@@ -425,7 +424,6 @@ export async function JapanSectorListPage({
         globalConfig={globalConfig}
         tenantName={tenantName}
         defaultHeadline="採用計画に最適な業種を見つけましょう"
-        secondaryDocumentId={stringValue(record(data.final_cta).secondary_document_file_id)}
       />
     </>
   );
@@ -484,7 +482,9 @@ export async function JapanSectorDetailPage({
       lpk_name: tenantName,
     },
   );
-  const documentUrl = await resolveMediaUrl(stringValue(data.secondary_document_file_id));
+  const directDocUrl = stringValue(data.secondary_document_url);
+  const legacyDocUrl = await resolveMediaUrl(stringValue(data.secondary_document_file_id));
+  const documentUrl = directDocUrl || legacyDocUrl || undefined;
 
   return (
     <>
@@ -648,7 +648,6 @@ export async function JapanContactPage(props: JapanPageProps) {
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
         defaultHeadline="パートナーシップのお問い合わせを開始しましょう"
-        secondaryDocumentId={stringValue(record(data.final_cta).secondary_document_file_id)}
       />
     </>
   );
@@ -869,7 +868,9 @@ async function DocumentSection({ config }: { config: PublicJson }) {
     return null;
   }
 
-  const fileUrl = await resolveMediaUrl(stringValue(config.file_id));
+  const directUrl = stringValue(config.file_url);
+  const legacyUrl = await resolveMediaUrl(stringValue(config.file_id));
+  const fileUrl = directUrl || legacyUrl;
 
   if (!fileUrl) {
     return null;
@@ -971,16 +972,16 @@ async function FinalCTA({
   tenantName,
   defaultHeadline,
   darkVariant = true,
-  secondaryDocumentId,
 }: {
   finalCta: PublicJson;
   globalConfig: Record<string, PublicJson>;
   tenantName: string;
   defaultHeadline: string;
   darkVariant?: boolean;
-  secondaryDocumentId?: string;
 }) {
-  const secondaryDocumentUrl = await resolveMediaUrl(secondaryDocumentId || "");
+  const directUrl = stringValue(finalCta.secondary_document_url);
+  const legacyMediaUrl = await resolveMediaUrl(stringValue(finalCta.secondary_document_file_id));
+  const secondaryDocumentUrl = directUrl || legacyMediaUrl || undefined;
   const secondaryHref = secondaryDocumentUrl || stringValue(finalCta.secondary_href);
   const secondaryLabel = stringValue(finalCta.secondary_cta_label);
 

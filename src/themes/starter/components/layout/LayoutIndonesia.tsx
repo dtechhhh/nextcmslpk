@@ -67,6 +67,7 @@ export async function LayoutIndonesia({
     >
       <HeaderIndonesia
         lpkName={lpkName}
+        tagline={stringValue(brand.tagline)}
         logoSrc={logoSrc ?? undefined}
         logoLightSrc={logoLightSrc ?? undefined}
         navItems={arrayOfRecords(brandHeader.navbar).map((item) => ({
