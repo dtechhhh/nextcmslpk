@@ -141,6 +141,7 @@ type SeedItem = {
   collectionKey: CollectionKey;
   title: string;
   slug: string;
+  status?: PublishStatus;
   isFeatured?: boolean;
   sortOrder?: number;
   thumbnailImageId?: string;
@@ -579,6 +580,7 @@ function buildItems(media: MediaIds, options: OptionIds, now: Date): SeedItem[] 
       collectionKey: "offer",
       title: "Promo Spesial — Diskon 20% Biaya Administrasi",
       slug: "promo-spesial-diskon-biaya-administrasi",
+      status: PublishStatus.DRAFT,
       isFeatured: false,
       startAt: now,
       expiredAt: addDays(now, 30),
@@ -1002,6 +1004,7 @@ async function main() {
 
       for (const item of seedItems) {
         const json = toPrismaJson(item.dataJson);
+        const status = item.status ?? PublishStatus.PUBLISHED;
         const created = await tx.contentItem.create({
           data: {
             tenantId: tenant.id,
@@ -1009,17 +1012,17 @@ async function main() {
             collectionKey: item.collectionKey,
             title: item.title,
             slug: item.slug,
-            status: PublishStatus.PUBLISHED,
+            status,
             excerpt: getExcerpt(item.dataJson),
             thumbnailImageId: item.thumbnailImageId ?? null,
             heroImageId: item.heroImageId ?? null,
             isFeatured: item.isFeatured ?? false,
-            publishedAt: item.publishedAt ?? null,
+            publishedAt: status === PublishStatus.PUBLISHED ? (item.publishedAt ?? null) : null,
             startAt: item.startAt ?? null,
             expiredAt: item.expiredAt ?? null,
             sortOrder: item.sortOrder ?? 0,
             dataJson: json,
-            publishedDataJson: json,
+            publishedDataJson: status === PublishStatus.PUBLISHED ? json : Prisma.JsonNull,
           },
           select: {
             id: true,

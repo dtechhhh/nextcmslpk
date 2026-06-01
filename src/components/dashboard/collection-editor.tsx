@@ -966,6 +966,7 @@ function renderControl({
           tenantId={tenantId}
           value={toInputValue(rawValue)}
           mediaType={field.kind === "document" ? "DOCUMENT" : "IMAGE"}
+          cropPreset={field.kind === "media" ? field.cropPreset : undefined}
           onChange={(mediaId) => setValue(path, mediaId)}
         />
       );
@@ -1129,6 +1130,7 @@ function BlockFields({
               tenantId={tenantId}
               value={readString(data.image_id)}
               mediaType="IMAGE"
+              cropPreset="thumbnail"
               onChange={(mediaId) => onChange("data.image_id", mediaId)}
             />
           </Field>

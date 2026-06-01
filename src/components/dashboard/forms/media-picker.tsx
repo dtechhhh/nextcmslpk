@@ -1,7 +1,16 @@
 "use client";
 
-import { FileTextIcon, ImageIcon, Loader2Icon, SearchIcon, UploadIcon, XIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  CropIcon,
+  FileTextIcon,
+  ImageIcon,
+  Loader2Icon,
+  RotateCcwIcon,
+  SearchIcon,
+  UploadIcon,
+  XIcon,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,11 +23,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
+  createCroppedImage,
   confirmUpload,
   generatePresignedUploadUrl,
   listMedia,
 } from "@/server/actions/tenant/media";
 import { cn } from "@/lib/utils";
+import {
+  getMediaCropConfig,
+  type MediaCropPreset,
+  type MediaCropRect,
+} from "@/lib/media-crop";
 import {
   LOGO_IMAGE_REQUIREMENT_TEXT,
   validateLogoFileBasics,
@@ -47,7 +62,15 @@ type MediaPickerProps = {
   onChange: (mediaId: string) => void;
   mediaType?: MediaType;
   mediaPreset?: MediaPreset;
+  cropPreset?: MediaCropPreset;
   disabled?: boolean;
+};
+
+const DEFAULT_CROP_RECT: MediaCropRect = {
+  x: 0,
+  y: 0,
+  width: 1,
+  height: 1,
 };
 
 export function MediaPicker({
@@ -56,6 +79,7 @@ export function MediaPicker({
   onChange,
   mediaType = "IMAGE",
   mediaPreset,
+  cropPreset,
   disabled = false,
 }: MediaPickerProps) {
   const [open, setOpen] = useState(false);
@@ -66,12 +90,31 @@ export function MediaPicker({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [cropTarget, setCropTarget] = useState<MediaItem | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropPosition, setCropPosition] = useState({ x: 50, y: 50 });
+  const [cropError, setCropError] = useState<string | null>(null);
+  const [cropSaving, setCropSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === value) ?? null,
     [items, value],
   );
+  const cropConfig = cropPreset ? getMediaCropConfig(cropPreset) : null;
+  const cropRect = useMemo(() => {
+    if (!cropTarget || !cropConfig) {
+      return DEFAULT_CROP_RECT;
+    }
+
+    return buildCropRect(
+      cropTarget.width,
+      cropTarget.height,
+      cropConfig.aspectRatio,
+      cropZoom,
+      cropPosition,
+    );
+  }, [cropConfig, cropPosition, cropTarget, cropZoom]);
   const PickerIcon = mediaType === "IMAGE" ? ImageIcon : FileTextIcon;
 
   useEffect(() => {
@@ -118,8 +161,74 @@ export function MediaPicker({
   }, [open, tenantId, mediaType, query, page]);
 
   function handleSelect(mediaId: string) {
+    const item = items.find((mediaItem) => mediaItem.id === mediaId);
+
+    if (item) {
+      beginMediaSelection(item);
+      return;
+    }
+
     onChange(mediaId);
     setOpen(false);
+  }
+
+  function beginMediaSelection(item: MediaItem) {
+    if (cropConfig && item.mediaType === "IMAGE" && item.publicUrl) {
+      setCropTarget(item);
+      setCropZoom(1);
+      setCropPosition({ x: 50, y: 50 });
+      setCropError(null);
+      setOpen(false);
+      return;
+    }
+
+    onChange(item.id);
+    setOpen(false);
+  }
+
+  async function handleApplyCrop() {
+    if (!cropTarget || !cropPreset) {
+      return;
+    }
+
+    setCropSaving(true);
+    setCropError(null);
+
+    try {
+      const result = await createCroppedImage({
+        mediaId: cropTarget.id,
+        cropPreset,
+        crop: cropRect,
+      });
+
+      if (!isCropSuccess(result)) {
+        setCropError(getActionErrorMessage(result, "Crop gambar gagal."));
+        return;
+      }
+
+      const croppedItem = toUploadedMediaItem(result.media, cropTarget);
+
+      setItems((current) => [
+        croppedItem,
+        ...current.filter((item) => item.id !== croppedItem.id),
+      ]);
+      onChange(croppedItem.id);
+      setCropTarget(null);
+      toast.success("Crop gambar disimpan.");
+    } catch {
+      setCropError("Crop gambar gagal diproses.");
+    } finally {
+      setCropSaving(false);
+    }
+  }
+
+  function handleUseOriginal() {
+    if (!cropTarget) {
+      return;
+    }
+
+    onChange(cropTarget.id);
+    setCropTarget(null);
   }
 
   async function handleInlineUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -166,8 +275,27 @@ export function MediaPicker({
         return;
       }
 
-      onChange(presignedResult.mediaId);
-      setOpen(false);
+      const uploadedItem = toUploadedMediaItem(
+        confirmResult.media,
+        {
+          id: presignedResult.mediaId,
+          fileName: file.name,
+          mimeType: file.type,
+          fileSize: file.size,
+          mediaType,
+          status: "ACTIVE",
+          width: null,
+          height: null,
+          publicUrl: presignedResult.publicUrl,
+        },
+      );
+
+      setItems((current) => [
+        uploadedItem,
+        ...current.filter((item) => item.id !== uploadedItem.id),
+      ]);
+      setTotalPages((current) => Math.max(current, 1));
+      beginMediaSelection(uploadedItem);
       toast.success("Media berhasil diupload.");
     } catch {
       setUploadError("Upload ke storage gagal. Periksa konfigurasi CORS R2.");
@@ -371,7 +499,157 @@ export function MediaPicker({
           </div>
         </DialogContent>
       </Dialog>
+
+      {cropConfig && cropTarget ? (
+        <Dialog
+          open={Boolean(cropTarget)}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen && !cropSaving) {
+              setCropTarget(null);
+            }
+          }}
+        >
+          <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CropIcon className="size-5" />
+                Crop {cropConfig.label}
+              </DialogTitle>
+              <DialogDescription>{cropTarget.fileName}</DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_240px]">
+              <div className="flex flex-col gap-3">
+                <div
+                  className="relative overflow-hidden rounded-lg border bg-muted"
+                  style={{ aspectRatio: cropConfig.aspectRatio }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cropTarget.publicUrl}
+                    alt={cropTarget.fileName}
+                    className="absolute max-w-none select-none"
+                    style={getCropPreviewStyle(cropRect)}
+                    draggable={false}
+                  />
+                </div>
+                {cropError ? (
+                  <p className="text-xs text-destructive">{cropError}</p>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <RangeField
+                  label="Zoom"
+                  value={cropZoom}
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  disabled={cropSaving}
+                  onChange={setCropZoom}
+                />
+                <RangeField
+                  label="Horizontal"
+                  value={cropPosition.x}
+                  min={0}
+                  max={100}
+                  step={1}
+                  disabled={cropSaving || cropRect.width >= 0.999}
+                  onChange={(x) =>
+                    setCropPosition((current) => ({ ...current, x }))
+                  }
+                />
+                <RangeField
+                  label="Vertical"
+                  value={cropPosition.y}
+                  min={0}
+                  max={100}
+                  step={1}
+                  disabled={cropSaving || cropRect.height >= 0.999}
+                  onChange={(y) =>
+                    setCropPosition((current) => ({ ...current, y }))
+                  }
+                />
+
+                <div className="mt-2 flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={cropSaving}
+                    onClick={() => {
+                      setCropZoom(1);
+                      setCropPosition({ x: 50, y: 50 });
+                    }}
+                  >
+                    <RotateCcwIcon />
+                    Reset
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={cropSaving}
+                    onClick={handleUseOriginal}
+                  >
+                    Use original
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={cropSaving}
+                    onClick={handleApplyCrop}
+                  >
+                    {cropSaving ? (
+                      <Loader2Icon className="size-4 animate-spin" />
+                    ) : (
+                      <CropIcon />
+                    )}
+                    Use crop
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : null}
     </div>
+  );
+}
+
+function RangeField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-2 text-sm font-medium">
+      <span className="flex items-center justify-between gap-3">
+        <span>{label}</span>
+        <span className="text-xs font-normal text-muted-foreground">
+          {Math.round(value)}
+        </span>
+      </span>
+      <input
+        type="range"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+        className="w-full accent-primary"
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </label>
   );
 }
 
@@ -460,6 +738,54 @@ function readImageDimensions(file: File): Promise<{ width: number; height: numbe
   });
 }
 
+function buildCropRect(
+  sourceWidth: number | null,
+  sourceHeight: number | null,
+  targetAspectRatio: number,
+  zoom: number,
+  position: { x: number; y: number },
+): MediaCropRect {
+  const safeWidth = sourceWidth && sourceWidth > 0 ? sourceWidth : targetAspectRatio;
+  const safeHeight = sourceHeight && sourceHeight > 0 ? sourceHeight : 1;
+  const sourceAspectRatio = safeWidth / safeHeight;
+  let baseWidth = 1;
+  let baseHeight = 1;
+
+  if (sourceAspectRatio > targetAspectRatio) {
+    baseWidth = targetAspectRatio / sourceAspectRatio;
+  } else {
+    baseHeight = sourceAspectRatio / targetAspectRatio;
+  }
+
+  const safeZoom = clampNumber(zoom, 1, 3);
+  const width = clampNumber(baseWidth / safeZoom, 0.01, 1);
+  const height = clampNumber(baseHeight / safeZoom, 0.01, 1);
+
+  return {
+    x: (1 - width) * (clampNumber(position.x, 0, 100) / 100),
+    y: (1 - height) * (clampNumber(position.y, 0, 100) / 100),
+    width,
+    height,
+  };
+}
+
+function getCropPreviewStyle(crop: MediaCropRect): CSSProperties {
+  return {
+    left: `${(-crop.x / crop.width) * 100}%`,
+    top: `${(-crop.y / crop.height) * 100}%`,
+    width: `${100 / crop.width}%`,
+    height: `${100 / crop.height}%`,
+  };
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) {
+    return min;
+  }
+
+  return Math.min(Math.max(value, min), max);
+}
+
 function isMediaListSuccess(value: unknown): value is {
   ok: true;
   items: MediaItem[];
@@ -477,15 +803,45 @@ function isPresignedSuccess(value: unknown): value is {
   ok: true;
   mediaId: string;
   presignedUrl: string;
+  publicUrl: string;
 } {
-  return isRecord(value) && value.ok === true && typeof value.presignedUrl === "string" && typeof value.mediaId === "string";
+  return isRecord(value) && value.ok === true && typeof value.presignedUrl === "string" && typeof value.mediaId === "string" && typeof value.publicUrl === "string";
 }
 
 function isConfirmSuccess(value: unknown): value is {
   ok: true;
-  media: unknown;
+  media: Record<string, unknown>;
 } {
-  return isRecord(value) && value.ok === true;
+  return isRecord(value) && value.ok === true && isRecord(value.media);
+}
+
+function isCropSuccess(value: unknown): value is {
+  ok: true;
+  media: Record<string, unknown>;
+} {
+  return isRecord(value) && value.ok === true && isRecord(value.media);
+}
+
+function toUploadedMediaItem(media: Record<string, unknown>, fallback: MediaItem): MediaItem {
+  return {
+    id: typeof media.id === "string"
+      ? media.id
+      : typeof media.mediaId === "string"
+        ? media.mediaId
+        : fallback.id,
+    fileName: typeof media.fileName === "string" ? media.fileName : fallback.fileName,
+    mimeType: typeof media.mimeType === "string" ? media.mimeType : fallback.mimeType,
+    fileSize: typeof media.fileSize === "number" ? media.fileSize : fallback.fileSize,
+    mediaType: isMediaType(media.mediaType) ? media.mediaType : fallback.mediaType,
+    status: typeof media.status === "string" ? media.status : fallback.status,
+    width: typeof media.width === "number" ? media.width : fallback.width,
+    height: typeof media.height === "number" ? media.height : fallback.height,
+    publicUrl: typeof media.publicUrl === "string" ? media.publicUrl : fallback.publicUrl,
+  };
+}
+
+function isMediaType(value: unknown): value is MediaType {
+  return value === "IMAGE" || value === "DOCUMENT";
 }
 
 function getActionErrorMessage(value: unknown, fallback: string) {

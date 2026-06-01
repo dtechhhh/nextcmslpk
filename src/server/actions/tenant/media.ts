@@ -8,6 +8,7 @@ import { AppError, AuthError, ForbiddenError, ValidationError } from "@/lib/erro
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import {
+  createCroppedImage as createStorageCroppedImage,
   confirmUpload as confirmStorageUpload,
   deleteMedia as deleteStorageMedia,
   generatePresignedUploadUrl as generateStoragePresignedUploadUrl,
@@ -55,6 +56,17 @@ const generateUploadUrlSchema = z.object({
   fileName: z.string().trim().min(1).max(200),
   contentType: z.string().trim().min(1),
   fileSize: z.number().int().positive(),
+});
+
+const cropImageSchema = z.object({
+  mediaId: z.string().trim().min(1).max(128),
+  cropPreset: z.enum(["thumbnail", "hero", "square", "portrait"]),
+  crop: z.object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+    width: z.number().min(0.01).max(1),
+    height: z.number().min(0.01).max(1),
+  }),
 });
 
 export async function confirmUpload(input: unknown) {
@@ -123,6 +135,49 @@ export async function deleteMedia(input: unknown) {
     };
   } catch (error) {
     return toActionError(error, "Media gagal dihapus.");
+  }
+}
+
+export async function createCroppedImage(input: unknown) {
+  try {
+    const session = await requireTenantSession();
+    const parsed = cropImageSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        crop: ["Data crop tidak valid."],
+      });
+    }
+
+    const cropped = await createStorageCroppedImage(
+      session.tenantId,
+      parsed.data.mediaId,
+      parsed.data.crop,
+      parsed.data.cropPreset,
+    );
+
+    await createAuditLog({
+      tenantId: session.tenantId,
+      userId: session.userId,
+      action: "media.crop",
+      targetType: "MediaAsset",
+      targetId: cropped.mediaId,
+      metadata: {
+        sourceMediaId: cropped.sourceMediaId,
+        cropPreset: cropped.cropPreset,
+        crop: cropped.crop,
+        storagePath: cropped.storagePath,
+        publicUrl: cropped.publicUrl,
+      },
+      ipAddress: null,
+    });
+
+    return {
+      ok: true,
+      media: cropped,
+    };
+  } catch (error) {
+    return toActionError(error, "Crop gambar gagal.");
   }
 }
 

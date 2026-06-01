@@ -1,4 +1,5 @@
 import type { PageKey } from "@/lib/constants";
+import type { MediaCropPreset } from "@/lib/media-crop";
 import type { VariantKey } from "@/types";
 
 export type PageEditorData = Record<string, unknown>;
@@ -36,7 +37,11 @@ export type PageEditorField =
       options: PageEditorFieldOption[];
     })
   | (BaseField & {
-      kind: "media" | "document" | "icon";
+      kind: "media";
+      cropPreset?: MediaCropPreset;
+    })
+  | (BaseField & {
+      kind: "document" | "icon";
     })
   | (BaseField & {
       kind: "string-array";
@@ -49,6 +54,7 @@ export type PageEditorField =
       addLabel?: string;
       itemLabel?: string;
       defaultItem?: string;
+      cropPreset?: MediaCropPreset;
     })
   | (BaseField & {
       kind: "array";
@@ -126,7 +132,7 @@ const mediaHeroFields: PageEditorField[] = [
     label: "Media type",
     options: mediaTypeOptions,
   },
-  { kind: "media", path: "media_id", label: "Media" },
+  { kind: "media", path: "media_id", label: "Media", cropPreset: "hero" },
   { kind: "text", path: "headline", label: "Headline" },
   { kind: "textarea", path: "subheadline", label: "Subheadline" },
   { kind: "text", path: "primary_cta_label", label: "Primary CTA label" },

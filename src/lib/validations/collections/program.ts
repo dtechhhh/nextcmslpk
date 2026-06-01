@@ -2,11 +2,14 @@ import { z } from "zod";
 
 import {
   contentIdSchema,
+  ctaFields,
   ctaDefaults,
   faqItemSchema,
+  identityFields,
   identityDefaults,
   mediaIdSchema,
   optionalString,
+  sidebarFields,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
 
@@ -50,9 +53,9 @@ const testimonialItem = z
 
 export const programSchema = z
   .object({
-    ...identityDefaults,
-    ...ctaDefaults,
-    ...sidebarDefaults,
+    ...identityFields,
+    ...ctaFields,
+    ...sidebarFields,
     excerpt: optionalString(600),
     short_description: optionalString(600),
     overview: optionalString(2000),
