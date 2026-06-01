@@ -43,6 +43,8 @@ export const lineBusinessContactSchema = z
       .object({
         company_profile_file_id: mediaIdSchema,
         curriculum_file_id: mediaIdSchema,
+        company_profile_url: emptyOrUrl("Company profile URL"),
+        curriculum_url: emptyOrUrl("Curriculum URL"),
       })
       .passthrough(),
     social_links: z

@@ -297,7 +297,12 @@ export function MediaPicker({
                         )}
                         onClick={() => handleSelect(item.id)}
                       >
-                        <div className="grid aspect-video place-items-center bg-muted">
+                        <div
+                          className={cn(
+                            "grid place-items-center bg-muted",
+                            mediaPreset === "logo" ? "aspect-square" : "aspect-video",
+                          )}
+                        >
                           {item.mediaType === "IMAGE" && item.publicUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img

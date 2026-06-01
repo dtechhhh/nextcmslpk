@@ -456,7 +456,7 @@ function buildItems(media: MediaIds, options: OptionIds, now: Date): SeedItem[] 
         line_message_template:
           "製造業の人材についてお問い合わせです。採用条件を相談させてください。",
         secondary_cta_label: "資料請求",
-        secondary_document_file_id: null,
+        secondary_document_url: "",
       },
     },
     {
@@ -504,7 +504,7 @@ function buildItems(media: MediaIds, options: OptionIds, now: Date): SeedItem[] 
         primary_cta_label: "介護人材についてLINEで相談",
         line_message_template: "介護・福祉分野の人材についてお問い合わせです。",
         secondary_cta_label: "資料請求",
-        secondary_document_file_id: null,
+        secondary_document_url: "",
       },
     },
     {
@@ -532,7 +532,7 @@ function buildItems(media: MediaIds, options: OptionIds, now: Date): SeedItem[] 
         primary_cta_label: "農業人材についてLINEで相談",
         line_message_template: "農業・農畜産業の人材についてお問い合わせです。",
         secondary_cta_label: "資料請求",
-        secondary_document_file_id: null,
+        secondary_document_url: "",
       },
     },
   ];

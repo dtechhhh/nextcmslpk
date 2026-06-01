@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   enabledSortFields,
+  emptyOrUrl,
   iconKeySchema,
   mediaIdSchema,
   optionalString,
@@ -51,6 +52,7 @@ const japanFinalCtaWithDocSchema = z
     primary_cta_label: optionalString(120),
     primary_line_message_template: optionalString(600),
     secondary_cta_label: optionalString(120),
+    secondary_document_url: emptyOrUrl("Secondary document URL"),
     secondary_document_file_id: mediaIdSchema,
   })
   .passthrough();
@@ -68,6 +70,7 @@ export const metodePelatihanSchema = z
       .object({
         headline: optionalString(220),
         description: optionalString(700),
+        file_url: emptyOrUrl("File URL"),
         file_id: mediaIdSchema,
         button_label: optionalString(120),
         is_enabled: z.boolean().default(false),
@@ -76,6 +79,7 @@ export const metodePelatihanSchema = z
       .default({
         headline: "",
         description: "",
+        file_url: "",
         file_id: "",
         button_label: "",
         is_enabled: false,
@@ -91,6 +95,7 @@ export const metodePelatihanSchema = z
       primary_cta_label: "",
       primary_line_message_template: "",
       secondary_cta_label: "",
+      secondary_document_url: "",
       secondary_document_file_id: "",
     }),
   })

@@ -199,9 +199,10 @@ const lineCtaFields: CollectionField[] = [
   },
   { kind: "text", path: "secondary_cta_label", label: "Secondary CTA label" },
   {
-    kind: "document",
-    path: "secondary_document_file_id",
-    label: "Secondary document",
+    kind: "text",
+    path: "secondary_document_url",
+    label: "Secondary document URL",
+    placeholder: "https://...",
   },
 ];
 
@@ -831,7 +832,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       process_items: [],
       faqs: [],
       secondary_cta_label: "",
-      secondary_document_file_id: "",
+      secondary_document_url: "",
     },
     sections: [
       {

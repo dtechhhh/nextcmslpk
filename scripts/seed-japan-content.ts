@@ -174,7 +174,7 @@ function buildGlobalConfigs(media: MediaIds) {
       header_secondary_cta: {
         label: "会社案内 ダウンロード",
         type: "document",
-        document_file_id: null,
+        document_file_id: "",
         href: "",
         is_enabled: false,
       },
@@ -210,8 +210,10 @@ function buildGlobalConfigs(media: MediaIds) {
         language_support: ["日本語", "英語", "インドネシア語"],
       },
       documents: {
-        company_profile_file_id: null,
-        curriculum_file_id: null,
+        company_profile_file_id: "",
+        curriculum_file_id: "",
+        company_profile_url: "",
+        curriculum_url: "",
       },
       social_links: {
         line: "https://line.me/R/ti/p/@hit-japan",
@@ -255,7 +257,6 @@ function buildGlobalConfigs(media: MediaIds) {
           key: "candidate_profile",
           label: "人材プロフィール",
           href: "/candidate-profile",
-          document_file_id: null,
           is_enabled: true,
           sort_order: 1,
         },
@@ -263,7 +264,6 @@ function buildGlobalConfigs(media: MediaIds) {
           key: "sectors",
           label: "対応業種",
           href: "/sectors",
-          document_file_id: null,
           is_enabled: true,
           sort_order: 2,
         },
@@ -271,7 +271,6 @@ function buildGlobalConfigs(media: MediaIds) {
           key: "news",
           label: "ニュース",
           href: "/news",
-          document_file_id: null,
           is_enabled: true,
           sort_order: 3,
         },
@@ -857,7 +856,7 @@ function buildPageData(media: MediaIds) {
         primary_line_message_template:
           "業種ページを拝見しました。採用についてご相談させてください。",
         secondary_cta_label: "メールで問い合わせ",
-        secondary_document_file_id: null,
+        secondary_document_url: "",
       },
     },
     news_page: {
@@ -950,7 +949,7 @@ function buildPageData(media: MediaIds) {
         primary_line_message_template:
           "お問い合わせページから連絡しました。インドネシア人材の採用について相談したいです。",
         secondary_cta_label: "メールで問い合わせる",
-        secondary_document_file_id: null,
+        secondary_document_url: "",
       },
     },
   } satisfies Record<(typeof requiredPageKeys)[number], JsonRecord>;

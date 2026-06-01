@@ -332,9 +332,10 @@ const japanFinalCtaFieldsWithDoc: PageEditorField[] = [
     label: "Secondary CTA label",
   },
   {
-    kind: "document",
-    path: "secondary_document_file_id",
-    label: "Secondary CTA document",
+    kind: "text",
+    path: "secondary_document_url",
+    label: "Secondary document URL",
+    inputType: "url",
   },
 ];
 
@@ -396,7 +397,7 @@ const japanEmptyFinalCtaWithDoc = {
   primary_cta_label: "",
   primary_line_message_template: "",
   secondary_cta_label: "",
-  secondary_document_file_id: "",
+  secondary_document_url: "",
 };
 
 const japanEmptyIconTitleDesc = {
@@ -1738,7 +1739,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       curriculum_download: {
         headline: "",
         description: "",
-        file_id: "",
+        file_url: "",
         button_label: "",
         is_enabled: false,
       },
@@ -1767,7 +1768,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           { kind: "switch", path: "curriculum_download.is_enabled", label: "Enabled" },
           { kind: "text", path: "curriculum_download.headline", label: "Headline" },
           { kind: "textarea", path: "curriculum_download.description", label: "Description" },
-          { kind: "document", path: "curriculum_download.file_id", label: "File" },
+          { kind: "text", path: "curriculum_download.file_url", label: "File URL", inputType: "url" },
           { kind: "text", path: "curriculum_download.button_label", label: "Button label" },
         ],
       },

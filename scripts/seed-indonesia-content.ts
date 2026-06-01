@@ -100,6 +100,7 @@ function buildGlobalConfigs(media: MediaIds) {
     brand_header: {
       brand: {
         lpk_name: "Hashimoto Indo Trust",
+        tagline: "LPK Penempatan Kerja Jepang",
         logo_image_id: media["hit-logo-dark"],
         logo_light_image_id: media["hit-logo-light"],
       },

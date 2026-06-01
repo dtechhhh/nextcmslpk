@@ -32,15 +32,15 @@ export const LOGO_IMAGE_CONSTRAINTS = {
   allowedMimeTypes: ALLOWED_IMAGE_UPLOAD_MIME_TYPES,
   maxBytes: 1024 * 1024,
   minWidth: 160,
-  minHeight: 40,
-  maxWidth: 2400,
+  minHeight: 160,
+  maxWidth: 1200,
   maxHeight: 1200,
   minAspectRatio: 1,
-  maxAspectRatio: 6,
+  maxAspectRatio: 1,
 } as const;
 
 export const LOGO_IMAGE_REQUIREMENT_TEXT =
-  "Logo: JPG/PNG/WebP, maksimal 1 MB, dimensi 160x40 sampai 2400x1200 px, rasio 1:1 sampai 6:1.";
+  "Logo: JPG/PNG/WebP, maksimal 1 MB, dimensi 160x160 sampai 1200x1200 px, wajib berbentuk kotak (rasio 1:1).";
 
 export function validateLogoFileBasics(file: {
   type: string;
@@ -110,13 +110,8 @@ export function validateLogoImageDimensions(
     );
   }
 
-  const aspectRatio = width / height;
-
-  if (
-    aspectRatio < LOGO_IMAGE_CONSTRAINTS.minAspectRatio ||
-    aspectRatio > LOGO_IMAGE_CONSTRAINTS.maxAspectRatio
-  ) {
-    errors.push("Rasio logo harus antara 1:1 sampai 6:1.");
+  if (width !== height) {
+    errors.push("Rasio logo harus 1:1 (bentuk kotak).");
   }
 
   return errors;
