@@ -1,4 +1,5 @@
 import type { ConfigKey } from "@/lib/constants";
+import type { MediaCropPreset } from "@/lib/media-crop";
 import type { MediaPreset } from "@/lib/media-constraints";
 import type { VariantKey } from "@/types";
 
@@ -41,6 +42,7 @@ export type GlobalConfigField =
   | (BaseField & {
       kind: "media";
       mediaPreset?: MediaPreset;
+      cropPreset?: MediaCropPreset;
     })
   | (BaseField & {
       kind: "document" | "icon";

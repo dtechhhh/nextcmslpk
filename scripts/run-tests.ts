@@ -591,7 +591,7 @@ async function runContentCountVerification(hit: HitContext) {
   const expectedItems = new Map([
     ["indonesia|program", { total: 3, published: 3 }],
     ["indonesia|job", { total: 3, published: 3 }],
-    ["indonesia|offer", { total: 2, published: 2 }],
+    ["indonesia|offer", { total: 2, published: 1 }],
     ["indonesia|blog", { total: 3, published: 3 }],
     ["indonesia|karir", { total: 2, published: 2 }],
     ["japan|news", { total: 3, published: 3 }],

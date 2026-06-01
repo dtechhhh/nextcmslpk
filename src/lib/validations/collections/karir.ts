@@ -2,10 +2,13 @@ import { z } from "zod";
 
 import {
   contentIdSchema,
+  ctaFields,
   ctaDefaults,
   faqItemSchema,
+  identityFields,
   identityDefaults,
   optionalString,
+  sidebarFields,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
 
@@ -24,9 +27,9 @@ const itemWithTitleDesc = z
 
 export const karirSchema = z
   .object({
-    ...identityDefaults,
-    ...ctaDefaults,
-    ...sidebarDefaults,
+    ...identityFields,
+    ...ctaFields,
+    ...sidebarFields,
     excerpt: optionalString(600),
     short_description: optionalString(600),
     overview: optionalString(2000),
