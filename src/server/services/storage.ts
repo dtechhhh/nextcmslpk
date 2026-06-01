@@ -8,8 +8,14 @@ import {
   type HeadObjectCommandOutput,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import sharp from "sharp";
 
 import { AppError, NotFoundError, ValidationError } from "@/lib/errors";
+import {
+  getMediaCropConfig,
+  type MediaCropPreset,
+  type MediaCropRect,
+} from "@/lib/media-crop";
 import {
   ALLOWED_UPLOAD_MIME_TYPES,
   GENERAL_IMAGE_MAX_BYTES,
@@ -32,9 +38,23 @@ export type GeneratePresignedUploadUrlResult = {
 };
 
 export type ConfirmUploadResult = {
+  id: string;
   mediaId: string;
-  publicUrl: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  mediaType: "IMAGE" | "DOCUMENT";
+  status: "ACTIVE";
   storagePath: string;
+  width: number | null;
+  height: number | null;
+  publicUrl: string;
+};
+
+export type CroppedImageResult = ConfirmUploadResult & {
+  sourceMediaId: string;
+  crop: MediaCropRect;
+  cropPreset: MediaCropPreset;
 };
 
 export type DeleteMediaResult = {
@@ -55,6 +75,8 @@ type MediaForStorage = {
   fileName: string;
   mimeType: string;
   fileSize: number;
+  mediaType: "IMAGE" | "DOCUMENT";
+  status: "UPLOADING" | "ACTIVE";
   storagePath: string;
 };
 
@@ -142,14 +164,121 @@ export async function confirmUpload(
     },
     select: {
       id: true,
+      fileName: true,
+      mimeType: true,
+      fileSize: true,
+      mediaType: true,
       storagePath: true,
+      width: true,
+      height: true,
     },
   });
 
   return {
+    id: activeMedia.id,
     mediaId: activeMedia.id,
+    fileName: activeMedia.fileName,
+    mimeType: activeMedia.mimeType,
+    fileSize: activeMedia.fileSize,
+    mediaType: activeMedia.mediaType,
+    status: "ACTIVE",
     storagePath: activeMedia.storagePath,
+    width: activeMedia.width,
+    height: activeMedia.height,
     publicUrl: getPublicUrl(activeMedia.storagePath),
+  };
+}
+
+export async function createCroppedImage(
+  tenantId: string,
+  mediaId: string,
+  crop: MediaCropRect,
+  cropPreset: MediaCropPreset,
+): Promise<CroppedImageResult> {
+  const media = await findTenantMediaOrThrow(tenantId, mediaId);
+
+  if (media.mediaType !== "IMAGE" || media.status !== "ACTIVE") {
+    throw new ValidationError({
+      mediaId: ["Media gambar aktif diperlukan untuk crop."],
+    });
+  }
+
+  const config = getMediaCropConfig(cropPreset);
+  const sourceBytes = await readObjectBytes(media.storagePath);
+  const normalizedSource = await sharp(sourceBytes).rotate().toBuffer();
+  const metadata = await sharp(normalizedSource).metadata();
+  const sourceWidth = metadata.width ?? 0;
+  const sourceHeight = metadata.height ?? 0;
+
+  if (sourceWidth <= 0 || sourceHeight <= 0) {
+    throw new ValidationError({
+      mediaId: ["Dimensi gambar tidak bisa dibaca."],
+    });
+  }
+
+  const extractRegion = toSharpExtractRegion(crop, sourceWidth, sourceHeight);
+  const cropped = await sharp(normalizedSource)
+    .extract(extractRegion)
+    .resize(config.outputWidth, config.outputHeight, {
+      fit: "cover",
+      withoutEnlargement: false,
+    })
+    .webp({ quality: 88 })
+    .toBuffer();
+  const croppedMediaId = cuid();
+  const storagePath = `tenants/${tenantId}/media/${croppedMediaId}.webp`;
+  const fileName = buildCroppedFileName(media.fileName, cropPreset, croppedMediaId);
+
+  await r2Client.send(
+    new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: storagePath,
+      Body: cropped,
+      ContentType: "image/webp",
+      ContentLength: cropped.length,
+    }),
+  );
+
+  const created = await prisma.mediaAsset.create({
+    data: {
+      id: croppedMediaId,
+      tenantId,
+      fileName,
+      mimeType: "image/webp",
+      fileSize: cropped.length,
+      mediaType: "IMAGE",
+      status: "ACTIVE",
+      storagePath,
+      width: config.outputWidth,
+      height: config.outputHeight,
+    },
+    select: {
+      id: true,
+      fileName: true,
+      mimeType: true,
+      fileSize: true,
+      mediaType: true,
+      storagePath: true,
+      width: true,
+      height: true,
+    },
+  });
+
+  return {
+    id: created.id,
+    mediaId: created.id,
+    sourceMediaId: media.id,
+    fileName: created.fileName,
+    mimeType: created.mimeType,
+    fileSize: created.fileSize,
+    mediaType: created.mediaType,
+    status: "ACTIVE",
+    storagePath: created.storagePath,
+    width: created.width,
+    height: created.height,
+    publicUrl: getPublicUrl(created.storagePath),
+    crop: normalizeCropRect(crop),
+    cropPreset,
   };
 }
 
@@ -300,6 +429,8 @@ async function findTenantMediaOrThrow(tenantId: string, mediaId: string) {
       fileName: true,
       mimeType: true,
       fileSize: true,
+      mediaType: true,
+      status: true,
       storagePath: true,
     },
   });
@@ -385,6 +516,79 @@ async function readObjectHeaderBytes(storagePath: string) {
 
     throw error;
   }
+}
+
+async function readObjectBytes(storagePath: string) {
+  try {
+    const object = await r2Client.send(
+      new GetObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: storagePath,
+      }),
+    );
+
+    return bodyToBuffer(object.Body);
+  } catch (error) {
+    if (isS3NotFoundError(error)) {
+      throw new NotFoundError("R2 object", storagePath);
+    }
+
+    throw error;
+  }
+}
+
+function toSharpExtractRegion(
+  crop: MediaCropRect,
+  sourceWidth: number,
+  sourceHeight: number,
+) {
+  const normalized = normalizeCropRect(crop);
+  const width = clampInt(Math.round(normalized.width * sourceWidth), 1, sourceWidth);
+  const height = clampInt(Math.round(normalized.height * sourceHeight), 1, sourceHeight);
+  const left = clampInt(Math.round(normalized.x * sourceWidth), 0, sourceWidth - width);
+  const top = clampInt(Math.round(normalized.y * sourceHeight), 0, sourceHeight - height);
+
+  return { left, top, width, height };
+}
+
+function normalizeCropRect(crop: MediaCropRect): MediaCropRect {
+  const width = clampNumber(crop.width, 0.01, 1);
+  const height = clampNumber(crop.height, 0.01, 1);
+
+  return {
+    x: clampNumber(crop.x, 0, 1 - width),
+    y: clampNumber(crop.y, 0, 1 - height),
+    width,
+    height,
+  };
+}
+
+function buildCroppedFileName(
+  sourceFileName: string,
+  cropPreset: MediaCropPreset,
+  mediaId: string,
+) {
+  const baseName = sourceFileName
+    .replace(/\.[^.]+$/, "")
+    .trim()
+    .slice(0, 120);
+
+  return sanitizeFileName(
+    `${baseName || mediaId}-${cropPreset}-crop.webp`,
+    `${mediaId}.webp`,
+  );
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) {
+    return min;
+  }
+
+  return Math.min(Math.max(value, min), max);
+}
+
+function clampInt(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 async function bodyToBuffer(body: unknown): Promise<Buffer> {

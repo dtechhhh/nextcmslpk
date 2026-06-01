@@ -507,6 +507,7 @@ function renderControl({
           value={toInputValue(rawValue)}
           mediaType={field.kind === "document" ? "DOCUMENT" : "IMAGE"}
           mediaPreset={field.kind === "media" ? field.mediaPreset : undefined}
+          cropPreset={field.kind === "media" ? field.cropPreset : undefined}
           onChange={(mediaId) => setValue(path, mediaId)}
         />
       );

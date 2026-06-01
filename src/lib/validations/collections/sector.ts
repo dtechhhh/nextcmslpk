@@ -4,8 +4,10 @@ import {
   contentIdSchema,
   ctaDefaults,
   faqItemSchema,
+  identityFields,
   identityDefaults,
   optionalString,
+  sidebarFields,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
 import { emptyOrUrl } from "@/lib/validations/global/_shared";
@@ -25,8 +27,8 @@ const itemWithTitleDesc = z
 
 export const sectorSchema = z
   .object({
-    ...identityDefaults,
-    ...sidebarDefaults,
+    ...identityFields,
+    ...sidebarFields,
     title: optionalString(200),
     slug: optionalString(120),
     subtitle: optionalString(200),

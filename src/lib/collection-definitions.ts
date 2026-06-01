@@ -3,6 +3,7 @@ import {
   COLLECTIONS_JAPAN,
   type CollectionKey,
 } from "@/lib/constants";
+import type { MediaCropPreset } from "@/lib/media-crop";
 import type { VariantKey } from "@/types";
 
 export type { CollectionKey };
@@ -36,12 +37,19 @@ export type ContentBlockType =
 
 export type CollectionField =
   | {
-      kind: "text" | "textarea" | "number" | "date" | "switch" | "media" | "document";
+      kind: "text" | "textarea" | "number" | "date" | "switch" | "document";
       path: string;
       label: string;
       placeholder?: string;
       min?: number;
       max?: number;
+    }
+  | {
+      kind: "media";
+      path: string;
+      label: string;
+      placeholder?: string;
+      cropPreset?: MediaCropPreset;
     }
   | {
       kind: "select";
@@ -177,8 +185,13 @@ const identityFields: CollectionField[] = [
 ];
 
 const mediaFields: CollectionField[] = [
-  { kind: "media", path: "thumbnail_image_id", label: "Thumbnail image" },
-  { kind: "media", path: "hero_image_id", label: "Hero image" },
+  {
+    kind: "media",
+    path: "thumbnail_image_id",
+    label: "Thumbnail image",
+    cropPreset: "thumbnail",
+  },
+  { kind: "media", path: "hero_image_id", label: "Hero image", cropPreset: "hero" },
 ];
 
 const whatsappCtaFields: CollectionField[] = [
@@ -311,7 +324,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
             { kind: "text", path: "name", label: "Name" },
             { kind: "text", path: "role_or_program", label: "Role/program" },
             { kind: "textarea", path: "quote", label: "Quote" },
-            { kind: "media", path: "image_id", label: "Image" },
+            { kind: "media", path: "image_id", label: "Image", cropPreset: "square" },
             { kind: "switch", path: "is_enabled", label: "Enabled" },
           ] },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
@@ -581,7 +594,12 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "slug", label: "Slug" },
           { kind: "text", path: "subtitle", label: "Subtitle" },
           { kind: "textarea", path: "excerpt", label: "Excerpt" },
-          { kind: "media", path: "cover_image_id", label: "Cover image" },
+          {
+            kind: "media",
+            path: "cover_image_id",
+            label: "Cover image",
+            cropPreset: "thumbnail",
+          },
           { kind: "text", path: "reading_time_label", label: "Reading time label" },
         ],
       },
@@ -598,7 +616,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "author_name", label: "Author name" },
           { kind: "text", path: "author_title", label: "Author title" },
           { kind: "textarea", path: "author_bio", label: "Author bio" },
-          { kind: "media", path: "author_image_id", label: "Author image" },
+          { kind: "media", path: "author_image_id", label: "Author image", cropPreset: "square" },
         ],
       },
       {
@@ -758,7 +776,12 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "slug", label: "Slug" },
           { kind: "text", path: "subtitle", label: "Subtitle" },
           { kind: "textarea", path: "excerpt", label: "Excerpt" },
-          { kind: "media", path: "cover_image_id", label: "Cover image" },
+          {
+            kind: "media",
+            path: "cover_image_id",
+            label: "Cover image",
+            cropPreset: "thumbnail",
+          },
           { kind: "text", path: "reading_time_label", label: "Reading time label" },
         ],
       },
@@ -774,7 +797,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
         fields: [
           { kind: "text", path: "author_name", label: "Author name" },
           { kind: "text", path: "author_title", label: "Author title" },
-          { kind: "media", path: "author_image_id", label: "Author image" },
+          { kind: "media", path: "author_image_id", label: "Author image", cropPreset: "square" },
         ],
       },
       {
