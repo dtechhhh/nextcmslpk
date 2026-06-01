@@ -18,6 +18,7 @@ import { AppError, AuthError, ForbiddenError, NotFoundError, ValidationError } f
 import { generateSlug } from "@/lib/slugify";
 import { getCollectionSchema } from "@/lib/validations/collections";
 import { zodErrorToFieldErrors } from "@/lib/validations/global/_shared";
+import { prisma } from "@/server/db/client";
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import { signPreviewToken } from "@/server/services/preview-token";
@@ -370,24 +371,67 @@ export async function publishItem(itemId: unknown) {
       itemId: item.id,
     });
 
-    const updated = await db.contentItem.update({
-      where: { id: item.id },
-      data: {
-        ...scalarData,
-        dataJson: toPrismaJson(normalizedData),
-        publishedDataJson: toPrismaJson(normalizedData),
-        status: "PUBLISHED",
-        publishedAt: new Date(),
-        updatedBy: context.userId,
-      },
-      select: {
-        id: true,
-        status: true,
-        dataJson: true,
-        publishedDataJson: true,
-        updatedAt: true,
-      },
-    });
+    const publishedAt = new Date();
+    const { updated, replacedOfferSlugs, replacedOfferIds } =
+      await prisma.$transaction(async (tx) => {
+        const existingPublishedOffers =
+          item.collectionKey === "offer"
+            ? await tx.contentItem.findMany({
+                where: {
+                  tenantId: context.tenantId,
+                  variantId: item.variantId,
+                  collectionKey: "offer",
+                  status: "PUBLISHED",
+                  NOT: { id: item.id },
+                },
+                select: {
+                  id: true,
+                  slug: true,
+                },
+              })
+            : [];
+
+        if (existingPublishedOffers.length > 0) {
+          await tx.contentItem.updateMany({
+            where: {
+              tenantId: context.tenantId,
+              variantId: item.variantId,
+              collectionKey: "offer",
+              status: "PUBLISHED",
+              NOT: { id: item.id },
+            },
+            data: {
+              status: "DRAFT",
+              updatedBy: context.userId,
+            },
+          });
+        }
+
+        const updated = await tx.contentItem.update({
+          where: { id: item.id },
+          data: {
+            ...scalarData,
+            dataJson: toPrismaJson(normalizedData),
+            publishedDataJson: toPrismaJson(normalizedData),
+            status: "PUBLISHED",
+            publishedAt,
+            updatedBy: context.userId,
+          },
+          select: {
+            id: true,
+            status: true,
+            dataJson: true,
+            publishedDataJson: true,
+            updatedAt: true,
+          },
+        });
+
+        return {
+          updated,
+          replacedOfferIds: existingPublishedOffers.map((offer) => offer.id),
+          replacedOfferSlugs: existingPublishedOffers.map((offer) => offer.slug),
+        };
+      });
 
     await revalidateTag(`collection:${item.variantId}:${item.collectionKey}`, {
       expire: 0,
@@ -397,6 +441,13 @@ export async function publishItem(itemId: unknown) {
       { expire: 0 },
     );
     await revalidateTag(`page:${item.variantId}:homepage`, { expire: 0 });
+    await Promise.all(
+      replacedOfferSlugs.map((slug) =>
+        revalidateTag(`item:${item.variantId}:${item.collectionKey}:${slug}`, {
+          expire: 0,
+        }),
+      ),
+    );
 
     await createAuditLog({
       tenantId: context.tenantId,
@@ -409,11 +460,15 @@ export async function publishItem(itemId: unknown) {
         collectionKey: item.collectionKey,
         oldStatus: item.status,
         newStatus: "PUBLISHED",
+        replacedOfferIds,
       },
       ipAddress: null,
     });
 
     revalidateCollectionPaths(item.collectionKey, scalarData.slug);
+    for (const slug of replacedOfferSlugs) {
+      revalidateCollectionPaths(item.collectionKey, slug);
+    }
 
     return {
       ok: true,

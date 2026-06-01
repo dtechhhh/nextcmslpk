@@ -591,6 +591,7 @@ function FieldRenderer({
               tenantId={tenantId}
               value={item}
               mediaType="IMAGE"
+              cropPreset={field.cropPreset}
               onChange={(mediaId) => {
                 const nextItems = [...items];
 
@@ -707,6 +708,7 @@ function renderControl({
           tenantId={tenantId}
           value={toInputValue(rawValue)}
           mediaType={field.kind === "document" ? "DOCUMENT" : "IMAGE"}
+          cropPreset={field.kind === "media" ? field.cropPreset : undefined}
           onChange={(mediaId) => setValue(path, mediaId)}
         />
       );
