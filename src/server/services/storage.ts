@@ -20,6 +20,7 @@ import {
   ALLOWED_UPLOAD_MIME_TYPES,
   GENERAL_IMAGE_MAX_BYTES,
   GENERAL_PDF_MAX_BYTES,
+  GENERAL_VIDEO_MAX_BYTES,
   normalizeMimeType,
   type AllowedUploadMimeType,
 } from "@/lib/media-constraints";
@@ -43,7 +44,7 @@ export type ConfirmUploadResult = {
   fileName: string;
   mimeType: string;
   fileSize: number;
-  mediaType: "IMAGE" | "DOCUMENT";
+  mediaType: "IMAGE" | "DOCUMENT" | "VIDEO";
   status: "ACTIVE";
   storagePath: string;
   width: number | null;
@@ -75,7 +76,7 @@ type MediaForStorage = {
   fileName: string;
   mimeType: string;
   fileSize: number;
-  mediaType: "IMAGE" | "DOCUMENT";
+  mediaType: "IMAGE" | "DOCUMENT" | "VIDEO";
   status: "UPLOADING" | "ACTIVE";
   storagePath: string;
 };
@@ -87,6 +88,9 @@ const EXTENSION_BY_MIME_TYPE: Record<AllowedUploadMimeType, string> = {
   "image/png": "png",
   "image/webp": "webp",
   "application/pdf": "pdf",
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "video/quicktime": "mov",
 };
 
 let cuidCounter = 0;
@@ -119,7 +123,7 @@ export async function generatePresignedUploadUrl(
       fileName: sanitizedFileName,
       mimeType,
       fileSize,
-      mediaType: mimeType === "application/pdf" ? "DOCUMENT" : "IMAGE",
+      mediaType: getMediaTypeForMimeType(mimeType),
       status: "UPLOADING",
       storagePath,
     },
@@ -336,17 +340,10 @@ export function validateUploadRequest(input: {
   if (!Number.isInteger(input.fileSize) || input.fileSize <= 0) {
     errors.fileSize = ["Ukuran file tidak valid."];
   } else if (isAllowedUploadMimeType(mimeType)) {
-    const maxBytes =
-      mimeType === "application/pdf"
-        ? GENERAL_PDF_MAX_BYTES
-        : GENERAL_IMAGE_MAX_BYTES;
+    const maxBytes = getMaxUploadBytesForMimeType(mimeType);
 
     if (input.fileSize > maxBytes) {
-      errors.fileSize = [
-        mimeType === "application/pdf"
-          ? "Ukuran PDF maksimal 10 MB."
-          : "Ukuran gambar maksimal 5 MB.",
-      ];
+      errors.fileSize = [getMaxUploadMessageForMimeType(mimeType)];
     }
   }
 
@@ -391,6 +388,42 @@ export function getTotalReferenceCount(references: MediaReferenceCounts) {
 
 function getExtensionForMimeType(contentType: AllowedUploadMimeType) {
   return EXTENSION_BY_MIME_TYPE[contentType];
+}
+
+function getMediaTypeForMimeType(mimeType: AllowedUploadMimeType) {
+  if (mimeType === "application/pdf") {
+    return "DOCUMENT";
+  }
+
+  if (mimeType.startsWith("video/")) {
+    return "VIDEO";
+  }
+
+  return "IMAGE";
+}
+
+function getMaxUploadBytesForMimeType(mimeType: AllowedUploadMimeType) {
+  if (mimeType === "application/pdf") {
+    return GENERAL_PDF_MAX_BYTES;
+  }
+
+  if (mimeType.startsWith("video/")) {
+    return GENERAL_VIDEO_MAX_BYTES;
+  }
+
+  return GENERAL_IMAGE_MAX_BYTES;
+}
+
+function getMaxUploadMessageForMimeType(mimeType: AllowedUploadMimeType) {
+  if (mimeType === "application/pdf") {
+    return "Ukuran PDF maksimal 10 MB.";
+  }
+
+  if (mimeType.startsWith("video/")) {
+    return "Ukuran video maksimal 50 MB.";
+  }
+
+  return "Ukuran gambar maksimal 5 MB.";
 }
 
 function sanitizeFileName(fileName: string, fallback: string) {
@@ -652,11 +685,25 @@ function matchesFileSignature(mimeType: string, bytes: Buffer) {
     return bytes.length >= 5 && bytes.subarray(0, 5).toString("ascii") === "%PDF-";
   }
 
+  if (mimeType === "video/mp4" || mimeType === "video/quicktime") {
+    return bytes.length >= 12 && bytes.subarray(4, 8).toString("ascii") === "ftyp";
+  }
+
+  if (mimeType === "video/webm") {
+    return (
+      bytes.length >= 4 &&
+      bytes[0] === 0x1a &&
+      bytes[1] === 0x45 &&
+      bytes[2] === 0xdf &&
+      bytes[3] === 0xa3
+    );
+  }
+
   return false;
 }
 
 function getImageDimensions(mimeType: string, bytes: Buffer) {
-  if (mimeType === "application/pdf") {
+  if (!mimeType.startsWith("image/")) {
     return null;
   }
 

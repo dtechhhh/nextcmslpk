@@ -8,6 +8,7 @@ import {
   RotateCcwIcon,
   SearchIcon,
   UploadIcon,
+  VideoIcon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -42,7 +43,7 @@ import {
   type MediaPreset,
 } from "@/lib/media-constraints";
 
-type MediaType = "IMAGE" | "DOCUMENT";
+type MediaType = "IMAGE" | "DOCUMENT" | "VIDEO";
 
 type MediaItem = {
   id: string;
@@ -115,7 +116,12 @@ export function MediaPicker({
       cropPosition,
     );
   }, [cropConfig, cropPosition, cropTarget, cropZoom]);
-  const PickerIcon = mediaType === "IMAGE" ? ImageIcon : FileTextIcon;
+  const PickerIcon =
+    mediaType === "IMAGE"
+      ? ImageIcon
+      : mediaType === "VIDEO"
+        ? VideoIcon
+        : FileTextIcon;
 
   useEffect(() => {
     if (!open) {
@@ -342,12 +348,12 @@ export function MediaPicker({
         <DialogContent className="max-h-[85vh] max-w-4xl overflow-hidden">
           <DialogHeader>
             <DialogTitle>
-              {mediaType === "IMAGE" ? "Select image" : "Select document"}
+              {getMediaPickerTitle(mediaType)}
             </DialogTitle>
             <DialogDescription>
               {mediaPreset === "logo"
                 ? LOGO_IMAGE_REQUIREMENT_TEXT
-                : "Choose an active asset from the tenant media library."}
+                : getMediaPickerDescription(mediaType)}
             </DialogDescription>
           </DialogHeader>
 
@@ -383,11 +389,7 @@ export function MediaPicker({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={
-                  mediaType === "IMAGE"
-                    ? "image/jpeg,image/png,image/webp"
-                    : "application/pdf"
-                }
+                accept={getAcceptedMimeTypes(mediaType)}
                 className="hidden"
                 onChange={handleInlineUpload}
               />
@@ -437,6 +439,15 @@ export function MediaPicker({
                               src={item.publicUrl}
                               alt={item.fileName}
                               className="h-full w-full object-contain"
+                            />
+                          ) : item.mediaType === "VIDEO" && item.publicUrl ? (
+                            <video
+                              src={item.publicUrl}
+                              className="h-full w-full object-cover"
+                              muted
+                              playsInline
+                              preload="metadata"
+                              aria-label={item.fileName}
                             />
                           ) : (
                             <FileTextIcon className="size-8 text-muted-foreground" />
@@ -840,8 +851,40 @@ function toUploadedMediaItem(media: Record<string, unknown>, fallback: MediaItem
   };
 }
 
+function getAcceptedMimeTypes(mediaType: MediaType) {
+  if (mediaType === "IMAGE") {
+    return "image/jpeg,image/png,image/webp";
+  }
+
+  if (mediaType === "VIDEO") {
+    return "video/mp4,video/webm,video/quicktime";
+  }
+
+  return "application/pdf";
+}
+
+function getMediaPickerTitle(mediaType: MediaType) {
+  if (mediaType === "IMAGE") {
+    return "Select image";
+  }
+
+  if (mediaType === "VIDEO") {
+    return "Select video";
+  }
+
+  return "Select document";
+}
+
+function getMediaPickerDescription(mediaType: MediaType) {
+  if (mediaType === "VIDEO") {
+    return "Choose an active video from the tenant media library.";
+  }
+
+  return "Choose an active asset from the tenant media library.";
+}
+
 function isMediaType(value: unknown): value is MediaType {
-  return value === "IMAGE" || value === "DOCUMENT";
+  return value === "IMAGE" || value === "DOCUMENT" || value === "VIDEO";
 }
 
 function getActionErrorMessage(value: unknown, fallback: string) {

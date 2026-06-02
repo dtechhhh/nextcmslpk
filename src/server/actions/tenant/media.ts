@@ -27,7 +27,7 @@ const mediaIdInputSchema = z.union([
 
 const listFilterSchema = z
   .object({
-    mediaType: z.enum(["IMAGE", "DOCUMENT"]).optional(),
+    mediaType: z.enum(["IMAGE", "DOCUMENT", "VIDEO"]).optional(),
     status: z.enum(["UPLOADING", "ACTIVE"]).optional(),
     query: z.string().trim().max(100).optional(),
   })
