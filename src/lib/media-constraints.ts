@@ -6,13 +6,22 @@ export const ALLOWED_IMAGE_UPLOAD_MIME_TYPES = [
 
 export const ALLOWED_DOCUMENT_UPLOAD_MIME_TYPES = ["application/pdf"] as const;
 
+export const ALLOWED_VIDEO_UPLOAD_MIME_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+] as const;
+
 export const ALLOWED_UPLOAD_MIME_TYPES = [
   ...ALLOWED_IMAGE_UPLOAD_MIME_TYPES,
   ...ALLOWED_DOCUMENT_UPLOAD_MIME_TYPES,
+  ...ALLOWED_VIDEO_UPLOAD_MIME_TYPES,
 ] as const;
 
 export type AllowedImageUploadMimeType =
   (typeof ALLOWED_IMAGE_UPLOAD_MIME_TYPES)[number];
+export type AllowedVideoUploadMimeType =
+  (typeof ALLOWED_VIDEO_UPLOAD_MIME_TYPES)[number];
 export type AllowedUploadMimeType = (typeof ALLOWED_UPLOAD_MIME_TYPES)[number];
 export type MediaPreset = "logo";
 
@@ -27,6 +36,7 @@ export type MediaValidationAsset = {
 
 export const GENERAL_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 export const GENERAL_PDF_MAX_BYTES = 10 * 1024 * 1024;
+export const GENERAL_VIDEO_MAX_BYTES = 50 * 1024 * 1024;
 
 export const LOGO_IMAGE_CONSTRAINTS = {
   allowedMimeTypes: ALLOWED_IMAGE_UPLOAD_MIME_TYPES,
