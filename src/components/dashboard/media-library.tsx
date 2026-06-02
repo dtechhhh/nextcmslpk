@@ -10,6 +10,7 @@ import {
   SearchIcon,
   Trash2Icon,
   UploadIcon,
+  VideoIcon,
   XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -39,9 +40,9 @@ import {
 } from "@/server/actions/tenant/media";
 import { cn } from "@/lib/utils";
 
-type MediaType = "IMAGE" | "DOCUMENT";
+type MediaType = "IMAGE" | "DOCUMENT" | "VIDEO";
 type ViewMode = "grid" | "list";
-type FilterType = "ALL" | "IMAGE" | "DOCUMENT";
+type FilterType = "ALL" | MediaType;
 
 type MediaItem = {
   id: string;
@@ -131,7 +132,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
     const entry: UploadEntry = {
       id: String(Math.random()),
       fileName: file.name,
-      mediaType: file.type === "application/pdf" ? "DOCUMENT" : "IMAGE",
+      mediaType: getMediaTypeForFile(file),
       fileSize: file.size,
       progress: 0,
       status: "uploading",
@@ -300,7 +301,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
             Drag & drop files here, or click to browse
           </p>
           <p className="text-xs text-muted-foreground">
-            JPEG, PNG, WebP (max 5 MB) &middot; PDF (max 10 MB)
+            JPEG, PNG, WebP (max 5 MB) &middot; PDF (max 10 MB) &middot; MP4, WebM, MOV (max 50 MB)
           </p>
           <Button
             type="button"
@@ -315,7 +316,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/jpeg,image/png,image/webp,application/pdf"
+            accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime"
             className="hidden"
             onChange={(event) => {
               if (event.target.files) {
@@ -365,7 +366,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1 rounded-lg border p-0.5">
-          {(["ALL", "IMAGE", "DOCUMENT"] as FilterType[]).map((type) => (
+          {(["ALL", "IMAGE", "VIDEO", "DOCUMENT"] as FilterType[]).map((type) => (
             <button
               key={type}
               type="button"
@@ -379,7 +380,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
                 setPage(1);
               }}
             >
-              {type === "ALL" ? "All" : type === "IMAGE" ? "Images" : "Documents"}
+              {getFilterLabel(type)}
             </button>
           ))}
         </div>
@@ -568,6 +569,15 @@ function MediaCard({
             alt={media.altText ?? media.fileName}
             className="h-full w-full object-cover"
           />
+        ) : media.mediaType === "VIDEO" ? (
+          <video
+            src={media.publicUrl}
+            className="h-full w-full object-cover"
+            muted
+            playsInline
+            preload="metadata"
+            aria-label={media.altText ?? media.fileName}
+          />
         ) : (
           <FileTextIcon className="size-10 text-muted-foreground" />
         )}
@@ -691,6 +701,8 @@ function MediaListRow({
             alt={media.fileName}
             className="h-full w-full object-cover"
           />
+        ) : media.mediaType === "VIDEO" ? (
+          <VideoIcon className="size-6 text-muted-foreground" />
         ) : (
           <FileTextIcon className="size-6 text-muted-foreground" />
         )}
@@ -815,6 +827,25 @@ function formatDateTime(value: string) {
 
 function formatUsageCount(count: number) {
   return `Used in ${count} item${count === 1 ? "" : "s"}`;
+}
+
+function getFilterLabel(type: FilterType) {
+  if (type === "ALL") return "All";
+  if (type === "IMAGE") return "Images";
+  if (type === "VIDEO") return "Videos";
+  return "Documents";
+}
+
+function getMediaTypeForFile(file: File): MediaType {
+  if (file.type === "application/pdf") {
+    return "DOCUMENT";
+  }
+
+  if (file.type.startsWith("video/")) {
+    return "VIDEO";
+  }
+
+  return "IMAGE";
 }
 
 function isMediaListSuccess(value: unknown): value is {

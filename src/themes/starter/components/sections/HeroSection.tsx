@@ -56,6 +56,7 @@ function HeroSection({
             muted
             loop
             playsInline
+            preload="auto"
             aria-label={mediaAlt || undefined}
           />
         )}

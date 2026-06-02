@@ -153,6 +153,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
     : defaultWhatsappHref;
   const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
+  const heroMediaType = stringValue(hero.media_type) === "video" ? "video" : "image";
   const featuredProgramsConfig = record(data.featured_programs);
   const offerSection = record(data.offer_section);
   const contactSection = record(data.contact_section);
@@ -178,8 +179,8 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       <PreviewBanner isPreview={isPreview} />
       {heroImage ? (
         <HeroSection
-          mediaType="image"
-          mediaSrc={heroImage}
+          mediaType={heroMediaType}
+          mediaSrc={heroMediaType === "video" ? getMediaProxyUrl(heroMediaId) : heroImage}
           mediaAlt={stringValue(hero.media_alt) || stringValue(hero.headline)}
           headline={stringValue(hero.headline) || page.title}
           subheadline={stringValue(hero.subheadline)}
@@ -3591,6 +3592,10 @@ function parseCostItems(value: unknown): CostItem[] {
       return null;
     })
     .filter((item): item is CostItem => item !== null);
+}
+
+function getMediaProxyUrl(mediaId: string) {
+  return `/api/media/${encodeURIComponent(mediaId)}`;
 }
 
 function renderRequirementList(value: unknown, title = "Persyaratan") {

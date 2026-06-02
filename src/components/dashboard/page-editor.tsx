@@ -702,16 +702,22 @@ function renderControl({
         </Select>
       );
     case "media":
-    case "document":
+    case "document": {
+      const mediaType =
+        field.kind === "document" ? "DOCUMENT" : getMediaPickerType(data, path);
+
       return (
         <MediaPicker
           tenantId={tenantId}
           value={toInputValue(rawValue)}
-          mediaType={field.kind === "document" ? "DOCUMENT" : "IMAGE"}
-          cropPreset={field.kind === "media" ? field.cropPreset : undefined}
+          mediaType={mediaType}
+          cropPreset={
+            field.kind === "media" && mediaType === "IMAGE" ? field.cropPreset : undefined
+          }
           onChange={(mediaId) => setValue(path, mediaId)}
         />
       );
+    }
     case "icon":
       return (
         <IconPicker
@@ -720,6 +726,13 @@ function renderControl({
         />
       );
   }
+}
+
+function getMediaPickerType(data: PageEditorData, mediaPath: string) {
+  const mediaTypePath = mediaPath.replace(/media_id$/, "media_type");
+  const mediaType = getAtPath(data, mediaTypePath);
+
+  return mediaType === "video" ? "VIDEO" : "IMAGE";
 }
 
 function getSaveStatusLabel(
