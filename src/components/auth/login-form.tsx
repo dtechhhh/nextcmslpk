@@ -4,6 +4,7 @@ import { FormEvent, useRef, useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { Loader2Icon } from "lucide-react";
 
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,38 +48,42 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const passwordRef = useRef("");
+  const busy = useCmsBusy();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    const stopBusy = busy.start(
+      requiresTotp ? "Memverifikasi kode login..." : "Memeriksa kredensial...",
+    );
 
     startTransition(async () => {
       const submittedPassword = requiresTotp ? passwordRef.current : password;
 
-      if (!requiresTotp) {
-        const result = await checkLoginCredentialsAction({
-          username,
-          password: submittedPassword,
-          scope,
-        });
-
-        if (!result.ok) {
-          passwordRef.current = "";
-          setPassword("");
-          setError(getPasswordStepError(result.error));
-          return;
-        }
-
-        if (result.requiresTotp) {
-          passwordRef.current = submittedPassword;
-          setPassword("");
-          setTotpCode("");
-          setRequiresTotp(true);
-          return;
-        }
-      }
-
       try {
+        if (!requiresTotp) {
+          const result = await checkLoginCredentialsAction({
+            username,
+            password: submittedPassword,
+            scope,
+          });
+
+          if (!result.ok) {
+            passwordRef.current = "";
+            setPassword("");
+            setError(getPasswordStepError(result.error));
+            return;
+          }
+
+          if (result.requiresTotp) {
+            passwordRef.current = submittedPassword;
+            setPassword("");
+            setTotpCode("");
+            setRequiresTotp(true);
+            return;
+          }
+        }
+
         const result = await signIn("credentials", {
           username,
           password: submittedPassword,
@@ -97,10 +102,13 @@ export function LoginForm({
         passwordRef.current = "";
         setPassword("");
         setTotpCode("");
+        busy.start("Login berhasil. Membuka dashboard...");
         window.location.replace(redirectTo);
       } catch {
         setTotpCode("");
         setError(requiresTotp ? TOTP_LOGIN_ERROR : GENERIC_LOGIN_ERROR);
+      } finally {
+        stopBusy();
       }
     });
   }

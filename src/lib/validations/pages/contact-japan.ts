@@ -83,8 +83,8 @@ export const contactJapanSchema = z
         business_hours: optionalString(300),
         language_support: z.array(optionalString(120)).default([]),
         address: optionalString(500),
-        map_url: optionalString(500),
-        map_embed_url: optionalString(500),
+        map_url: emptyOrUrl("Map URL"),
+        map_embed_url: emptyOrUrl("Map embed URL"),
       })
       .passthrough()
       .default({
