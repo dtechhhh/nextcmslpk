@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ChevronDownIcon, SaveIcon } from "lucide-react";
+import { ChevronDownIcon, Loader2Icon, SaveIcon } from "lucide-react";
 
 import { IconPicker } from "@/components/dashboard/forms/icon-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +76,7 @@ export function GlobalConfigEditor({
   const lastSavedSerializedRef = useRef(JSON.stringify(data));
   const saveSequenceRef = useRef(0);
   const pendingSaveCountRef = useRef(0);
+  const { start } = useCmsBusy();
 
   useEffect(() => {
     dataRef.current = data;
@@ -112,6 +114,9 @@ export function GlobalConfigEditor({
       pendingSaveCountRef.current += 1;
       setIsSaving(true);
       setSaveState("saving");
+      const stopBusy = start(
+        mode === "auto" ? "Menyimpan konfigurasi otomatis..." : "Menyimpan konfigurasi...",
+      );
 
       try {
         const response = await updateGlobalConfig(
@@ -150,11 +155,12 @@ export function GlobalConfigEditor({
         setSaveState("error");
         toast.error("Global config gagal disimpan.");
       } finally {
+        stopBusy();
         pendingSaveCountRef.current = Math.max(pendingSaveCountRef.current - 1, 0);
         setIsSaving(pendingSaveCountRef.current > 0);
       }
     },
-    [definition.configKey, validationSchema, variantId],
+    [definition.configKey, start, validationSchema, variantId],
   );
 
   useEffect(() => {
@@ -201,8 +207,8 @@ export function GlobalConfigEditor({
             {getSaveStatusLabel(saveState, isSaving, lastSavedAt)}
           </span>
           <Button type="submit" disabled={isSaving}>
-            <SaveIcon />
-            Save
+            {isSaving ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

@@ -7,6 +7,7 @@ import {
   faqItemSchema,
   identityFields,
   identityDefaults,
+  legacyTitleDescArray,
   optionalString,
   sidebarFields,
   sidebarDefaults,
@@ -45,11 +46,11 @@ export const offerSchema = z
     price_label: optionalString(120),
     original_price_label: optionalString(120),
     urgency_label: optionalString(200),
-    benefit_items: z.array(itemWithTitleDesc).default([]),
+    benefit_items: legacyTitleDescArray(itemWithTitleDesc),
     detail_description: optionalString(3000),
     detail_checklist: z.array(z.string()).default([]),
-    bonus_items: z.array(itemWithTitleDesc).default([]),
-    suitable_for_items: z.array(itemWithTitleDesc).default([]),
+    bonus_items: legacyTitleDescArray(itemWithTitleDesc),
+    suitable_for_items: legacyTitleDescArray(itemWithTitleDesc),
     faqs: z.array(faqItemSchema).default([]),
   })
   .passthrough();

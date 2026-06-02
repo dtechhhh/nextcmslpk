@@ -44,6 +44,7 @@ function ContactInfo({
   ctaHref,
   ctaVariant = "default",
 }: ContactInfoProps) {
+  const resolvedMapUrl = getEmbeddableMapUrl(mapUrl, address)
   const links = socialLinks
     ? Object.entries(socialLinks).filter((entry): entry is [keyof ContactInfoSocialLinks, string] =>
         Boolean(entry[1])
@@ -125,9 +126,9 @@ function ContactInfo({
             ) : null}
           </div>
 
-          {mapUrl ? (
+          {resolvedMapUrl ? (
             <iframe
-              src={mapUrl}
+              src={resolvedMapUrl}
               title="Lokasi"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -142,6 +143,82 @@ function ContactInfo({
       </Container>
     </section>
   )
+}
+
+function getEmbeddableMapUrl(mapUrl?: string, address?: string) {
+  const cleanMapUrl = mapUrl?.trim()
+  const coordinateFallbackUrl = getCoordinateEmbedUrl(cleanMapUrl)
+  const addressFallbackUrl = getSearchEmbedUrl(address)
+  const fallbackUrl = coordinateFallbackUrl ?? addressFallbackUrl
+
+  if (!cleanMapUrl) {
+    return fallbackUrl
+  }
+
+  let parsedUrl: URL
+
+  try {
+    parsedUrl = new URL(cleanMapUrl)
+  } catch {
+    return fallbackUrl
+  }
+
+  if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+    return fallbackUrl
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase()
+  const isGoogleMapsUrl =
+    hostname === "maps.app.goo.gl" ||
+    (hostname.includes("google.") && parsedUrl.pathname.includes("/maps"))
+
+  if (!isGoogleMapsUrl) {
+    return cleanMapUrl
+  }
+
+  if (parsedUrl.pathname.startsWith("/maps/embed")) {
+    return isLikelyTruncatedGoogleMapsEmbed(parsedUrl) && fallbackUrl
+      ? fallbackUrl
+      : cleanMapUrl
+  }
+
+  return fallbackUrl ?? getSearchEmbedUrl(cleanMapUrl)
+}
+
+function isLikelyTruncatedGoogleMapsEmbed(url: URL) {
+  const embedPayload = url.searchParams.get("pb")
+
+  return url.pathname === "/maps/embed" && embedPayload !== null && embedPayload.length < 100
+}
+
+function getCoordinateEmbedUrl(value?: string) {
+  if (!value) {
+    return undefined
+  }
+
+  const pbCoordinates = value.match(/!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)/)
+
+  if (pbCoordinates) {
+    return `https://www.google.com/maps?q=${pbCoordinates[2]},${pbCoordinates[1]}&output=embed`
+  }
+
+  const atCoordinates = value.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/)
+
+  if (atCoordinates) {
+    return `https://www.google.com/maps?q=${atCoordinates[1]},${atCoordinates[2]}&output=embed`
+  }
+
+  return undefined
+}
+
+function getSearchEmbedUrl(query?: string) {
+  const cleanQuery = query?.trim()
+
+  if (!cleanQuery) {
+    return undefined
+  }
+
+  return `https://www.google.com/maps?q=${encodeURIComponent(cleanQuery)}&output=embed`
 }
 
 export { ContactInfo }

@@ -7,6 +7,7 @@ import {
   faqItemSchema,
   identityFields,
   identityDefaults,
+  legacyTitleDescArray,
   optionalString,
   sidebarFields,
   sidebarDefaults,
@@ -48,12 +49,12 @@ export const karirSchema = z
     experience_label: optionalString(200),
     education_label: optionalString(200),
     deadline_label: optionalString(120),
-    overview_items: z.array(itemWithTitleDesc).default([]),
+    overview_items: legacyTitleDescArray(itemWithTitleDesc),
     role_description: optionalString(3000),
     responsibilities: z.array(z.string()).default([]),
     requirements: z.array(z.string()).default([]),
-    benefits: z.array(itemWithTitleDesc).default([]),
-    recruitment_steps: z.array(itemWithTitleDesc).default([]),
+    benefits: legacyTitleDescArray(itemWithTitleDesc),
+    recruitment_steps: legacyTitleDescArray(itemWithTitleDesc),
     faqs: z.array(faqItemSchema).default([]),
   })
   .passthrough();

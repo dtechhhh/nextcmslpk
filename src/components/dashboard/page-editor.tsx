@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronDownIcon,
   EyeIcon,
+  Loader2Icon,
   SaveIcon,
   SendIcon,
   Undo2Icon,
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 import { IconPicker } from "@/components/dashboard/forms/icon-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -98,6 +100,7 @@ export function PageEditor({
   const lastSavedSerializedRef = useRef(JSON.stringify(data));
   const saveSequenceRef = useRef(0);
   const pendingSaveCountRef = useRef(0);
+  const { start } = useCmsBusy();
 
   useEffect(() => {
     dataRef.current = data;
@@ -135,6 +138,9 @@ export function PageEditor({
       pendingSaveCountRef.current += 1;
       setIsSaving(true);
       setSaveState("saving");
+      const stopBusy = start(
+        mode === "auto" ? "Menyimpan otomatis..." : "Menyimpan draft...",
+      );
 
       try {
         const response = await saveDraft(pageId, clientValidation.data);
@@ -181,11 +187,12 @@ export function PageEditor({
         toast.error("Draft gagal disimpan.");
         return false;
       } finally {
+        stopBusy();
         pendingSaveCountRef.current = Math.max(pendingSaveCountRef.current - 1, 0);
         setIsSaving(pendingSaveCountRef.current > 0);
       }
     },
-    [pageId, validationSchema],
+    [pageId, start, validationSchema],
   );
 
   useEffect(() => {
@@ -211,6 +218,9 @@ export function PageEditor({
 
   async function handlePublish() {
     setIsPublishing(true);
+    const stopBusy = start(
+      status === "PUBLISHED" ? "Mempublish perubahan page..." : "Mempublish page...",
+    );
 
     try {
       const isDraftSaved =
@@ -247,12 +257,14 @@ export function PageEditor({
       setLastSavedAt(response.page.updatedAt);
       toast.success("Page dipublish.");
     } finally {
+      stopBusy();
       setIsPublishing(false);
     }
   }
 
   async function handleUnpublish() {
     setIsUnpublishing(true);
+    const stopBusy = start("Mengembalikan page ke draft...");
 
     try {
       const response = await unpublishPage(pageId);
@@ -266,6 +278,7 @@ export function PageEditor({
       setLastSavedAt(response.page.updatedAt);
       toast.success("Page kembali ke draft.");
     } finally {
+      stopBusy();
       setIsUnpublishing(false);
     }
   }
@@ -280,6 +293,7 @@ export function PageEditor({
 
     previewWindow.opener = null;
     setIsPreviewing(true);
+    const stopBusy = start("Menyiapkan preview...");
 
     try {
       const response = await generatePreviewToken(pageId);
@@ -292,6 +306,7 @@ export function PageEditor({
 
       previewWindow.location.href = response.previewUrl;
     } finally {
+      stopBusy();
       setIsPreviewing(false);
     }
   }
@@ -326,20 +341,24 @@ export function PageEditor({
             {getSaveStatusLabel(saveState, isSaving, lastSavedAt)}
           </span>
           <Button type="button" variant="outline" disabled={!canPreview} onClick={handlePreview}>
-            <EyeIcon />
-            Preview
+            {isPreviewing ? <Loader2Icon className="animate-spin" /> : <EyeIcon />}
+            {isPreviewing ? "Preparing..." : "Preview"}
           </Button>
           <Button type="submit" variant="outline" disabled={controlsDisabled}>
-            <SaveIcon />
-            Save
+            {isSaving ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
           <Button
             type="button"
             disabled={controlsDisabled}
             onClick={handlePublish}
           >
-            <SendIcon />
-            {status === "PUBLISHED" ? "Publish changes" : "Publish"}
+            {isPublishing ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
+            {isPublishing
+              ? "Publishing..."
+              : status === "PUBLISHED"
+                ? "Publish changes"
+                : "Publish"}
           </Button>
           {status === "PUBLISHED" ? (
             <Button
@@ -348,8 +367,8 @@ export function PageEditor({
               disabled={controlsDisabled}
               onClick={handleUnpublish}
             >
-              <Undo2Icon />
-              Unpublish
+              {isUnpublishing ? <Loader2Icon className="animate-spin" /> : <Undo2Icon />}
+              {isUnpublishing ? "Unpublishing..." : "Unpublish"}
             </Button>
           ) : null}
         </div>

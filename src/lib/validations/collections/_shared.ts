@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  emptyStringFromNullish,
   mediaIdSchema,
   optionalString,
   sortOrderSchema,
@@ -55,4 +56,29 @@ export const faqItemSchema = z
   })
   .passthrough();
 
-export const contentIdSchema = z.string().trim().max(128).default("");
+export const contentIdSchema = z.preprocess(
+  emptyStringFromNullish,
+  z.string().trim().max(128).default(""),
+);
+
+export function legacyTitleDescArray(itemSchema: z.ZodType) {
+  return z.preprocess(
+    (value) => {
+      if (!Array.isArray(value)) {
+        return value;
+      }
+
+      return value.map((item, index) =>
+        typeof item === "string"
+          ? {
+              title: item,
+              description: "",
+              is_enabled: true,
+              sort_order: index,
+            }
+          : item,
+      );
+    },
+    z.array(itemSchema).default([]),
+  );
+}

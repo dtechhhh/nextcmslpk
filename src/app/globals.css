@@ -169,3 +169,20 @@
     @apply font-sans;
   }
 }
+
+@keyframes cms-progress-slide {
+  0% {
+    transform: translateX(-120%) scaleX(0.45);
+  }
+  50% {
+    transform: translateX(65%) scaleX(1);
+  }
+  100% {
+    transform: translateX(240%) scaleX(0.45);
+  }
+}
+
+.cms-progress-bar {
+  animation: cms-progress-slide 1.15s ease-in-out infinite;
+  transform-origin: left center;
+}
