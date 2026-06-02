@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -57,28 +58,37 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
   const [valuesLoading, setValuesLoading] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [addingValue, setAddingValue] = useState(false);
+  const { start } = useCmsBusy();
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       setLoading(true);
-      const response = await listOptionSets(variantId);
+      const stopBusy = start("Memuat option data...");
 
-      if (cancelled) return;
-      setLoading(false);
+      try {
+        const response = await listOptionSets(variantId);
 
-      if (isOptionSetsSuccess(response)) {
-        setOptionSets(response.optionSets);
-      } else {
-        toast.error(getErrorMessage(response, "Option sets gagal dimuat."));
+        if (cancelled) return;
+
+        if (isOptionSetsSuccess(response)) {
+          setOptionSets(response.optionSets);
+        } else {
+          toast.error(getErrorMessage(response, "Option sets gagal dimuat."));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+        stopBusy();
       }
     }
 
     void load();
 
     return () => { cancelled = true; };
-  }, [variantId]);
+  }, [variantId, start]);
 
   async function toggleExpand(optionSetId: string) {
     if (expandedId === optionSetId) {
@@ -89,15 +99,19 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
 
     setExpandedId(optionSetId);
     setValuesLoading(true);
+    const stopBusy = start("Memuat values...");
 
-    const response = await getOptionSetValues(optionSetId);
+    try {
+      const response = await getOptionSetValues(optionSetId);
 
-    setValuesLoading(false);
-
-    if (isValuesSuccess(response)) {
-      setExpandedValues(response.values);
-    } else {
-      toast.error(getErrorMessage(response, "Values gagal dimuat."));
+      if (isValuesSuccess(response)) {
+        setExpandedValues(response.values);
+      } else {
+        toast.error(getErrorMessage(response, "Values gagal dimuat."));
+      }
+    } finally {
+      setValuesLoading(false);
+      stopBusy();
     }
   }
 
@@ -105,36 +119,46 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
     if (!newLabel.trim()) return;
 
     setAddingValue(true);
+    const stopBusy = start("Menambahkan value...");
 
-    const response = await addOptionValue({ optionSetId, label: newLabel.trim() });
+    try {
+      const response = await addOptionValue({ optionSetId, label: newLabel.trim() });
 
-    if (isValueSuccess(response)) {
-      setExpandedValues((current) => [...current, response.value]);
-      setNewLabel("");
-      toast.success("Value ditambahkan.");
-      setOptionSets((current) =>
-        current.map((set) =>
-          set.id === optionSetId ? { ...set, valuesCount: set.valuesCount + 1 } : set,
-        ),
-      );
-    } else {
-      toast.error(getErrorMessage(response, "Value gagal ditambahkan."));
+      if (isValueSuccess(response)) {
+        setExpandedValues((current) => [...current, response.value]);
+        setNewLabel("");
+        toast.success("Value ditambahkan.");
+        setOptionSets((current) =>
+          current.map((set) =>
+            set.id === optionSetId ? { ...set, valuesCount: set.valuesCount + 1 } : set,
+          ),
+        );
+      } else {
+        toast.error(getErrorMessage(response, "Value gagal ditambahkan."));
+      }
+    } finally {
+      setAddingValue(false);
+      stopBusy();
     }
-
-    setAddingValue(false);
   }
 
   async function handleToggleActive(valueId: string, isActive: boolean) {
-    const response = await toggleOptionValue({ valueId, isActive });
+    const stopBusy = start("Mengubah status value...");
 
-    if (isValueSuccess(response)) {
-      setExpandedValues((current) =>
-        current.map((v) =>
-          v.id === valueId ? { ...v, isActive: response.value.isActive } : v,
-        ),
-      );
-    } else {
-      toast.error(getErrorMessage(response, "Status gagal diubah."));
+    try {
+      const response = await toggleOptionValue({ valueId, isActive });
+
+      if (isValueSuccess(response)) {
+        setExpandedValues((current) =>
+          current.map((v) =>
+            v.id === valueId ? { ...v, isActive: response.value.isActive } : v,
+          ),
+        );
+      } else {
+        toast.error(getErrorMessage(response, "Status gagal diubah."));
+      }
+    } finally {
+      stopBusy();
     }
   }
 

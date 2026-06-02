@@ -16,6 +16,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,27 +91,34 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
   const [deleteRefCount, setDeleteRefCount] = useState(0);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const { start } = useCmsBusy();
 
   const loadItems = useCallback(async () => {
+    const stopBusy = start("Memuat media...");
     const mediaType = filter === "ALL" ? undefined : filter;
-    const response = await listMedia(
-      tenantId,
-      { mediaType, status: "ACTIVE", query: query || undefined },
-      { page, pageSize: PAGE_SIZE },
-    );
 
-    setLoading(false);
+    try {
+      const response = await listMedia(
+        tenantId,
+        { mediaType, status: "ACTIVE", query: query || undefined },
+        { page, pageSize: PAGE_SIZE },
+      );
 
-    if (isMediaListSuccess(response)) {
-      setItems(response.items);
-      setTotalPages(Math.max(response.totalPages, 1));
-    } else {
-      toast.error(getErrorMessage(response, "Media gagal dimuat."));
+      if (isMediaListSuccess(response)) {
+        setItems(response.items);
+        setTotalPages(Math.max(response.totalPages, 1));
+      } else {
+        toast.error(getErrorMessage(response, "Media gagal dimuat."));
+      }
+    } finally {
+      setLoading(false);
+      stopBusy();
     }
-  }, [tenantId, filter, query, page]);
+  }, [tenantId, filter, query, page, start]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -129,6 +137,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   }
 
   async function uploadFile(file: File) {
+    const stopBusy = start(`Mengupload ${file.name}...`);
     const entry: UploadEntry = {
       id: String(Math.random()),
       fileName: file.name,
@@ -199,6 +208,8 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
             : u,
         ),
       );
+    } finally {
+      stopBusy();
     }
   }
 
@@ -223,30 +234,42 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   async function handleDelete(media: MediaItem) {
     setDeleteTarget(media);
     setDeleteLoading(true);
+    const stopBusy = start("Mengecek penggunaan media...");
 
-    const refs = await getMediaReferences(media.id);
+    try {
+      const refs = await getMediaReferences(media.id);
 
-    if (isRefSuccess(refs)) {
-      setDeleteRefCount(refs.totalReferences);
-    } else {
-      setDeleteRefCount(0);
+      if (isRefSuccess(refs)) {
+        setDeleteRefCount(refs.totalReferences);
+      } else {
+        setDeleteRefCount(0);
+      }
+    } finally {
+      setDeleteLoading(false);
+      stopBusy();
     }
-
-    setDeleteLoading(false);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    const result = await deleteMedia(deleteTarget.id);
+    setConfirmDeleteLoading(true);
+    const stopBusy = start(`Menghapus ${deleteTarget.fileName}...`);
 
-    if (isDeleteSuccess(result)) {
-      toast.success("Media dihapus.");
-      setDeleteTarget(null);
-      void loadItems();
-    } else {
-      toast.error(getErrorMessage(result, "Media gagal dihapus."));
-      setDeleteTarget(null);
+    try {
+      const result = await deleteMedia(deleteTarget.id);
+
+      if (isDeleteSuccess(result)) {
+        toast.success("Media dihapus.");
+        setDeleteTarget(null);
+        void loadItems();
+      } else {
+        toast.error(getErrorMessage(result, "Media gagal dihapus."));
+        setDeleteTarget(null);
+      }
+    } finally {
+      setConfirmDeleteLoading(false);
+      stopBusy();
     }
   }
 
@@ -256,17 +279,23 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
       return;
     }
 
-    const result = await updateMediaAltText({ mediaId, altText: editingAltValue });
+    const stopBusy = start("Menyimpan alt text...");
 
-    if (isAltTextSuccess(result)) {
-      setItems((current) =>
-        current.map((item) =>
-          item.id === mediaId ? { ...item, altText: result.media.altText } : item,
-        ),
-      );
-      setEditingAltId(null);
-    } else {
-      toast.error(getErrorMessage(result, "Alt text gagal diubah."));
+    try {
+      const result = await updateMediaAltText({ mediaId, altText: editingAltValue });
+
+      if (isAltTextSuccess(result)) {
+        setItems((current) =>
+          current.map((item) =>
+            item.id === mediaId ? { ...item, altText: result.media.altText } : item,
+          ),
+        );
+        setEditingAltId(null);
+      } else {
+        toast.error(getErrorMessage(result, "Alt text gagal diubah."));
+      }
+    } finally {
+      stopBusy();
     }
   }
 
@@ -276,7 +305,8 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   }
 
   const activeUploads = uploads.filter((u) => u.status !== "done").length;
-  const canDelete = deleteTarget && deleteRefCount === 0 && !deleteLoading;
+  const canDelete =
+    deleteTarget && deleteRefCount === 0 && !deleteLoading && !confirmDeleteLoading;
 
   return (
     <div className="flex flex-col gap-5">
@@ -511,6 +541,8 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
             <AlertDialogDescription>
               {deleteLoading ? (
                 "Checking references..."
+              ) : confirmDeleteLoading ? (
+                "Deleting media..."
               ) : canDelete ? (
                 `Delete "${deleteTarget?.fileName}"? This action cannot be undone.`
               ) : (
@@ -524,9 +556,14 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              disabled={!canDelete || deleteLoading}
+              disabled={!canDelete || deleteLoading || confirmDeleteLoading}
               onClick={confirmDelete}
             >
+              {confirmDeleteLoading ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <Trash2Icon className="size-4" />
+              )}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

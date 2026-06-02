@@ -205,7 +205,7 @@ function buildGlobalConfigs(media: MediaIds) {
         address:
           "インドネシア 西ジャワ州 Bandung Soreang ラヤ・ソレアン通り45番地 40911",
         map_url:
-          "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "https://www.google.com/maps?q=-7.02,107.52&output=embed",
         operational_hours: "月〜金 08:00-17:00 WIB（UTC+7）",
         language_support: ["日本語", "英語", "インドネシア語"],
       },
@@ -906,9 +906,9 @@ function buildPageData(media: MediaIds) {
         address:
           "インドネシア 西ジャワ州 Bandung Soreang ラヤ・ソレアン通り45番地 40911",
         map_url:
-          "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "https://www.google.com/maps?q=-7.02,107.52&output=embed",
         map_embed_url:
-          "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "https://www.google.com/maps?q=-7.02,107.52&output=embed",
       },
       inquiry_flow: [
         {

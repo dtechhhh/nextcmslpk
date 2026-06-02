@@ -5,6 +5,7 @@ import {
   ChevronDownIcon,
   EyeIcon,
   FileImageIcon,
+  Loader2Icon,
   SaveIcon,
   SendIcon,
   Undo2Icon,
@@ -16,6 +17,7 @@ import { CalloutPicker } from "@/components/dashboard/forms/callout-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
 import { StatusBadge } from "@/components/dashboard/collection-list";
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -115,6 +117,7 @@ export function CollectionEditor({
   const lastSavedSerializedRef = useRef(JSON.stringify(data));
   const saveSequenceRef = useRef(0);
   const pendingSaveCountRef = useRef(0);
+  const { start, startNavigation } = useCmsBusy();
 
   useEffect(() => {
     dataRef.current = data;
@@ -159,6 +162,9 @@ export function CollectionEditor({
       pendingSaveCountRef.current += 1;
       setIsSaving(true);
       setSaveState("saving");
+      const stopBusy = start(
+        existingItemId ? "Menyimpan item..." : "Membuat item...",
+      );
 
       try {
         const response = existingItemId
@@ -195,6 +201,7 @@ export function CollectionEditor({
           setSaveState("saved");
 
           if (!existingItemId) {
+            startNavigation("Membuka item baru...");
             router.replace(`${definition.listPath}/${response.item.id}`);
           }
         }
@@ -212,11 +219,20 @@ export function CollectionEditor({
         toast.error("Gagal menyimpan.");
         return null;
       } finally {
+        stopBusy();
         pendingSaveCountRef.current = Math.max(pendingSaveCountRef.current - 1, 0);
         setIsSaving(pendingSaveCountRef.current > 0);
       }
     },
-    [collectionKey, definition.defaultData, definition.listPath, router, variantId],
+    [
+      collectionKey,
+      definition.defaultData,
+      definition.listPath,
+      router,
+      start,
+      startNavigation,
+      variantId,
+    ],
   );
 
   useEffect(() => {
@@ -277,6 +293,9 @@ export function CollectionEditor({
 
   async function handlePublish() {
     setIsPublishing(true);
+    const stopBusy = start(
+      status === "PUBLISHED" ? "Mempublish perubahan item..." : "Mempublish item...",
+    );
 
     try {
       const savedItemId = await save(false);
@@ -307,6 +326,7 @@ export function CollectionEditor({
       setLastSavedAt(response.item.updatedAt);
       toast.success("Item dipublish.");
     } finally {
+      stopBusy();
       setIsPublishing(false);
     }
   }
@@ -319,6 +339,7 @@ export function CollectionEditor({
     }
 
     setIsUnpublishing(true);
+    const stopBusy = start("Mengembalikan item ke draft...");
 
     try {
       const response = await unpublishItem(savedItemId);
@@ -332,6 +353,7 @@ export function CollectionEditor({
       setLastSavedAt(response.item.updatedAt);
       toast.success("Item kembali ke draft.");
     } finally {
+      stopBusy();
       setIsUnpublishing(false);
     }
   }
@@ -358,6 +380,7 @@ export function CollectionEditor({
     }
 
     setIsChangingStatus(true);
+    const stopBusy = start("Mengubah status item...");
 
     try {
       const response = await changeItemStatus(savedItemId, value);
@@ -371,6 +394,7 @@ export function CollectionEditor({
       setLastSavedAt(response.item.updatedAt);
       toast.success("Status diubah.");
     } finally {
+      stopBusy();
       setIsChangingStatus(false);
     }
   }
@@ -392,6 +416,7 @@ export function CollectionEditor({
 
     previewWindow.opener = null;
     setIsPreviewing(true);
+    const stopBusy = start("Menyiapkan preview...");
 
     try {
       const response = await generateItemPreviewToken(savedItemId);
@@ -404,6 +429,7 @@ export function CollectionEditor({
 
       previewWindow.location.href = response.previewUrl;
     } finally {
+      stopBusy();
       setIsPreviewing(false);
     }
   }
@@ -447,16 +473,20 @@ export function CollectionEditor({
             disabled={!canPreview}
             onClick={handlePreview}
           >
-            <EyeIcon />
-            Preview
+            {isPreviewing ? <Loader2Icon className="animate-spin" /> : <EyeIcon />}
+            {isPreviewing ? "Preparing..." : "Preview"}
           </Button>
           <Button type="submit" variant="outline" disabled={controlsDisabled}>
-            <SaveIcon />
-            Save
+            {isSaving ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
           <Button type="button" disabled={controlsDisabled} onClick={handlePublish}>
-            <SendIcon />
-            {status === "PUBLISHED" ? "Publish changes" : "Publish"}
+            {isPublishing ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
+            {isPublishing
+              ? "Publishing..."
+              : status === "PUBLISHED"
+                ? "Publish changes"
+                : "Publish"}
           </Button>
           {status === "PUBLISHED" ? (
             <Button
@@ -465,8 +495,8 @@ export function CollectionEditor({
               disabled={controlsDisabled}
               onClick={handleUnpublish}
             >
-              <Undo2Icon />
-              Unpublish
+              {isUnpublishing ? <Loader2Icon className="animate-spin" /> : <Undo2Icon />}
+              {isUnpublishing ? "Unpublishing..." : "Unpublish"}
             </Button>
           ) : null}
         </div>

@@ -171,7 +171,7 @@ function buildGlobalConfigs(media: MediaIds) {
         email: "info@hashimotoindotrust.co.id",
         address: "Jl. Raya Soreang No. 45, Soreang, Bandung, Jawa Barat 40911",
         map_url:
-          "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "https://www.google.com/maps?q=-7.02,107.52&output=embed",
         operational_hours:
           "Senin–Jumat: 08.00–17.00 WIB | Sabtu: 08.00–13.00 WIB",
       },

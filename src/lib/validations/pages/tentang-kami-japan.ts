@@ -81,7 +81,7 @@ const japanFinalCtaSchema = z
     primary_cta_label: optionalString(120),
     primary_line_message_template: optionalString(600),
     secondary_cta_label: optionalString(120),
-    secondary_href: emptyOrUrl("Secondary CTA href"),
+    secondary_href: optionalString(500),
   })
   .passthrough();
 
