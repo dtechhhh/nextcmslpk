@@ -20,6 +20,7 @@ import {
   DashboardVariantProvider,
   useDashboardVariant,
 } from "@/components/dashboard/variant-context";
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -150,6 +151,7 @@ export function VariantTabs({ className }: { className?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const { activeVariant, setActiveVariant } = useDashboardVariant();
+  const busy = useCmsBusy();
 
   function handleValueChange(value: string | null) {
     if (value !== "indonesia" && value !== "japan") {
@@ -162,6 +164,7 @@ export function VariantTabs({ className }: { className?: string }) {
       pathname.startsWith("/dashboard/indonesia") ||
       pathname.startsWith("/dashboard/japan")
     ) {
+      busy.startNavigation("Membuka workspace...");
       router.push(DASHBOARD_VARIANTS[value].workspaceHref);
     }
   }
@@ -185,6 +188,7 @@ export function VariantTabs({ className }: { className?: string }) {
 
 function UserMenu({ username }: { username: string }) {
   const initials = username.slice(0, 2).toUpperCase();
+  const busy = useCmsBusy();
 
   return (
     <DropdownMenu>
@@ -207,10 +211,11 @@ function UserMenu({ username }: { username: string }) {
         <DropdownMenuGroup>
           <DropdownMenuLabel>{username}</DropdownMenuLabel>
           <DropdownMenuItem
-            className="cursor-pointer"
-            onClick={() => {
-              window.location.href = "/dashboard/account";
-            }}
+          className="cursor-pointer"
+          onClick={() => {
+            busy.startNavigation("Membuka akun...");
+            window.location.href = "/dashboard/account";
+          }}
           >
             <UserCircleIcon />
             Account
@@ -221,6 +226,7 @@ function UserMenu({ username }: { username: string }) {
           className="cursor-pointer"
           variant="destructive"
           onClick={() => {
+            busy.start("Keluar dari dashboard...");
             void signOut({ callbackUrl: "/dashboard/login" });
           }}
         >

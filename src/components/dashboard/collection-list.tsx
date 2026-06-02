@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   FileImageIcon,
+  Loader2Icon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
@@ -14,6 +15,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -121,32 +123,12 @@ export function CollectionList({
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ListItem | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const { start, startNavigation } = useCmsBusy();
 
   const fetchItems = useCallback(async () => {
-    const response = await listItems({
-      variantId,
-      collectionKey,
-      status: statusFilter,
-      page: currentPage,
-      filters: optionFilters,
-    });
+    const stopBusy = start("Memuat daftar konten...");
 
-    if (!isListSuccess(response)) {
-      toast.error(getActionError(response, "Gagal memuat data."));
-      setLoading(false);
-      return;
-    }
-
-    setItems(response.items);
-    setTotal(response.total);
-    setTotalPages(response.totalPages);
-    setLoading(false);
-  }, [variantId, collectionKey, statusFilter, currentPage, optionFilters]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
+    try {
       const response = await listItems({
         variantId,
         collectionKey,
@@ -155,20 +137,53 @@ export function CollectionList({
         filters: optionFilters,
       });
 
-      if (cancelled) {
-        return;
-      }
-
       if (!isListSuccess(response)) {
         toast.error(getActionError(response, "Gagal memuat data."));
-        setLoading(false);
         return;
       }
 
       setItems(response.items);
       setTotal(response.total);
       setTotalPages(response.totalPages);
+    } finally {
       setLoading(false);
+      stopBusy();
+    }
+  }, [variantId, collectionKey, statusFilter, currentPage, optionFilters, start]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const stopBusy = start("Memuat daftar konten...");
+
+      try {
+        const response = await listItems({
+          variantId,
+          collectionKey,
+          status: statusFilter,
+          page: currentPage,
+          filters: optionFilters,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!isListSuccess(response)) {
+          toast.error(getActionError(response, "Gagal memuat data."));
+          return;
+        }
+
+        setItems(response.items);
+        setTotal(response.total);
+        setTotalPages(response.totalPages);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+        stopBusy();
+      }
     }
 
     void load();
@@ -176,7 +191,7 @@ export function CollectionList({
     return () => {
       cancelled = true;
     };
-  }, [variantId, collectionKey, statusFilter, currentPage, optionFilters]);
+  }, [variantId, collectionKey, statusFilter, currentPage, optionFilters, start]);
 
   function handleStatusChange(value: string | null) {
     setLoading(true);
@@ -207,6 +222,7 @@ export function CollectionList({
 
   async function handlePublish(item: ListItem) {
     setActionLoading(item.id);
+    const stopBusy = start(`Mempublish ${item.title || "item"}...`);
 
     try {
       const response = await publishItem(item.id);
@@ -218,12 +234,14 @@ export function CollectionList({
         toast.error(getActionError(response, "Gagal mempublish."));
       }
     } finally {
+      stopBusy();
       setActionLoading(null);
     }
   }
 
   async function handleUnpublish(item: ListItem) {
     setActionLoading(item.id);
+    const stopBusy = start(`Mengembalikan ${item.title || "item"} ke draft...`);
 
     try {
       const response = await unpublishItem(item.id);
@@ -235,6 +253,7 @@ export function CollectionList({
         toast.error(getActionError(response, "Gagal mengembalikan ke draft."));
       }
     } finally {
+      stopBusy();
       setActionLoading(null);
     }
   }
@@ -245,6 +264,7 @@ export function CollectionList({
     }
 
     setActionLoading(deleteTarget.id);
+    const stopBusy = start(`Menghapus ${deleteTarget.title || "item"}...`);
 
     try {
       const response = await deleteItem(deleteTarget.id);
@@ -257,6 +277,7 @@ export function CollectionList({
         toast.error(getActionError(response, "Gagal menghapus."));
       }
     } finally {
+      stopBusy();
       setActionLoading(null);
     }
   }
@@ -272,7 +293,12 @@ export function CollectionList({
             {definition.pluralLabel}
           </h1>
         </div>
-        <Button onClick={() => router.push(definition.createPath)}>
+        <Button
+          onClick={() => {
+            startNavigation("Membuka editor baru...");
+            router.push(definition.createPath);
+          }}
+        >
           <PlusIcon />
           Create {definition.label}
         </Button>
@@ -329,7 +355,10 @@ export function CollectionList({
             {loading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  Loading...
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2Icon className="size-4 animate-spin" />
+                    Loading...
+                  </span>
                 </TableCell>
               </TableRow>
             ) : items.length === 0 ? (
@@ -390,6 +419,7 @@ export function CollectionList({
                         <DropdownMenuItem
                           className="cursor-pointer"
                           onClick={() => {
+                            startNavigation("Membuka editor...");
                             router.push(`${definition.listPath}/${item.id}`);
                           }}
                         >
@@ -513,6 +543,11 @@ export function CollectionList({
               onClick={handleDelete}
               disabled={actionLoading !== null}
             >
+              {actionLoading ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <TrashIcon className="size-4" />
+              )}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

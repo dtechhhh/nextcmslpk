@@ -37,6 +37,11 @@ const contentBlock = z.discriminatedUnion("type", [
   sectorCalloutBlockSchema,
 ]);
 
+const relatedArticleIdsSchema = z.preprocess(
+  (value) => (Array.isArray(value) ? value : []),
+  z.array(z.string()).default([]),
+);
+
 export {
   headingBlockSchema,
   imageBlockSchema,
@@ -71,7 +76,7 @@ export const newsSchema = z
       .enum(["same_category", "same_tags", "manual"])
       .default("same_category"),
     manual_news_ids: z.array(z.string()).default([]),
-    related_articles: z.array(z.string()).default([]),
+    related_articles: relatedArticleIdsSchema,
     related_max_items: z.coerce.number().int().min(1).max(10).default(3),
   })
   .passthrough();

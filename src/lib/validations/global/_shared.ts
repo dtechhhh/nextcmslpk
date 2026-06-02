@@ -1,11 +1,17 @@
 import { z } from "zod";
 
-export const mediaIdSchema = z.string().trim().max(128).default("");
+export const mediaIdSchema = z.preprocess(
+  emptyStringFromNullish,
+  z.string().trim().max(128).default(""),
+);
 
 export const sortOrderSchema = z.coerce.number().int().min(0).default(0);
 
 export function optionalString(max = 500) {
-  return z.string().trim().max(max).default("");
+  return z.preprocess(
+    emptyStringFromNullish,
+    z.string().trim().max(max).default(""),
+  );
 }
 
 export function requiredString(label: string, max = 200) {
@@ -17,25 +23,31 @@ export function requiredString(label: string, max = 200) {
 }
 
 export function emptyOrUrl(label: string) {
-  return z
-    .string()
-    .trim()
-    .max(2048, `${label} terlalu panjang.`)
-    .refine((value) => value === "" || isHttpUrl(value), {
-      message: `${label} harus berupa URL http/https.`,
-    })
-    .default("");
+  return z.preprocess(
+    emptyStringFromNullish,
+    z
+      .string()
+      .trim()
+      .max(2048, `${label} terlalu panjang.`)
+      .refine((value) => value === "" || isHttpUrl(value), {
+        message: `${label} harus berupa URL http/https.`,
+      })
+      .default(""),
+  );
 }
 
 export function emptyOrEmail(label: string) {
-  return z
-    .string()
-    .trim()
-    .max(254, `${label} terlalu panjang.`)
-    .refine((value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
-      message: `${label} harus berupa email valid.`,
-    })
-    .default("");
+  return z.preprocess(
+    emptyStringFromNullish,
+    z
+      .string()
+      .trim()
+      .max(254, `${label} terlalu panjang.`)
+      .refine((value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
+        message: `${label} harus berupa email valid.`,
+      })
+      .default(""),
+  );
 }
 
 export const whatsappNumberSchema = z
@@ -70,4 +82,8 @@ function isHttpUrl(value: string) {
   } catch {
     return false;
   }
+}
+
+export function emptyStringFromNullish(value: unknown) {
+  return value === null || value === undefined ? "" : value;
 }

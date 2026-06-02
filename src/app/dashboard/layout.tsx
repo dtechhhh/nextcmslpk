@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { IdleTracker } from "@/components/auth/idle-tracker";
+import { CmsBusyProvider } from "@/components/cms/cms-busy-feedback";
 import { TenantDashboardShell } from "@/components/dashboard/tenant-dashboard-shell";
 import {
   DEFAULT_DASHBOARD_VARIANT,
@@ -30,8 +31,10 @@ export default async function DashboardLayout({
   if (PUBLIC_DASHBOARD_ROUTES.has(pathname)) {
     return (
       <section className="min-h-full bg-background text-foreground">
-        <IdleTracker callbackUrl="/dashboard/login" />
-        {children}
+        <CmsBusyProvider>
+          <IdleTracker callbackUrl="/dashboard/login" />
+          {children}
+        </CmsBusyProvider>
       </section>
     );
   }
@@ -56,8 +59,10 @@ export default async function DashboardLayout({
   if (ONBOARDING_DASHBOARD_ROUTES.has(pathname)) {
     return (
       <section className="min-h-full bg-background text-foreground">
-        <IdleTracker callbackUrl="/dashboard/login" />
-        {children}
+        <CmsBusyProvider>
+          <IdleTracker callbackUrl="/dashboard/login" />
+          {children}
+        </CmsBusyProvider>
       </section>
     );
   }
@@ -67,14 +72,16 @@ export default async function DashboardLayout({
 
   return (
     <section className="min-h-full bg-background text-foreground">
-      <IdleTracker callbackUrl="/dashboard/login" />
-      <TenantDashboardShell
-        tenantName={dashboardContext.tenantName}
-        username={dashboardContext.username}
-        initialVariant={initialVariant}
-      >
-        {children}
-      </TenantDashboardShell>
+      <CmsBusyProvider>
+        <IdleTracker callbackUrl="/dashboard/login" />
+        <TenantDashboardShell
+          tenantName={dashboardContext.tenantName}
+          username={dashboardContext.username}
+          initialVariant={initialVariant}
+        >
+          {children}
+        </TenantDashboardShell>
+      </CmsBusyProvider>
     </section>
   );
 }

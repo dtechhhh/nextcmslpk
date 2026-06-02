@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { IdleTracker } from "@/components/auth/idle-tracker";
+import { CmsBusyProvider } from "@/components/cms/cms-busy-feedback";
 import { SuperAdminShell } from "@/components/super-admin/super-admin-shell";
 import { requireSuperAdminPage } from "@/server/services/super-admin";
 
@@ -19,8 +20,10 @@ export default async function SuperAdminLayout({
   if (PUBLIC_SUPER_ADMIN_ROUTES.has(pathname)) {
     return (
       <section className="min-h-full bg-background text-foreground">
-        <IdleTracker callbackUrl="/super-admin/login" />
-        {children}
+        <CmsBusyProvider>
+          <IdleTracker callbackUrl="/super-admin/login" />
+          {children}
+        </CmsBusyProvider>
       </section>
     );
   }
@@ -29,8 +32,10 @@ export default async function SuperAdminLayout({
 
   return (
     <section className="min-h-full bg-background text-foreground">
-      <IdleTracker callbackUrl="/super-admin/login" />
-      <SuperAdminShell username={user.username}>{children}</SuperAdminShell>
+      <CmsBusyProvider>
+        <IdleTracker callbackUrl="/super-admin/login" />
+        <SuperAdminShell username={user.username}>{children}</SuperAdminShell>
+      </CmsBusyProvider>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  emptyStringFromNullish,
   emptyOrUrl,
   mediaIdSchema,
   optionalString,
@@ -8,7 +9,10 @@ import {
 } from "@/lib/validations/global/_shared";
 
 export const iconKeySchema = z.string().trim().max(120).default("");
-export const contentIdSchema = z.string().trim().max(128).default("");
+export const contentIdSchema = z.preprocess(
+  emptyStringFromNullish,
+  z.string().trim().max(128).default(""),
+);
 
 export const enabledSortFields = {
   is_enabled: z.boolean().default(true),
