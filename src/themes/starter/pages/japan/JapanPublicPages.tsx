@@ -702,16 +702,19 @@ async function JapanHero({
     }
   }
 
-  const mediaSrc = await resolveMediaUrl(stringValue(hero.media_id));
+  const mediaId = stringValue(hero.media_id);
+  const mediaSrc = await resolveMediaUrl(mediaId);
 
   if (!mediaSrc) {
     return <PlainHero title={headline} subtitle={subheadline} eyebrowLabel={eyebrowLabel} />;
   }
 
+  const heroMediaType = mediaType === "video" ? "video" : "image";
+
   return (
     <HeroSection
-      mediaType={mediaType === "video" ? "video" : "image"}
-      mediaSrc={mediaSrc}
+      mediaType={heroMediaType}
+      mediaSrc={heroMediaType === "video" ? getMediaProxyUrl(mediaId) : mediaSrc}
       mediaAlt={headline}
       headline={headline}
       subheadline={subheadline}
@@ -720,6 +723,10 @@ async function JapanHero({
       priority
     />
   );
+}
+
+function getMediaProxyUrl(mediaId: string) {
+  return `/api/media/${encodeURIComponent(mediaId)}`;
 }
 
 function PlainHero({
