@@ -692,7 +692,6 @@ function buildPreviewUrl({
 
 function getPreviewProtocol(host: string) {
   if (
-    process.env.NODE_ENV !== "production" &&
     (host.startsWith("localhost") ||
       host.startsWith("127.0.0.1") ||
       host.startsWith("[::1]") ||
