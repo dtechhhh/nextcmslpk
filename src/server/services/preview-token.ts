@@ -38,7 +38,7 @@ export function signPreviewToken(payload: PreviewTokenPayload) {
 }
 
 export function verifyPreviewToken(token: string): VerifyPreviewTokenResult {
-  const secret = process.env.AUTH_SECRET;
+  const secret = getPreviewSecretValue();
 
   if (!secret) {
     return {
@@ -91,13 +91,17 @@ export function verifyPreviewToken(token: string): VerifyPreviewTokenResult {
 }
 
 function getPreviewSecret() {
-  const secret = process.env.AUTH_SECRET;
+  const secret = getPreviewSecretValue();
 
   if (!secret) {
     throw new AppError("CONFIG_ERROR", "AUTH_SECRET belum dikonfigurasi.", 500);
   }
 
   return secret;
+}
+
+function getPreviewSecretValue() {
+  return process.env.PREVIEW_SECRET || process.env.AUTH_SECRET;
 }
 
 function createSignature(value: string, secret: string) {

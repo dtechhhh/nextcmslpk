@@ -63,6 +63,8 @@ const slugAvailabilitySchema = z.object({
 
 const PAGE_SIZE = 12;
 
+type CompatibleOptionFilters = Record<string, string | string[]>;
+
 export async function listItems(input: unknown) {
   try {
     const context = await requireTenantActionContext();
@@ -118,8 +120,15 @@ export async function listItems(input: unknown) {
       },
     });
 
+    const compatibleFilters = await resolveCompatibleOptionFilters(
+      db,
+      variant.id,
+      collectionKey,
+      parsed.data.filters,
+    );
+
     const filteredRows = rows.filter((item) =>
-      matchesOptionFilters(item.dataJson, parsed.data.filters),
+      matchesOptionFilters(item.dataJson, compatibleFilters),
     );
     const total = filteredRows.length;
     const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -481,7 +490,7 @@ export async function publishItem(itemId: unknown) {
       },
     };
   } catch (error) {
-    return toActionError(error, "Item gagal dipublish.");
+    return toActionError(error, "Item gagal diterbitkan.");
   }
 }
 
@@ -549,7 +558,7 @@ export async function unpublishItem(itemId: unknown) {
       },
     };
   } catch (error) {
-    return toActionError(error, "Item gagal di-unpublish.");
+    return toActionError(error, "Item gagal dikembalikan ke draft.");
   }
 }
 
@@ -647,7 +656,7 @@ export async function deleteItem(itemId: unknown) {
 
     if (item.status !== "DRAFT") {
       throw new ValidationError({
-        status: ["Unpublish item terlebih dahulu sebelum delete."],
+        status: ["Kembalikan item ke draft terlebih dahulu sebelum dihapus."],
       });
     }
 
@@ -933,7 +942,7 @@ function validateCollectionData(collectionKey: CollectionKey, data: unknown) {
 
   if (!schema) {
     throw new ValidationError({
-      collectionKey: ["Collection key tidak tersedia."],
+      collectionKey: ["Jenis collection tidak tersedia."],
     });
   }
 
@@ -951,7 +960,7 @@ function normalizeEditableData(
   data: Record<string, unknown>,
 ) {
   const definition = getCollectionDefinition(collectionKey);
-  const title = readString(data.title) || "Untitled";
+  const title = readString(data.title) || "Tanpa judul";
   const slug = normalizeSlug(readString(data.slug) || title);
 
   return {
@@ -975,7 +984,7 @@ function getScalarItemData(
   },
 ) {
   const definition = COLLECTION_DEFINITIONS[collectionKey];
-  const title = readString(data.title) || fallback?.title || "Untitled";
+  const title = readString(data.title) || fallback?.title || "Tanpa judul";
   const slug = normalizeSlug(readString(data.slug) || fallback?.slug || title);
   const excerpt =
     readString(data.excerpt) ||
@@ -1013,19 +1022,19 @@ function validatePublishRequirements(
   const errors: Record<string, string[]> = {};
 
   if (definition.hasStartAt && !readString(data.start_at)) {
-    errors.start_at = ["Start at wajib diisi sebelum publish."];
+    errors.start_at = ["Tanggal mulai wajib diisi sebelum terbit."];
   }
 
   if (definition.hasExpiry && !readString(data.expired_at)) {
-    errors.expired_at = ["Expired at wajib diisi sebelum publish."];
+    errors.expired_at = ["Tanggal berakhir wajib diisi sebelum terbit."];
   }
 
   if (!readString(data.title)) {
-    errors.title = ["Title wajib diisi sebelum publish."];
+    errors.title = ["Judul wajib diisi sebelum terbit."];
   }
 
   if (!readString(data.slug)) {
-    errors.slug = ["Slug wajib diisi sebelum publish."];
+    errors.slug = ["Slug wajib diisi sebelum terbit."];
   }
 
   if (
@@ -1033,7 +1042,7 @@ function validatePublishRequirements(
     !readString(getAtPath(data, definition.descriptionPath))
   ) {
     errors[definition.descriptionPath] = [
-      "Ringkasan/deskripsi wajib diisi sebelum publish.",
+      "Ringkasan/deskripsi wajib diisi sebelum terbit.",
     ];
   }
 
@@ -1088,29 +1097,77 @@ async function isSlugAvailable(
   return !existing;
 }
 
-function matchesOptionFilters(dataJson: unknown, filters: Record<string, string>) {
+async function resolveCompatibleOptionFilters(
+  db: ReturnType<typeof tenantDb>,
+  variantId: string,
+  collectionKey: CollectionKey,
+  filters: Record<string, string>,
+): Promise<CompatibleOptionFilters> {
+  const definition = getCollectionDefinition(collectionKey);
+  const next: CompatibleOptionFilters = { ...filters };
+
+  for (const [path, value] of Object.entries(filters)) {
+    if (!value || value === "ALL") {
+      continue;
+    }
+
+    const filter = definition.optionFilters.find((item) => item.path === path);
+
+    if (!filter) {
+      continue;
+    }
+
+    const option = await db.optionValue.findFirst({
+      where: {
+        OR: [{ id: value }, { value }],
+        optionSet: {
+          variantId,
+          key: filter.optionSetKey,
+        },
+      },
+      select: { id: true, value: true },
+    });
+
+    if (option) {
+      next[path] = Array.from(new Set([option.id, option.value]));
+    }
+  }
+
+  return next;
+}
+
+function matchesOptionFilters(
+  dataJson: unknown,
+  filters: CompatibleOptionFilters,
+) {
   const data = isRecord(dataJson) ? dataJson : {};
 
   for (const [path, expectedValue] of Object.entries(filters)) {
-    if (!expectedValue || expectedValue === "ALL") {
+    const expectedValues = normalizeOptionFilterValues(expectedValue);
+
+    if (expectedValues.length === 0 || expectedValues.includes("ALL")) {
       continue;
     }
 
     const actualValue = getAtPath(data, path);
+    const actualValues = normalizeOptionFilterValues(actualValue);
 
-    if (Array.isArray(actualValue)) {
-      if (!actualValue.includes(expectedValue)) {
-        return false;
-      }
-      continue;
-    }
-
-    if (actualValue !== expectedValue) {
+    if (!actualValues.some((value) => expectedValues.includes(value))) {
       return false;
     }
   }
 
   return true;
+}
+
+function normalizeOptionFilterValues(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (item): item is string => typeof item === "string" && item.trim() !== "",
+    );
+  }
+
+  return typeof value === "string" && value.trim() !== "" ? [value] : [];
 }
 
 function normalizeListItem(item: {
@@ -1191,7 +1248,6 @@ function buildPreviewUrl({
 
 function getPreviewProtocol(host: string) {
   if (
-    process.env.NODE_ENV !== "production" &&
     (host.startsWith("localhost") ||
       host.startsWith("127.0.0.1") ||
       host.startsWith("[::1]") ||
