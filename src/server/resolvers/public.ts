@@ -1,7 +1,11 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-
 import type { PublishStatus } from "@/generated/prisma/enums";
 import type { ContentItemModel, ContentItemWhereInput } from "@/generated/prisma/models";
+import {
+  getCollectionDefinition,
+  isCollectionKey,
+  type CollectionKey,
+} from "@/lib/collection-definitions";
+import { verifyPreviewToken } from "@/server/services/preview-token";
 import { getPublicUrl } from "@/server/services/storage";
 import { prisma } from "@/server/db/client";
 
@@ -151,13 +155,36 @@ async function resolveFallbackMediaUrl(mediaUrls: Map<string, string> | undefine
   return mediaId ? resolveMediaUrl(mediaId) : null;
 }
 
-export async function resolveOptionLabel(optionId: string) {
+export async function resolveOptionLabel(
+  optionId: string,
+  scope?: { variantId: string; optionSetKey: string },
+) {
   if (!optionId) {
     return null;
   }
 
-  return prisma.optionValue.findUnique({
+  const option = await prisma.optionValue.findUnique({
     where: { id: optionId },
+    select: { label: true, value: true },
+  });
+
+  if (option) {
+    return option;
+  }
+
+  if (!scope) {
+    return null;
+  }
+
+  return prisma.optionValue.findFirst({
+    where: {
+      value: optionId,
+      isActive: true,
+      optionSet: {
+        variantId: scope.variantId,
+        key: scope.optionSetKey,
+      },
+    },
     select: { label: true, value: true },
   });
 }
@@ -195,13 +222,21 @@ export async function resolveCollectionList(
   const skip = (page - 1) * pageSize;
   const now = new Date();
   const source = opts.source;
+  const filters = await resolveCompatiblePublicFilters(
+    variantId,
+    collectionKey,
+    opts.filters,
+  );
 
   const where = buildCollectionListWhere({
     variantId,
     collectionKey,
     now,
     source,
-    opts,
+    opts: {
+      ...opts,
+      filters,
+    },
   });
   const orderBy =
     source === "latest_active" || source === "latest_published"
@@ -302,7 +337,8 @@ export async function resolveActiveOffer(variantId: string) {
 }
 
 export async function resolvePreviewToken(token: string, tenantId: string) {
-  const payload = verifyJwt(token);
+  const verified = verifyPreviewToken(token);
+  const payload = verified.ok ? verified.payload : null;
 
   if (!payload || payload.tenantId !== tenantId) {
     return { valid: false };
@@ -320,7 +356,8 @@ export async function resolvePreviewToken(token: string, tenantId: string) {
 }
 
 async function resolvePreviewTokenForVariant(token: string, variantId: string) {
-  const payload = verifyJwt(token);
+  const verified = verifyPreviewToken(token);
+  const payload = verified.ok ? verified.payload : null;
 
   if (!payload || payload.variantId !== variantId) {
     return null;
@@ -380,7 +417,7 @@ function buildCollectionListWhere({
   now: Date;
   source: "featured" | "latest_active" | "latest_published" | "manual" | undefined;
   opts: {
-    filters?: Record<string, string>;
+    filters?: Record<string, string | string[]>;
     activeOnly?: boolean;
     manualIds?: string[];
   };
@@ -401,16 +438,82 @@ function buildCollectionListWhere({
 }
 
 function buildPublishedJsonFilterConditions(
-  filters?: Record<string, string>,
+  filters?: Record<string, string | string[]>,
 ): ContentItemWhereInput[] {
-  const activeFilters = Object.entries(filters ?? {}).filter(([, value]) => value);
+  const activeFilters = Object.entries(filters ?? {})
+    .map(([key, value]) => [key, normalizeFilterValues(value)] as const)
+    .filter(([, values]) => values.length > 0);
 
-  return activeFilters.map(([key, value]) => ({
+  return activeFilters.map(([key, values]) => ({
     OR: filterJsonPaths(key).flatMap((path) => [
-      { publishedDataJson: { path: [path], equals: value } },
-      { publishedDataJson: { path: [path], array_contains: [value] } },
+      ...values.map((value) => ({
+        publishedDataJson: { path: [path], equals: value },
+      })),
+      ...values.map((value) => ({
+        publishedDataJson: { path: [path], array_contains: [value] },
+      })),
     ]),
   }));
+}
+
+async function resolveCompatiblePublicFilters(
+  variantId: string,
+  collectionKey: string,
+  filters?: Record<string, string>,
+) {
+  if (!filters || !isCollectionKey(collectionKey)) {
+    return filters;
+  }
+
+  const definition = getCollectionDefinition(collectionKey);
+  const next: Record<string, string | string[]> = { ...filters };
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (!value) {
+      continue;
+    }
+
+    const optionSetKey = getFilterOptionSetKey(definition.key, key);
+
+    if (!optionSetKey) {
+      continue;
+    }
+
+    const option = await prisma.optionValue.findFirst({
+      where: {
+        OR: [{ id: value }, { value }],
+        optionSet: {
+          variantId,
+          key: optionSetKey,
+        },
+      },
+      select: { id: true, value: true },
+    });
+
+    if (option) {
+      next[key] = Array.from(new Set([option.id, option.value]));
+    }
+  }
+
+  return next;
+}
+
+function getFilterOptionSetKey(collectionKey: CollectionKey, key: string) {
+  const definition = getCollectionDefinition(collectionKey);
+  const pathCandidates = new Set(filterJsonPaths(key));
+  const filter = definition.optionFilters.find((item) => pathCandidates.has(item.path));
+
+  return filter?.optionSetKey ?? null;
+}
+
+function normalizeFilterValues(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (item): item is string => typeof item === "string" && item.trim() !== "",
+    );
+  }
+
+  return typeof value === "string" && value.trim() !== "" ? [value] : [];
 }
 
 function filterJsonPaths(key: string) {
@@ -421,81 +524,6 @@ function filterJsonPaths(key: string) {
     `${key}_option_ids`,
     `${key}_ids`,
   ];
-}
-
-type PreviewJwtPayload = {
-  iss: "nextcmslpk";
-  sub: string;
-  type: "content_page" | "content_item";
-  tenantId: string;
-  variantId: string;
-  pageKey?: string;
-  collectionKey?: string;
-  iat: number;
-  exp: number;
-};
-
-function verifyJwt(token: string): PreviewJwtPayload | null {
-  const secret = process.env.PREVIEW_SECRET || process.env.AUTH_SECRET;
-
-  if (!secret) {
-    return null;
-  }
-
-  const [encodedHeader, encodedPayload, signature, ...extraParts] = token.split(".");
-
-  if (!encodedHeader || !encodedPayload || !signature || extraParts.length > 0) {
-    return null;
-  }
-
-  const expectedSignature = createHmac("sha256", secret)
-    .update(`${encodedHeader}.${encodedPayload}`)
-    .digest("base64url");
-
-  if (!safeEqual(signature, expectedSignature)) {
-    return null;
-  }
-
-  try {
-    const payload = JSON.parse(
-      Buffer.from(encodedPayload, "base64url").toString("utf8"),
-    ) as unknown;
-
-    if (!isPreviewPayload(payload)) {
-      return null;
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-    const isExpired = payload.exp <= now;
-    const isOlderThanOneHour = payload.iat < now - 60 * 60;
-
-    return isExpired || isOlderThanOneHour ? null : payload;
-  } catch {
-    return null;
-  }
-}
-
-function safeEqual(left: string, right: string) {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-
-  return (
-    leftBuffer.byteLength === rightBuffer.byteLength &&
-    timingSafeEqual(leftBuffer, rightBuffer)
-  );
-}
-
-function isPreviewPayload(value: unknown): value is PreviewJwtPayload {
-  return (
-    isRecord(value) &&
-    value.iss === "nextcmslpk" &&
-    (value.type === "content_page" || value.type === "content_item") &&
-    typeof value.sub === "string" &&
-    typeof value.tenantId === "string" &&
-    typeof value.variantId === "string" &&
-    typeof value.iat === "number" &&
-    typeof value.exp === "number"
-  );
 }
 
 function normalizeJson(value: unknown): PublicJson {

@@ -2,9 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export function proxy(request: NextRequest) {
-  const host = request.headers.get("host") || "";
+  const host = normalizeHost(request.headers.get("host") || "");
 
-  if (host === process.env.SUPER_ADMIN_DOMAIN) {
+  if (isSameHost(host, process.env.SUPER_ADMIN_DOMAIN)) {
     if (request.nextUrl.pathname === "/dashboard/login") {
       return redirectToPath(request, "/super-admin/login");
     }
@@ -12,7 +12,7 @@ export function proxy(request: NextRequest) {
     return rewriteToSurface(request, "/super-admin");
   }
 
-  if (host === process.env.DASHBOARD_DOMAIN) {
+  if (isSameHost(host, process.env.DASHBOARD_DOMAIN)) {
     if (request.nextUrl.pathname === "/super-admin/login") {
       return redirectToPath(request, "/dashboard/login");
     }
@@ -58,6 +58,36 @@ function rewriteToSurface(request: NextRequest, surfacePath: string) {
       headers: requestHeaders,
     },
   });
+}
+
+function isSameHost(left: string, right?: string) {
+  if (!right) {
+    return false;
+  }
+
+  const normalizedRight = normalizeHost(right);
+
+  return left === normalizedRight || stripPort(left) === stripPort(normalizedRight);
+}
+
+function normalizeHost(value: string) {
+  return value.trim().replace(/\.$/, "").toLowerCase();
+}
+
+function stripPort(host: string) {
+  if (host.startsWith("[")) {
+    const bracketEnd = host.indexOf("]");
+
+    return bracketEnd >= 0 ? host.slice(0, bracketEnd + 1) : host;
+  }
+
+  const [hostname, port, ...rest] = host.split(":");
+
+  if (hostname && port && rest.length === 0 && /^\d{1,5}$/.test(port)) {
+    return hostname;
+  }
+
+  return host;
 }
 
 export const config = {

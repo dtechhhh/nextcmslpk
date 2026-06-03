@@ -22,16 +22,7 @@ export async function resolveDomain(hostInput: string): Promise<DomainResolution
     return { type: "not_found" };
   }
 
-  const domain = await prisma.domain.findFirst({
-    where: { host, status: "ACTIVE" },
-    include: {
-      variant: {
-        include: {
-          tenant: true,
-        },
-      },
-    },
-  });
+  const domain = await findActiveDomainByHost(host);
 
   if (!domain) {
     return { type: "not_found" };
@@ -56,6 +47,35 @@ export async function resolveDomain(hostInput: string): Promise<DomainResolution
       theme: starterTheme,
     },
   };
+}
+
+async function findActiveDomainByHost(host: string) {
+  const hostWithoutPort = stripPort(host);
+  const hostFilters =
+    host === hostWithoutPort
+      ? [{ host }, { host: { startsWith: `${host}:` } }]
+      : [{ host }, { host: hostWithoutPort }];
+
+  const domains = await prisma.domain.findMany({
+    where: {
+      status: "ACTIVE",
+      OR: hostFilters,
+    },
+    include: {
+      variant: {
+        include: {
+          tenant: true,
+        },
+      },
+    },
+    orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+  });
+
+  return (
+    domains.find((domain) => normalizeHost(domain.host) === host) ??
+    domains.find((domain) => stripPort(normalizeHost(domain.host)) === hostWithoutPort) ??
+    null
+  );
 }
 
 export type PublicDomainResolution =
@@ -107,6 +127,22 @@ export async function resolvePublicDomainByHost(
 
 function normalizeHost(value: string) {
   return value.trim().replace(/\.$/, "").toLowerCase();
+}
+
+function stripPort(host: string) {
+  if (host.startsWith("[")) {
+    const bracketEnd = host.indexOf("]");
+
+    return bracketEnd >= 0 ? host.slice(0, bracketEnd + 1) : host;
+  }
+
+  const [hostname, port, ...rest] = host.split(":");
+
+  if (hostname && port && rest.length === 0 && /^\d{1,5}$/.test(port)) {
+    return hostname;
+  }
+
+  return host;
 }
 
 export function getDomainProtocol(host: string): "http" | "https" {

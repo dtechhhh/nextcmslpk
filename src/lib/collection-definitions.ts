@@ -35,7 +35,14 @@ export type ContentBlockType =
   | "line_cta"
   | "sector_callout";
 
-export type CollectionField =
+type CollectionFieldGuidance = {
+  helpText?: string;
+  usage?: string;
+  example?: string;
+  requiredForPublish?: boolean;
+};
+
+export type CollectionField = (
   | {
       kind: "text" | "textarea" | "number" | "date" | "switch" | "document";
       path: string;
@@ -87,7 +94,9 @@ export type CollectionField =
       path: string;
       label: string;
       blockTypes: ContentBlockType[];
-    };
+    }
+) &
+  CollectionFieldGuidance;
 
 export type CollectionSection = {
   title: string;
