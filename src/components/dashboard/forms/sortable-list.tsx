@@ -7,7 +7,7 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 import { GripVerticalIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useId } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,14 @@ type SortableListProps<T> = {
   className?: string;
 };
 
+function sanitizeStableKey(value: string) {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+function createInitialStableKey(value: string, index: number) {
+  return `${sanitizeStableKey(value) || "item"}-${index}`;
+}
+
 export function SortableList<T>({
   items,
   onChange,
@@ -39,8 +47,22 @@ export function SortableList<T>({
 }: SortableListProps<T>) {
   const reactId = useId();
   const droppableId = `sortable-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const nextStableKeyRef = useRef(0);
+  const [itemKeys, setItemKeys] = useState(() =>
+    items.map((item, index) => createInitialStableKey(getItemKey(item, index), index)),
+  );
 
-  function emit(nextItems: T[]) {
+  const createStableKey = useCallback((item: T, index: number) => {
+    nextStableKeyRef.current += 1;
+
+    return `${createInitialStableKey(
+      getItemKey(item, index),
+      index,
+    )}-${nextStableKeyRef.current}`;
+  }, [getItemKey]);
+
+  function emit(nextItems: T[], nextKeys = itemKeys) {
+    setItemKeys(nextKeys);
     onChange(normalizeItems(nextItems));
   }
 
@@ -50,14 +72,29 @@ export function SortableList<T>({
     }
 
     const nextItems = [...items];
+    const nextKeys = [...itemKeys];
     const [movedItem] = nextItems.splice(result.source.index, 1);
+    const [movedKey] = nextKeys.splice(result.source.index, 1);
 
     nextItems.splice(result.destination.index, 0, movedItem);
-    emit(nextItems);
+    nextKeys.splice(result.destination.index, 0, movedKey);
+    emit(nextItems, nextKeys);
   }
 
   function handleRemove(index: number) {
-    emit(items.filter((_item, itemIndex) => itemIndex !== index));
+    emit(
+      items.filter((_item, itemIndex) => itemIndex !== index),
+      itemKeys.filter((_key, itemIndex) => itemIndex !== index),
+    );
+  }
+
+  function handleAdd() {
+    const nextItem = createItem(items.length);
+
+    emit([...items, nextItem], [
+      ...itemKeys,
+      createStableKey(nextItem, items.length),
+    ]);
   }
 
   return (
@@ -77,7 +114,10 @@ export function SortableList<T>({
               )}
 
               {items.map((item, index) => {
-                const itemKey = `${droppableId}-${getItemKey(item, index)}-${index}`;
+                const itemKey = `${droppableId}-${
+                  itemKeys[index] ??
+                  createInitialStableKey(getItemKey(item, index), index)
+                }`;
 
                 return (
                   <Draggable draggableId={itemKey} index={index} key={itemKey}>
@@ -127,7 +167,7 @@ export function SortableList<T>({
         type="button"
         variant="outline"
         className="w-fit"
-        onClick={() => emit([...items, createItem(items.length)])}
+        onClick={handleAdd}
       >
         <PlusIcon />
         {addLabel}

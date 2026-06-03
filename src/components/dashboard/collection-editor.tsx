@@ -28,6 +28,7 @@ import {
 import {
   Field,
   FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -51,6 +52,20 @@ import {
   type ContentBlockType,
   type PublishStatus,
 } from "@/lib/collection-definitions";
+import {
+  getCmsAddLabel,
+  getCmsBlockTypeLabel,
+  getCmsCollectionEyebrow,
+  getCmsCollectionLabel,
+  getCmsEmptyLabel,
+  getCmsFieldGuidance,
+  getCmsFieldLabel,
+  getCmsItemLabel,
+  getCmsPlaceholder,
+  getCmsPublishStatusLabel,
+  getCmsSectionTitle,
+  getCmsStaticOptionLabel,
+} from "@/lib/cms-field-guidance";
 import { generateSlug } from "@/lib/slugify";
 import { cn } from "@/lib/utils";
 import {
@@ -127,6 +142,11 @@ export function CollectionEditor({
     currentItemIdRef.current = currentItemId;
   }, [currentItemId]);
 
+  const hasUnsavedChanges = useCallback(
+    () => JSON.stringify(dataRef.current) !== lastSavedSerializedRef.current,
+    [],
+  );
+
   const setValue = useCallback(
     (path: string, value: unknown) => {
       setData((current) => {
@@ -152,7 +172,15 @@ export function CollectionEditor({
       if (
         existingItemId &&
         serializedSnapshot === lastSavedSerializedRef.current &&
-        !showSuccessToast
+        showSuccessToast
+      ) {
+        toast.success("Tidak ada perubahan baru.");
+        return existingItemId;
+      }
+
+      if (
+        existingItemId &&
+        serializedSnapshot === lastSavedSerializedRef.current
       ) {
         return existingItemId;
       }
@@ -244,12 +272,73 @@ export function CollectionEditor({
     }
 
     setSaveState((current) => (current === "saving" ? current : "dirty"));
-    const timeoutId = window.setTimeout(() => {
-      void save(false);
-    }, 1000);
+  }, [data]);
 
-    return () => window.clearTimeout(timeoutId);
-  }, [data, save]);
+  useEffect(() => {
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      if (!hasUnsavedChanges()) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    function handleDocumentClick(event: MouseEvent) {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        !hasUnsavedChanges()
+      ) {
+        return;
+      }
+
+      if (!(event.target instanceof Element)) {
+        return;
+      }
+
+      const anchor = event.target.closest<HTMLAnchorElement>("a[href]");
+
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) {
+        return;
+      }
+
+      const href = anchor.getAttribute("href");
+
+      if (!href || href.startsWith("#")) {
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+
+      if (url.origin !== window.location.origin || url.href === window.location.href) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        "Ada perubahan belum disimpan. Tinggalkan halaman tanpa menyimpan?",
+      );
+
+      if (!confirmed) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }
+
+    document.addEventListener("click", handleDocumentClick, true);
+
+    return () => document.removeEventListener("click", handleDocumentClick, true);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     const slug = readString(getAtPath(data, "slug"));
@@ -294,7 +383,9 @@ export function CollectionEditor({
   async function handlePublish() {
     setIsPublishing(true);
     const stopBusy = start(
-      status === "PUBLISHED" ? "Mempublish perubahan item..." : "Mempublish item...",
+      status === "PUBLISHED"
+        ? "Menerbitkan perubahan item..."
+        : "Menerbitkan item...",
     );
 
     try {
@@ -313,18 +404,18 @@ export function CollectionEditor({
           setErrors(actionErrors);
         } else {
           setErrors({
-            form: [getActionErrorMessage(response, "Gagal mempublish.")],
+            form: [getActionErrorMessage(response, "Gagal menerbitkan.")],
           });
         }
 
-        toast.error(getActionErrorMessage(response, "Gagal mempublish."));
+        toast.error(getActionErrorMessage(response, "Gagal menerbitkan."));
         return;
       }
 
       setErrors({});
       setStatus(response.item.status);
       setLastSavedAt(response.item.updatedAt);
-      toast.success("Item dipublish.");
+      toast.success("Item diterbitkan.");
     } finally {
       stopBusy();
       setIsPublishing(false);
@@ -410,7 +501,7 @@ export function CollectionEditor({
     const previewWindow = window.open("about:blank", "_blank");
 
     if (!previewWindow) {
-      toast.error("Preview diblokir browser.");
+      toast.error("Pratinjau diblokir browser.");
       return;
     }
 
@@ -423,7 +514,7 @@ export function CollectionEditor({
 
       if (!isPreviewTokenSuccess(response)) {
         previewWindow.close();
-        toast.error(getActionErrorMessage(response, "Preview gagal dibuka."));
+        toast.error(getActionErrorMessage(response, "Pratinjau gagal dibuka."));
         return;
       }
 
@@ -448,11 +539,12 @@ export function CollectionEditor({
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-sm font-medium text-muted-foreground">
-            {definition.eyebrow}
+            {getCmsCollectionEyebrow(definition.eyebrow)}
           </p>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-normal">
-              {readString(data.title) || `Create ${definition.label}`}
+              {readString(data.title) ||
+                `Tambah ${getCmsCollectionLabel(definition.label)}`}
             </h1>
             <StatusBadge status={status} />
           </div>
@@ -474,19 +566,19 @@ export function CollectionEditor({
             onClick={handlePreview}
           >
             {isPreviewing ? <Loader2Icon className="animate-spin" /> : <EyeIcon />}
-            {isPreviewing ? "Preparing..." : "Preview"}
+            {isPreviewing ? "Menyiapkan..." : "Pratinjau"}
           </Button>
           <Button type="submit" variant="outline" disabled={controlsDisabled}>
             {isSaving ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? "Menyimpan..." : "Simpan"}
           </Button>
           <Button type="button" disabled={controlsDisabled} onClick={handlePublish}>
             {isPublishing ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
             {isPublishing
-              ? "Publishing..."
+              ? "Menerbitkan..."
               : status === "PUBLISHED"
-                ? "Publish changes"
-                : "Publish"}
+                ? "Terbitkan perubahan"
+                : "Terbitkan"}
           </Button>
           {status === "PUBLISHED" ? (
             <Button
@@ -496,7 +588,7 @@ export function CollectionEditor({
               onClick={handleUnpublish}
             >
               {isUnpublishing ? <Loader2Icon className="animate-spin" /> : <Undo2Icon />}
-              {isUnpublishing ? "Unpublishing..." : "Unpublish"}
+              {isUnpublishing ? "Membatalkan terbit..." : "Batalkan terbit"}
             </Button>
           ) : null}
         </div>
@@ -544,7 +636,7 @@ export function CollectionEditor({
                     <SelectContent>
                       {definition.statuses.map((itemStatus) => (
                         <SelectItem key={itemStatus} value={itemStatus}>
-                          {itemStatus}
+                          {getCmsPublishStatusLabel(itemStatus)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -554,7 +646,7 @@ export function CollectionEditor({
               {lastSavedAt ? (
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
-                    Last saved
+                    Terakhir disimpan
                   </p>
                   <p className="text-sm">{formatDateTime(lastSavedAt)}</p>
                 </div>
@@ -565,14 +657,14 @@ export function CollectionEditor({
           <div className="rounded-lg border bg-card p-4">
             <div className="flex flex-col gap-4">
               <Field className="flex-row items-center justify-between">
-                <FieldLabel>Featured</FieldLabel>
+                <FieldLabel>Unggulan</FieldLabel>
                 <Switch
                   checked={Boolean(data.is_featured)}
                   onCheckedChange={(checked) => setValue("is_featured", checked)}
                 />
               </Field>
               <Field>
-                <FieldLabel>Sort Order</FieldLabel>
+                <FieldLabel>Urutan tampil</FieldLabel>
                 <Input
                   type="number"
                   value={toNumberInputValue(data.sort_order)}
@@ -591,7 +683,7 @@ export function CollectionEditor({
           <div className="rounded-lg border bg-card p-4">
             <div className="flex flex-col gap-3">
               <p className="text-xs font-medium text-muted-foreground">
-                Thumbnail preview
+                Pratinjau thumbnail
               </p>
               <div className="flex min-h-28 items-center justify-center rounded-lg border border-dashed bg-muted/40 p-3 text-center text-xs text-muted-foreground">
                 {readString(getAtPath(data, definition.thumbnailPath)) ? (
@@ -602,7 +694,7 @@ export function CollectionEditor({
                     </span>
                   </div>
                 ) : (
-                  "No thumbnail selected"
+                  "Belum ada thumbnail dipilih"
                 )}
               </div>
             </div>
@@ -640,7 +732,9 @@ function EditorSection({
     <Collapsible open={open} onOpenChange={setOpen}>
       <div className="overflow-hidden rounded-lg border bg-card">
         <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
-          <span className="text-base font-medium">{section.title}</span>
+          <span className="text-base font-medium">
+            {getCmsSectionTitle(section.title)}
+          </span>
           <ChevronDownIcon
             className={cn(
               "size-4 shrink-0 text-muted-foreground transition-transform",
@@ -704,6 +798,7 @@ function FieldRenderer({
     field.kind === "string-array" ||
     field.kind === "content-blocks" ||
     field.kind === "multiselect";
+  const label = getCmsFieldLabel(field);
 
   if (field.kind === "array") {
     const rawItems = getAtPath(data, path);
@@ -711,13 +806,14 @@ function FieldRenderer({
 
     return (
       <Field className={wide ? "md:col-span-2" : undefined} data-invalid={Boolean(error)}>
-        <FieldLabel>{field.label}</FieldLabel>
+        <FieldLabel>{label}</FieldLabel>
+        <FieldGuidance field={field} />
         <SortableList
           items={items.map((item) =>
             isRecord(item) ? deepMerge(field.defaultItem, item) : field.defaultItem,
           )}
-          addLabel={field.addLabel ?? `Add ${field.itemLabel ?? "item"}`}
-          emptyLabel="No items yet."
+          addLabel={getCmsAddLabel(field)}
+          emptyLabel={getCmsEmptyLabel(field)}
           createItem={(index) =>
             normalizeArrayItems(
               [
@@ -732,7 +828,9 @@ function FieldRenderer({
           normalizeItems={(nextItems) =>
             normalizeArrayItems(nextItems, field.sortOrderField)
           }
-          getItemLabel={(item, index) => getArrayItemLabel(item, index, field.itemLabel)}
+          getItemLabel={(item, index) =>
+            getArrayItemLabel(item, index, getCmsItemLabel(field.itemLabel))
+          }
           getItemKey={(item, index) => getArrayItemKey(item, index)}
           onChange={(nextItems) => setValue(path, nextItems)}
           renderItem={(_item, index) => (
@@ -768,19 +866,22 @@ function FieldRenderer({
 
     return (
       <Field className="md:col-span-2" data-invalid={Boolean(error)}>
-        <FieldLabel>{field.label}</FieldLabel>
+        <FieldLabel>{label}</FieldLabel>
+        <FieldGuidance field={field} />
         <SortableList
           items={items}
-          addLabel={field.addLabel ?? `Add ${field.itemLabel ?? "item"}`}
-          emptyLabel="No items yet."
+          addLabel={getCmsAddLabel(field)}
+          emptyLabel={getCmsEmptyLabel(field)}
           createItem={() => ""}
-          getItemLabel={(_item, index) => `${field.itemLabel ?? "Item"} ${index + 1}`}
+          getItemLabel={(_item, index) =>
+            `${getCmsItemLabel(field.itemLabel)} ${index + 1}`
+          }
           getItemKey={(item, index) => `${item}-${index}`}
           onChange={(nextItems) => setValue(path, nextItems)}
           renderItem={(_item, index) => (
             <Input
               value={items[index] ?? ""}
-              placeholder={field.placeholder}
+              placeholder={getCmsPlaceholder(field)}
               onChange={(event) => {
                 const nextItems = [...items];
 
@@ -798,7 +899,8 @@ function FieldRenderer({
   if (field.kind === "content-blocks") {
     return (
       <Field className="md:col-span-2" data-invalid={Boolean(error)}>
-        <FieldLabel>{field.label}</FieldLabel>
+        <FieldLabel>{label}</FieldLabel>
+        <FieldGuidance field={field} />
         <ContentBlocksEditor
           tenantId={tenantId}
           variantId={variantId}
@@ -817,10 +919,11 @@ function FieldRenderer({
 
     return (
       <Field className="md:col-span-2" data-invalid={Boolean(error)}>
-        <FieldLabel>{field.label}</FieldLabel>
+        <FieldLabel>{label}</FieldLabel>
+        <FieldGuidance field={field} />
         <div className="grid gap-2 rounded-lg border p-3 sm:grid-cols-2">
           {options.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No options yet.</p>
+            <p className="text-sm text-muted-foreground">Belum ada opsi.</p>
           ) : (
             options.map((option) => (
               <label
@@ -830,11 +933,14 @@ function FieldRenderer({
                 <input
                   type="checkbox"
                   className="size-4 accent-primary"
-                  checked={selectedValues.includes(option.value)}
+                  checked={isOptionSelected(selectedValues, option)}
                   onChange={(event) => {
+                    const valuesWithoutOption = selectedValues.filter(
+                      (value) => value !== option.id && value !== option.value,
+                    );
                     const nextValues = event.target.checked
-                      ? [...selectedValues, option.value]
-                      : selectedValues.filter((value) => value !== option.value);
+                      ? [...valuesWithoutOption, option.id]
+                      : valuesWithoutOption;
 
                     setValue(path, nextValues);
                   }}
@@ -854,7 +960,8 @@ function FieldRenderer({
       {field.kind === "switch" ? (
         <div className="flex min-h-10 items-center justify-between gap-3 rounded-lg border px-3 py-2">
           <FieldContent>
-            <FieldLabel>{field.label}</FieldLabel>
+            <FieldLabel>{label}</FieldLabel>
+            <FieldGuidance field={field} compact />
           </FieldContent>
           <Switch
             checked={Boolean(getAtPath(data, path))}
@@ -864,7 +971,8 @@ function FieldRenderer({
         </div>
       ) : (
         <>
-          <FieldLabel>{field.label}</FieldLabel>
+          <FieldLabel>{label}</FieldLabel>
+          <FieldGuidance field={field} />
           {renderControl({
             field,
             data,
@@ -883,6 +991,45 @@ function FieldRenderer({
       )}
       <FieldError>{error}</FieldError>
     </Field>
+  );
+}
+
+function FieldGuidance({
+  field,
+  compact = false,
+}: {
+  field: CollectionField;
+  compact?: boolean;
+}) {
+  const guidance = getCmsFieldGuidance(field);
+
+  if (!guidance) {
+    return null;
+  }
+
+  return (
+    <div className={cn("space-y-1", compact && "mt-0.5")}>
+      {guidance.helpText ? (
+        <FieldDescription className={compact ? "text-xs" : undefined}>
+          {guidance.helpText}
+        </FieldDescription>
+      ) : null}
+      {guidance.usage ? (
+        <p className="text-xs leading-5 text-muted-foreground">
+          Dipakai untuk: {guidance.usage}
+        </p>
+      ) : null}
+      {guidance.example ? (
+        <p className="text-xs leading-5 text-muted-foreground">
+          Contoh: <span className="font-medium text-foreground">{guidance.example}</span>
+        </p>
+      ) : null}
+      {guidance.requiredForPublish ? (
+        <Badge variant="outline" className="w-fit text-[11px]">
+          Wajib sebelum terbit
+        </Badge>
+      ) : null}
+    </div>
   );
 }
 
@@ -915,7 +1062,7 @@ function renderControl({
       return (
         <Input
           value={toInputValue(rawValue)}
-          placeholder={field.placeholder}
+          placeholder={getCmsPlaceholder(field)}
           aria-invalid={Boolean(error)}
           onBlur={() => {
             if (path === "slug") {
@@ -935,7 +1082,7 @@ function renderControl({
       return (
         <Textarea
           value={toInputValue(rawValue)}
-          placeholder={field.placeholder}
+          placeholder={getCmsPlaceholder(field)}
           aria-invalid={Boolean(error)}
           onChange={(event) => setValue(path, event.target.value)}
         />
@@ -963,10 +1110,15 @@ function renderControl({
         />
       );
     case "select": {
+      const usesOptionSet = Boolean(field.optionSetKey && !field.options);
       const options =
         field.options ??
         (field.optionSetKey ? optionSets[field.optionSetKey] ?? [] : []);
-      const value = toInputValue(rawValue) || EMPTY_SELECT_VALUE;
+      const value = resolveSelectValue(
+        toInputValue(rawValue),
+        options,
+        usesOptionSet,
+      );
 
       return (
         <Select
@@ -976,15 +1128,19 @@ function renderControl({
           }
         >
           <SelectTrigger className="w-full" aria-invalid={Boolean(error)}>
-            <SelectValue placeholder="Select value" />
+            <SelectValue placeholder="Pilih nilai" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
+            <SelectItem value={EMPTY_SELECT_VALUE}>Kosong</SelectItem>
+            {options.map((option) => {
+              const optionValue = getSelectOptionValue(option, usesOptionSet);
+
+              return (
+                <SelectItem key={optionValue} value={optionValue}>
+                  {usesOptionSet ? option.label : getCmsStaticOptionLabel(option.label)}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       );
@@ -1027,8 +1183,8 @@ function ContentBlocksEditor({
   return (
     <SortableList
       items={items}
-      addLabel="Add block"
-      emptyLabel="No content blocks yet."
+      addLabel="Tambah blok"
+      emptyLabel="Belum ada blok konten."
       createItem={(index) => createBlock(blockTypes[0], index)}
       normalizeItems={(nextItems) => normalizeArrayItems(nextItems, "sort_order")}
       getItemLabel={(item, index) => getBlockLabel(item, index)}
@@ -1040,7 +1196,7 @@ function ContentBlocksEditor({
         return (
           <div className="grid gap-4 md:grid-cols-2">
             <Field>
-              <FieldLabel>Type</FieldLabel>
+              <FieldLabel>Tipe blok</FieldLabel>
               <Select
                 value={type}
                 onValueChange={(value) => {
@@ -1052,12 +1208,12 @@ function ContentBlocksEditor({
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Block type" />
+                  <SelectValue placeholder="Pilih tipe blok" />
                 </SelectTrigger>
                 <SelectContent>
                   {blockTypes.map((blockType) => (
                     <SelectItem key={blockType} value={blockType}>
-                      {formatBlockType(blockType)}
+                      {getCmsBlockTypeLabel(blockType)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1098,13 +1254,13 @@ function BlockFields({
       return (
         <>
           <Field>
-            <FieldLabel>Level</FieldLabel>
+            <FieldLabel>Tingkat judul bagian</FieldLabel>
             <Select
               value={readString(data.level) || "h2"}
               onValueChange={(value) => onChange("data.level", value ?? "h2")}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Level" />
+                <SelectValue placeholder="Pilih tingkat" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="h2">H2</SelectItem>
@@ -1113,7 +1269,7 @@ function BlockFields({
             </Select>
           </Field>
           <Field>
-            <FieldLabel>Text</FieldLabel>
+            <FieldLabel>Teks</FieldLabel>
             <Input
               value={readString(data.text)}
               onChange={(event) => onChange("data.text", event.target.value)}
@@ -1124,10 +1280,10 @@ function BlockFields({
     case "paragraph":
       return (
         <Field className="md:col-span-2">
-          <FieldLabel>Paragraph</FieldLabel>
+          <FieldLabel>Paragraf</FieldLabel>
           <Textarea
             value={readString(data.text)}
-            placeholder="Plain text only"
+            placeholder="Tulis paragraf tanpa format khusus"
             onChange={(event) => onChange("data.text", event.target.value)}
           />
         </Field>
@@ -1136,14 +1292,14 @@ function BlockFields({
       return (
         <>
           <Field className="md:col-span-2">
-            <FieldLabel>Quote</FieldLabel>
+            <FieldLabel>Kutipan</FieldLabel>
             <Textarea
               value={readString(data.text)}
               onChange={(event) => onChange("data.text", event.target.value)}
             />
           </Field>
           <Field>
-            <FieldLabel>Author</FieldLabel>
+            <FieldLabel>Nama pengutip</FieldLabel>
             <Input
               value={readString(data.author)}
               onChange={(event) => onChange("data.author", event.target.value)}
@@ -1155,7 +1311,7 @@ function BlockFields({
       return (
         <>
           <Field>
-            <FieldLabel>Image</FieldLabel>
+            <FieldLabel>Gambar</FieldLabel>
             <MediaPicker
               tenantId={tenantId}
               value={readString(data.image_id)}
@@ -1165,14 +1321,14 @@ function BlockFields({
             />
           </Field>
           <Field>
-            <FieldLabel>Alt text</FieldLabel>
+            <FieldLabel>Teks alternatif gambar</FieldLabel>
             <Input
               value={readString(data.alt_text)}
               onChange={(event) => onChange("data.alt_text", event.target.value)}
             />
           </Field>
           <Field className="md:col-span-2">
-            <FieldLabel>Caption</FieldLabel>
+            <FieldLabel>Keterangan gambar</FieldLabel>
             <Input
               value={readString(data.caption)}
               onChange={(event) => onChange("data.caption", event.target.value)}
@@ -1184,7 +1340,7 @@ function BlockFields({
       return (
         <>
           <Field className="md:col-span-2">
-            <FieldLabel>YouTube video ID</FieldLabel>
+            <FieldLabel>ID video YouTube</FieldLabel>
             <Input
               value={readString(data.video_id)}
               maxLength={11}
@@ -1205,7 +1361,7 @@ function BlockFields({
             ) : null}
           </Field>
           <Field>
-            <FieldLabel>Caption</FieldLabel>
+            <FieldLabel>Keterangan video</FieldLabel>
             <Input
               value={readString(data.caption)}
               onChange={(event) => onChange("data.caption", event.target.value)}
@@ -1216,26 +1372,26 @@ function BlockFields({
     case "offer_callout":
       return (
         <Field className="md:col-span-2">
-          <FieldLabel>Offer</FieldLabel>
+          <FieldLabel>Penawaran terkait</FieldLabel>
           <CalloutPicker
             variantId={variantId}
             collectionKey="offer"
             value={readString(data.offer_id)}
             onChange={(id) => onChange("data.offer_id", id)}
-            placeholder="Pilih offer..."
+            placeholder="Pilih penawaran..."
           />
         </Field>
       );
     case "sector_callout":
       return (
         <Field className="md:col-span-2">
-          <FieldLabel>Sector</FieldLabel>
+          <FieldLabel>Sektor terkait</FieldLabel>
           <CalloutPicker
             variantId={variantId}
             collectionKey="sector"
             value={readString(data.sector_id)}
             onChange={(id) => onChange("data.sector_id", id)}
-            placeholder="Pilih sector..."
+            placeholder="Pilih sektor..."
           />
         </Field>
       );
@@ -1250,7 +1406,7 @@ function BlockFields({
             />
           </Field>
           <Field className="md:col-span-2">
-            <FieldLabel>WhatsApp message template</FieldLabel>
+            <FieldLabel>Template pesan WhatsApp</FieldLabel>
             <Textarea
               value={readString(data.whatsapp_message_template)}
               onChange={(event) =>
@@ -1271,7 +1427,7 @@ function BlockFields({
             />
           </Field>
           <Field className="md:col-span-2">
-            <FieldLabel>LINE message template</FieldLabel>
+            <FieldLabel>Template pesan LINE</FieldLabel>
             <Textarea
               value={readString(data.line_message_template)}
               onChange={(event) =>
@@ -1291,10 +1447,10 @@ function SlugHint({ status }: { status: SlugStatus }) {
 
   const label =
     status === "checking"
-      ? "Checking slug..."
+      ? "Mengecek slug..."
       : status === "available"
-        ? "Slug available."
-        : "Slug already used.";
+        ? "Slug tersedia."
+        : "Slug sudah digunakan.";
 
   return (
     <p
@@ -1322,7 +1478,7 @@ function ExpiredWarning({ value }: { value: string }) {
 
   return (
     <Badge variant="destructive" className="w-fit">
-      Expired date is in the past
+      Tanggal berakhir sudah lewat
     </Badge>
   );
 }
@@ -1382,24 +1538,24 @@ function getBlockLabel(item: Record<string, unknown>, index: number) {
       const text = readString(data.text);
       return text
         ? `${level.toUpperCase()} - ${truncateText(text, 40)}`
-        : `Heading ${index + 1}`;
+        : `Judul bagian ${index + 1}`;
     }
     case "paragraph": {
       const text = readString(data.text);
       return text
-        ? `Paragraph - ${truncateText(text, 50)}`
-        : `Paragraph ${index + 1}`;
+        ? `Paragraf - ${truncateText(text, 50)}`
+        : `Paragraf ${index + 1}`;
     }
     case "quote": {
       const text = readString(data.text);
       const author = readString(data.author);
       return text
-        ? `Quote - ${truncateText(text, 40)}${author ? ` — ${author}` : ""}`
-        : `Quote ${index + 1}`;
+        ? `Kutipan - ${truncateText(text, 40)}${author ? ` - ${author}` : ""}`
+        : `Kutipan ${index + 1}`;
     }
     case "image": {
       const alt = readString(data.alt_text) || readString(data.caption);
-      return alt ? `Image - ${truncateText(alt, 40)}` : `Image ${index + 1}`;
+      return alt ? `Gambar - ${truncateText(alt, 40)}` : `Gambar ${index + 1}`;
     }
     case "youtube_embed": {
       const videoId = readString(data.video_id);
@@ -1409,39 +1565,35 @@ function getBlockLabel(item: Record<string, unknown>, index: number) {
     }
     case "offer_callout": {
       const offerId = readString(data.offer_id);
-      return offerId ? `Offer Callout - ${offerId}` : `Offer Callout ${index + 1}`;
+      return offerId
+        ? `Tombol penawaran - ${offerId}`
+        : `Tombol penawaran ${index + 1}`;
     }
     case "sector_callout": {
       const sectorId = readString(data.sector_id);
       return sectorId
-        ? `Sector Callout - ${sectorId}`
-        : `Sector Callout ${index + 1}`;
+        ? `Tombol sektor - ${sectorId}`
+        : `Tombol sektor ${index + 1}`;
     }
     case "whatsapp_cta": {
       const label = readString(data.label);
       return label
-        ? `WhatsApp CTA - ${truncateText(label, 30)}`
-        : `WhatsApp CTA ${index + 1}`;
+        ? `Tombol WhatsApp - ${truncateText(label, 30)}`
+        : `Tombol WhatsApp ${index + 1}`;
     }
     case "line_cta": {
       const label = readString(data.label);
       return label
-        ? `LINE CTA - ${truncateText(label, 30)}`
-        : `LINE CTA ${index + 1}`;
+        ? `Tombol LINE - ${truncateText(label, 30)}`
+        : `Tombol LINE ${index + 1}`;
     }
     default:
-      return `Block ${index + 1}`;
+      return `Blok ${index + 1}`;
   }
 }
 
 function truncateText(text: string, max: number) {
   return text.length > max ? `${text.slice(0, max)}...` : text;
-}
-
-function formatBlockType(type: string) {
-  return type
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function getSaveStatusLabel(
@@ -1450,18 +1602,18 @@ function getSaveStatusLabel(
   lastSavedAt: string | null,
 ) {
   if (isSaving || saveState === "saving") {
-    return "Saving...";
+    return "Menyimpan...";
   }
 
   if (saveState === "dirty") {
-    return "Unsaved changes";
+    return "Ada perubahan belum disimpan";
   }
 
   if (saveState === "error") {
-    return "Needs attention";
+    return "Perlu dicek";
   }
 
-  return lastSavedAt ? `Saved ${formatDateTime(lastSavedAt)}` : "Saved";
+  return lastSavedAt ? `Tersimpan ${formatDateTime(lastSavedAt)}` : "Tersimpan";
 }
 
 function formatDateTime(value: string) {
@@ -1742,6 +1894,39 @@ function normalizeStringArray(value: unknown) {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string")
     : [];
+}
+
+function isOptionSelected(
+  values: string[],
+  option: { id: string; value: string },
+) {
+  return values.includes(option.id) || values.includes(option.value);
+}
+
+function resolveSelectValue(
+  value: string,
+  options: Array<{ id?: string; value: string }>,
+  usesOptionSet: boolean,
+) {
+  if (!value) {
+    return EMPTY_SELECT_VALUE;
+  }
+
+  if (!usesOptionSet) {
+    return value;
+  }
+
+  return (
+    options.find((option) => option.id === value || option.value === value)
+      ?.id ?? value
+  );
+}
+
+function getSelectOptionValue(
+  option: { id?: string; value: string },
+  usesOptionSet: boolean,
+) {
+  return usesOptionSet && option.id ? option.id : option.value;
 }
 
 function toInputValue(value: unknown) {

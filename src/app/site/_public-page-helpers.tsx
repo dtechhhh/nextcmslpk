@@ -251,14 +251,22 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       />
       <CardGrid
         title="Program Unggulan"
-        items={await Promise.all(programs.items.map((item) => collectionCard(item, "/program", ["program_type"])))}
+        items={await Promise.all(
+          programs.items.map((item) =>
+            collectionCard(item, "/program", ["program_type"], context.variantId),
+          ),
+        )}
         ctaLabel="Lihat Semua Program"
         ctaHref="/program"
       />
       <CollectionList
         title="Lowongan Terbaru"
         items={await Promise.all(jobs.items.map(async (item) => {
-          const labels = await resolveItemLabels(item, ["job_field", "job_type"]);
+          const labels = await resolveItemLabels(
+            item,
+            ["job_field", "job_type"],
+            context.variantId,
+          );
           return toListItem(item, labels, ["location_label"]);
         }))}
         total={jobs.total}
@@ -291,7 +299,11 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       <FAQ title="Pertanyaan Umum" items={arrayOfRecords(data.faqs).map(toFaqItem)} />
       <CardGrid
         title="Artikel Terbaru"
-        items={await Promise.all(blogs.items.map((item) => collectionCard(item, "/blog", ["category"])))}
+        items={await Promise.all(
+          blogs.items.map((item) =>
+            collectionCard(item, "/blog", ["category"], context.variantId),
+          ),
+        )}
         ctaLabel="Lihat Semua Artikel"
         ctaHref="/blog"
       />
@@ -373,7 +385,11 @@ export async function renderListPage(options: ListPageOptions) {
   const itemsWithLabels = options.cardLabelOptionKeys?.length
     ? await Promise.all(
         collection.items.map(async (item) => {
-          const labels = await resolveItemLabels(item, options.cardLabelOptionKeys!);
+          const labels = await resolveItemLabels(
+            item,
+            options.cardLabelOptionKeys!,
+            context.variantId,
+          );
           return toListItem(item, labels, options.cardMetaKeys);
         }),
       )
@@ -485,6 +501,9 @@ export async function renderDetailPage(options: DetailPageOptions) {
     const fallbackHeroImage = getDetailHeroSrc(item)
       ? undefined
       : await resolveDetailPageHeroSrc(context.variantId, "program_page");
+    const brochureUrl = booleanValue(item.dataJson.brochure_enabled, false)
+      ? await resolveMediaUrl(stringValue(item.dataJson.brochure_file_id))
+      : null;
 
     return (
       <>
@@ -497,13 +516,19 @@ export async function renderDetailPage(options: DetailPageOptions) {
             { label: item.title },
           ]}
           mainContent={
-            <ProgramDetailMain item={item} globalConfig={context.globalConfig} lpkName={lpkName} />
+            <ProgramDetailMain
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+              variantId={context.variantId}
+            />
           }
           sidebar={
             <ProgramDetailSidebar
               item={item}
               globalConfig={context.globalConfig}
               lpkName={lpkName}
+              brochureUrl={brochureUrl}
             />
           }
         />
@@ -528,7 +553,12 @@ export async function renderDetailPage(options: DetailPageOptions) {
             { label: item.title },
           ]}
           mainContent={
-            <JobDetailMain item={item} globalConfig={context.globalConfig} lpkName={lpkName} />
+            <JobDetailMain
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+              variantId={context.variantId}
+            />
           }
           sidebar={
             <JobDetailSidebar
@@ -553,10 +583,16 @@ export async function renderDetailPage(options: DetailPageOptions) {
     );
     const categoryOption = await resolveOptionLabel(
       stringValue(item.dataJson.category_option_id),
+      { variantId: context.variantId, optionSetKey: "blog_category" },
     );
     const tagOptionIds = flatStringList(item.dataJson.tag_option_ids);
     const tagOptions = await Promise.all(
-      tagOptionIds.map((id) => resolveOptionLabel(id)),
+      tagOptionIds.map((id) =>
+        resolveOptionLabel(id, {
+          variantId: context.variantId,
+          optionSetKey: "blog_tag",
+        }),
+      ),
     );
     const tagLabels = tagOptions
       .map((opt) => opt?.label ?? "")
@@ -619,7 +655,12 @@ export async function renderDetailPage(options: DetailPageOptions) {
             { label: item.title },
           ]}
           mainContent={
-            <KarirDetailMain item={item} globalConfig={context.globalConfig} lpkName={lpkName} />
+            <KarirDetailMain
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+              variantId={context.variantId}
+            />
           }
           sidebar={
             <KarirDetailSidebar
@@ -648,7 +689,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
             { label: item.title },
           ]}
           mainContent={
-            <OfferDetailMain item={item} />
+            <OfferDetailMain item={item} variantId={context.variantId} />
           }
           sidebar={
             <OfferDetailSidebar
@@ -1932,34 +1973,92 @@ function NormalizedCardSet({
   );
 }
 
+function renderCheckedCardSet(title: string, ...values: unknown[]) {
+  const visible = values
+    .flatMap((value) => normalizeMixedList(value))
+    .filter((item) => item.title || item.description);
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        {visible.map((item, index) => {
+          const heading = item.title || item.description;
+          const description = item.title ? item.description : "";
+
+          return (
+            <Card key={`${title}-${index}`}>
+              <CardContent className="p-5">
+                <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                  <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                  {heading}
+                </h3>
+                {description ? (
+                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-neutral-600">
+                    {description}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 async function ProgramDetailMain({
   item,
   globalConfig,
   lpkName,
+  variantId,
 }: {
   item: PublicCollectionItem;
   globalConfig: Record<string, PublicJson>;
   lpkName: string;
+  variantId: string;
 }) {
   const data = item.dataJson;
 
-  const optionIds = [
-    stringValue(data.program_type_option_id),
-    stringValue(data.gender_option_id),
-    stringValue(data.education_level_option_id),
-    stringValue(data.language_level_option_id),
-  ].filter(Boolean);
+  const optionRequests = [
+    { id: stringValue(data.program_type_option_id), optionSetKey: "program_type" },
+    { id: stringValue(data.gender_option_id), optionSetKey: "gender" },
+    { id: stringValue(data.education_level_option_id), optionSetKey: "education_level" },
+    { id: stringValue(data.language_level_option_id), optionSetKey: "language_level" },
+  ].filter((option) => option.id);
 
-  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
   const optLabel = (id: string) => {
-    const index = optionIds.indexOf(id);
+    const index = optionRequests.findIndex((option) => option.id === id);
     return index >= 0 ? options[index]?.label ?? "" : "";
   };
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+  const ageLabel = minAge && maxAge
+    ? `${minAge} - ${maxAge} tahun`
+    : minAge
+      ? `Min ${minAge} tahun`
+      : maxAge
+        ? `Max ${maxAge} tahun`
+        : "";
 
   const classificationLabels = [
     optLabel(stringValue(data.program_type_option_id)),
     optLabel(stringValue(data.gender_option_id)),
     stringValue(data.duration_label),
+    stringValue(data.capacity_label),
+    ageLabel,
     stringValue(data.contract_label),
     stringValue(data.salary_range_label),
     stringValue(data.target_language_label),
@@ -2021,6 +2120,8 @@ async function ProgramDetailMain({
       })()}
 
       {renderRequirementList(data.requirements)}
+
+      {renderCheckedCardSet("Manfaat", data.benefits)}
 
       {(() => {
         const costItems = parseCostItems(data.cost_items);
@@ -2098,13 +2199,24 @@ function ProgramDetailSidebar({
   item,
   globalConfig,
   lpkName,
+  brochureUrl,
 }: {
   item: PublicCollectionItem;
   globalConfig: Record<string, PublicJson>;
   lpkName: string;
+  brochureUrl?: string | null;
 }) {
   const data = item.dataJson;
   const whatsappHref = getProgramWhatsappHref(data, globalConfig, lpkName, item.title);
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+  const ageLabel = minAge && maxAge
+    ? `${minAge} - ${maxAge} tahun`
+    : minAge
+      ? `Min ${minAge} tahun`
+      : maxAge
+        ? `Max ${maxAge} tahun`
+        : "";
 
   return (
     <Card>
@@ -2114,6 +2226,10 @@ function ProgramDetailSidebar({
           {stringValue(data.duration_label) ? (
             <MetaRow label="Durasi" value={stringValue(data.duration_label)} />
           ) : null}
+          {stringValue(data.capacity_label) ? (
+            <MetaRow label="Kapasitas" value={stringValue(data.capacity_label)} />
+          ) : null}
+          {ageLabel ? <MetaRow label="Usia" value={ageLabel} /> : null}
           {stringValue(data.contract_label) ? (
             <MetaRow label="Kontrak" value={stringValue(data.contract_label)} />
           ) : null}
@@ -2137,6 +2253,16 @@ function ProgramDetailSidebar({
         >
           {stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
         </Button>
+        {brochureUrl ? (
+          <div className="mt-3">
+            <DocumentDownload
+              label="Unduh Brosur"
+              fileUrl={brochureUrl}
+              size="md"
+              variant="outline"
+            />
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -2187,26 +2313,36 @@ async function JobDetailMain({
   item,
   globalConfig,
   lpkName,
+  variantId,
 }: {
   item: PublicCollectionItem;
   globalConfig: Record<string, PublicJson>;
   lpkName: string;
+  variantId: string;
 }) {
   const data = item.dataJson;
 
-  const optionIds = [
-    stringValue(data.job_type_option_id),
-    stringValue(data.job_field_option_id),
-    stringValue(data.gender_option_id),
-    stringValue(data.language_level_option_id),
-    stringValue(data.education_level_option_id),
-  ].filter(Boolean);
+  const optionRequests = [
+    { id: stringValue(data.job_type_option_id), optionSetKey: "job_type" },
+    { id: stringValue(data.job_field_option_id), optionSetKey: "job_field" },
+    { id: stringValue(data.gender_option_id), optionSetKey: "gender" },
+    { id: stringValue(data.language_level_option_id), optionSetKey: "language_level" },
+    { id: stringValue(data.education_level_option_id), optionSetKey: "education_level" },
+  ].filter((option) => option.id);
 
-  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
   const optLabel = (id: string) => {
-    const index = optionIds.indexOf(id);
+    const index = optionRequests.findIndex((option) => option.id === id);
     return index >= 0 ? options[index]?.label ?? "" : "";
   };
+  const salaryLabel = stringValue(data.salary_range_label) || stringValue(data.salary_label);
 
   const classificationLabels = [
     optLabel(stringValue(data.job_type_option_id)),
@@ -2214,6 +2350,7 @@ async function JobDetailMain({
     optLabel(stringValue(data.gender_option_id)),
     optLabel(stringValue(data.language_level_option_id)),
     optLabel(stringValue(data.education_level_option_id)),
+    salaryLabel,
     stringValue(data.contract_label),
   ].filter(Boolean);
 
@@ -2284,37 +2421,16 @@ async function JobDetailMain({
         </section>
       ) : null}
 
-      {(() => {
-        const benefitRecords = sortedRecords(data.benefit_items).filter((v) => stringValue(v.title));
-        const stringBenefits = flatStringList(data.benefit_items);
-        const benefitItems: NormalizedItem[] =
-          benefitRecords.length > 0
-            ? benefitRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
-            : stringBenefits.map((s) => ({ title: s, description: "" }));
-        if (benefitItems.length === 0) return null;
-        return (
-          <section>
-            <h2 className="text-2xl font-bold text-neutral-900">Benefit</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {benefitItems.map((benefit, index) => (
-                <Card key={index}>
-                  <CardContent className="p-5">
-                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
-                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
-                      {benefit.title}
-                    </h3>
-                    {benefit.description ? (
-                      <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
-                    ) : null}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        );
-      })()}
+      {renderRequirementList(data.responsibilities, "Tanggung Jawab")}
 
-      {renderRequirementList(data.qualification_items)}
+      {renderRequirementList(data.requirements)}
+
+      <NormalizedCardSet
+        title="Kualifikasi"
+        items={normalizeMixedList(data.qualification_items)}
+      />
+
+      {renderCheckedCardSet("Manfaat", data.benefits, data.benefit_items)}
 
       {(() => {
         const steps = parseTimelineItems(data.recruitment_steps);
@@ -2396,6 +2512,7 @@ function JobDetailSidebar({
   const minAge = numberValue(data.min_age);
   const maxAge = numberValue(data.max_age);
   const ageLabel = minAge && maxAge ? `${minAge} - ${maxAge} tahun` : minAge ? `Min ${minAge} tahun` : maxAge ? `Max ${maxAge} tahun` : "";
+  const salaryLabel = stringValue(data.salary_range_label) || stringValue(data.salary_label);
 
   return (
     <Card>
@@ -2405,8 +2522,8 @@ function JobDetailSidebar({
           {stringValue(data.location_label) ? (
             <MetaRow label="Lokasi" value={stringValue(data.location_label)} />
           ) : null}
-          {stringValue(data.salary_range_label) ? (
-            <MetaRow label="Gaji" value={stringValue(data.salary_range_label)} />
+          {salaryLabel ? (
+            <MetaRow label="Gaji" value={salaryLabel} />
           ) : null}
           {stringValue(data.contract_label) ? (
             <MetaRow label="Jenis Kontrak" value={stringValue(data.contract_label)} />
@@ -2581,22 +2698,31 @@ async function KarirDetailMain({
   item,
   globalConfig,
   lpkName,
+  variantId,
 }: {
   item: PublicCollectionItem;
   globalConfig: Record<string, PublicJson>;
   lpkName: string;
+  variantId: string;
 }) {
   const data = item.dataJson;
 
-  const optionIds = [
-    stringValue(data.department_option_id),
-    stringValue(data.employment_type_option_id),
-    stringValue(data.work_arrangement_option_id),
-  ].filter(Boolean);
+  const optionRequests = [
+    { id: stringValue(data.department_option_id), optionSetKey: "career_department" },
+    { id: stringValue(data.employment_type_option_id), optionSetKey: "career_employment_type" },
+    { id: stringValue(data.work_arrangement_option_id), optionSetKey: "career_work_arrangement" },
+  ].filter((option) => option.id);
 
-  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
   const optLabel = (id: string) => {
-    const index = optionIds.indexOf(id);
+    const index = optionRequests.findIndex((option) => option.id === id);
     return index >= 0 ? options[index]?.label ?? "" : "";
   };
 
@@ -2693,35 +2819,7 @@ async function KarirDetailMain({
 
       {renderRequirementList(data.requirements)}
 
-      {(() => {
-        const benefitRecords = sortedRecords(data.benefits).filter((v) => stringValue(v.title));
-        const stringBenefits = flatStringList(data.benefits);
-        const benefitItems: NormalizedItem[] =
-          benefitRecords.length > 0
-            ? benefitRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
-            : stringBenefits.map((s) => ({ title: s, description: "" }));
-        if (benefitItems.length === 0) return null;
-        return (
-          <section>
-            <h2 className="text-2xl font-bold text-neutral-900">Benefit</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {benefitItems.map((benefit, index) => (
-                <Card key={index}>
-                  <CardContent className="p-5">
-                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
-                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
-                      {benefit.title}
-                    </h3>
-                    {benefit.description ? (
-                      <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
-                    ) : null}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        );
-      })()}
+      {renderCheckedCardSet("Benefit", data.benefits)}
 
       {(() => {
         const steps = parseTimelineItems(data.recruitment_steps);
@@ -2847,17 +2945,30 @@ function OfferDetailHero({ item }: { item: PublicCollectionItem }) {
   );
 }
 
-async function OfferDetailMain({ item }: { item: PublicCollectionItem }) {
+async function OfferDetailMain({
+  item,
+  variantId,
+}: {
+  item: PublicCollectionItem;
+  variantId: string;
+}) {
   const data = item.dataJson;
 
-  const optionIds = [
-    stringValue(data.offer_type_option_id),
-    stringValue(data.target_audience_option_id),
-  ].filter(Boolean);
+  const optionRequests = [
+    { id: stringValue(data.offer_type_option_id), optionSetKey: "offer_type" },
+    { id: stringValue(data.target_audience_option_id), optionSetKey: "target_audience" },
+  ].filter((option) => option.id);
 
-  const options = await Promise.all(optionIds.map((id) => resolveOptionLabel(id)));
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
   const optLabel = (id: string) => {
-    const index = optionIds.indexOf(id);
+    const index = optionRequests.findIndex((option) => option.id === id);
     return index >= 0 ? options[index]?.label ?? "" : "";
   };
 
@@ -2893,35 +3004,7 @@ async function OfferDetailMain({ item }: { item: PublicCollectionItem }) {
         ) : null}
       </section>
 
-      {(() => {
-        const benefitRecords = sortedRecords(data.benefit_items).filter((v) => stringValue(v.title));
-        const stringBenefits = flatStringList(data.benefit_items);
-        const benefitItems: NormalizedItem[] =
-          benefitRecords.length > 0
-            ? benefitRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
-            : stringBenefits.map((s) => ({ title: s, description: "" }));
-        if (benefitItems.length === 0) return null;
-        return (
-          <section>
-            <h2 className="text-2xl font-bold text-neutral-900">Keuntungan</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {benefitItems.map((benefit, index) => (
-                <Card key={index}>
-                  <CardContent className="p-5">
-                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
-                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
-                      {benefit.title}
-                    </h3>
-                    {benefit.description ? (
-                      <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
-                    ) : null}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        );
-      })()}
+      {renderCheckedCardSet("Keuntungan", data.benefit_items)}
 
       {renderRequirementList(data.detail_checklist, "Detail Penawaran")}
 
@@ -3155,12 +3238,27 @@ function toListItem(item: PublicCollectionItem, labels?: string[], metaKeys?: st
 async function resolveItemLabels(
   item: PublicCollectionItem,
   optionKeys: string[],
+  variantId: string,
 ): Promise<string[]> {
-  const ids = optionKeys
-    .map((key) => stringValue(item.dataJson[`${key}_option_id`]) || stringValue(item.dataJson[key]))
-    .filter(Boolean);
-  if (ids.length === 0) return [];
-  const resolved = await Promise.all(ids.map((id) => resolveOptionLabel(id)));
+  const requests = optionKeys
+    .map((key) => ({
+      id:
+        stringValue(item.dataJson[`${key}_option_id`]) ||
+        stringValue(item.dataJson[key]),
+      optionSetKey: getPublicOptionSetKey(key),
+    }))
+    .filter((request) => request.id && request.optionSetKey);
+
+  if (requests.length === 0) return [];
+
+  const resolved = await Promise.all(
+    requests.map((request) =>
+      resolveOptionLabel(request.id, {
+        variantId,
+        optionSetKey: request.optionSetKey,
+      }),
+    ),
+  );
   return resolved.map((r) => r?.label ?? "").filter(Boolean);
 }
 
@@ -3168,8 +3266,12 @@ async function collectionCard(
   item: PublicCollectionItem,
   pathPrefix: string,
   optionKeys?: string[],
+  variantId?: string,
 ) {
-  const labels = optionKeys?.length ? await resolveItemLabels(item, optionKeys) : [];
+  const labels =
+    optionKeys?.length && variantId
+      ? await resolveItemLabels(item, optionKeys, variantId)
+      : [];
   return {
     id: item.id,
     title: item.title,
@@ -3180,6 +3282,17 @@ async function collectionCard(
     labels,
     isEnabled: true,
   };
+}
+
+function getPublicOptionSetKey(key: string) {
+  const optionSetKeys: Record<string, string> = {
+    category: "blog_category",
+    department: "career_department",
+    employment_type: "career_employment_type",
+    work_arrangement: "career_work_arrangement",
+  };
+
+  return optionSetKeys[key] ?? key;
 }
 
 function getDetailHeroSrc(item: PublicCollectionItem, fallbackImageSrc?: string) {
