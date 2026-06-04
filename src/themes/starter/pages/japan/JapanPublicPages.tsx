@@ -1111,12 +1111,15 @@ function JapanCollectionList({
           {collection.total}件中{startItem}〜{endItem}件を表示
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {collection.items.map((item) => (
-            <a
-              key={item.id}
-              href={`${detailPathPrefix}/${item.slug}`}
-              className="group block h-full rounded-xl"
-            >
+          {collection.items.map((item) => {
+            const labels = getJapanCardLabels(kind, item, filters);
+
+            return (
+              <a
+                key={item.id}
+                href={`${detailPathPrefix}/${item.slug}`}
+                className="group block h-full rounded-xl"
+              >
               <Card variant="japan" className="h-full py-0">
                 {item.thumbnailSrc ? (
                   <div className="relative aspect-video overflow-hidden">
@@ -1139,12 +1142,21 @@ function JapanCollectionList({
                   <h3 className="text-lg font-semibold leading-snug text-neutral-900">
                     {item.title}
                   </h3>
+                  {labels.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {labels.map((label) => (
+                        <Badge key={label} variant="outline">
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
                   {item.excerpt ? (
                     <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-600">
                       {item.excerpt}
                     </p>
                   ) : null}
-                  {item.publishedAt ? (
+                  {kind === "news" && item.publishedAt ? (
                     <p className="mt-4 text-sm text-neutral-500">
                       {formatDate(item.publishedAt)}
                     </p>
@@ -1154,8 +1166,9 @@ function JapanCollectionList({
                   <Button className="w-full">{kind === "news" ? "読む" : "詳細を見る"}</Button>
                 </CardFooter>
               </Card>
-            </a>
-          ))}
+              </a>
+            );
+          })}
         </div>
         {collection.totalPages > 1 ? (
           <nav className="mt-10 flex flex-wrap justify-center gap-2" aria-label="Pagination">
@@ -1178,6 +1191,32 @@ function JapanCollectionList({
       </Container>
     </section>
   );
+}
+
+function getJapanCardLabels(
+  kind: "sector" | "news",
+  item: PublicCollectionItem,
+  filters: FilterBarFilter[],
+) {
+  if (kind !== "sector") {
+    return [];
+  }
+
+  const categoryId = stringValue(item.dataJson.sector_category_option_id);
+  const categoryLabel = getFilterOptionLabel(filters, "sector_category", categoryId);
+
+  return categoryLabel ? [categoryLabel] : [];
+}
+
+function getFilterOptionLabel(filters: FilterBarFilter[], key: string, value: string) {
+  if (!value) {
+    return "";
+  }
+
+  return filters
+    .find((filter) => filter.key === key)
+    ?.options.find((option) => option.value === value)
+    ?.label ?? "";
 }
 
 function DetailHero({ item }: { item: PublicCollectionItem }) {

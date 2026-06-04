@@ -1062,6 +1062,7 @@ function renderControl({
       return (
         <Input
           value={toInputValue(rawValue)}
+          maxLength={field.max}
           placeholder={getCmsPlaceholder(field)}
           aria-invalid={Boolean(error)}
           onBlur={() => {
@@ -1082,6 +1083,7 @@ function renderControl({
       return (
         <Textarea
           value={toInputValue(rawValue)}
+          maxLength={field.max}
           placeholder={getCmsPlaceholder(field)}
           aria-invalid={Boolean(error)}
           onChange={(event) => setValue(path, event.target.value)}
