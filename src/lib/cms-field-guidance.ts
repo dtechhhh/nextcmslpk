@@ -1,4 +1,8 @@
 import type { CollectionField, PublishStatus } from "@/lib/collection-definitions";
+import {
+  EXCERPT_MAX_LENGTH,
+  SHORT_DESCRIPTION_MAX_LENGTH,
+} from "@/lib/content-summary-limits";
 
 export type CmsFieldGuidance = {
   helpText?: string;
@@ -225,7 +229,7 @@ const PLACEHOLDERS_BY_PATH: Record<string, string> = {
   contract_label: "Contoh: Kontrak 3 tahun",
   deadline_label: "Contoh: Pendaftaran ditutup 30 Juni 2026",
   duration_label: "Contoh: 6 bulan pelatihan",
-  excerpt: "Tulis ringkasan 1-2 kalimat yang mudah dipahami.",
+  excerpt: `Tulis ringkasan artikel singkat. Maks ${EXCERPT_MAX_LENGTH} karakter.`,
   format_label: "Contoh: Online dan offline",
   highlight_label: "Contoh: Paling diminati",
   line_message_template: "Contoh: Saya ingin konsultasi tentang {sector_name}.",
@@ -240,7 +244,7 @@ const PLACEHOLDERS_BY_PATH: Record<string, string> = {
   schedule_label: "Contoh: Mulai setiap bulan",
   secondary_cta_label: "Contoh: Unduh Dokumen",
   secondary_document_url: "https://...",
-  short_description: "Tulis ringkasan singkat untuk kartu atau sidebar.",
+  short_description: `Tulis deskripsi singkat untuk kartu/sidebar. Maks ${SHORT_DESCRIPTION_MAX_LENGTH} karakter.`,
   slug: "contoh-url-singkat",
   subtitle: "Tulis subjudul pendek yang mendukung judul.",
   target_language_label: "Contoh: JLPT N4",
@@ -264,7 +268,7 @@ const GUIDANCE_BY_PATH: Record<string, CmsFieldGuidance> = {
     usage: "Muncul di kartu daftar dan halaman detail.",
   },
   excerpt: {
-    helpText: "Isi ringkasan singkat yang menjelaskan inti konten.",
+    helpText: `Isi ringkasan singkat yang menjelaskan inti konten. Ideal 25-35 kata, maksimal ${EXCERPT_MAX_LENGTH} karakter.`,
     usage: "Muncul di kartu, daftar, SEO, dan beberapa hero halaman.",
   },
   hero_image_id: {
@@ -291,7 +295,7 @@ const GUIDANCE_BY_PATH: Record<string, CmsFieldGuidance> = {
     example: "https://example.com/brosur.pdf",
   },
   short_description: {
-    helpText: "Isi deskripsi pendek yang cepat dipahami saat user sedang scanning.",
+    helpText: `Isi deskripsi pendek yang cepat dipahami saat user sedang scanning. Ideal 12-20 kata, maksimal ${SHORT_DESCRIPTION_MAX_LENGTH} karakter.`,
     usage: "Muncul di kartu daftar dan ringkasan detail.",
   },
   slug: {

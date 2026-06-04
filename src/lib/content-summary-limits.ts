@@ -1,0 +1,2 @@
+export const SHORT_DESCRIPTION_MAX_LENGTH = 180;
+export const EXCERPT_MAX_LENGTH = 320;
