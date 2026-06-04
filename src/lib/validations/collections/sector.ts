@@ -11,6 +11,7 @@ import {
   sidebarFields,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
+import { SHORT_DESCRIPTION_MAX_LENGTH } from "@/lib/content-summary-limits";
 import { emptyOrUrl } from "@/lib/validations/global/_shared";
 
 const sortFields = {
@@ -33,7 +34,7 @@ export const sectorSchema = z
     title: optionalString(200),
     slug: optionalString(120),
     subtitle: optionalString(200),
-    short_description: optionalString(600),
+    short_description: optionalString(SHORT_DESCRIPTION_MAX_LENGTH),
     overview: optionalString(3000),
     status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
     sector_category_option_id: contentIdSchema,

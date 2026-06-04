@@ -986,7 +986,11 @@ function getScalarItemData(
   const definition = COLLECTION_DEFINITIONS[collectionKey];
   const title = readString(data.title) || fallback?.title || "Tanpa judul";
   const slug = normalizeSlug(readString(data.slug) || fallback?.slug || title);
+  const description = definition.descriptionPath
+    ? readString(getAtPath(data, definition.descriptionPath))
+    : "";
   const excerpt =
+    description ||
     readString(data.excerpt) ||
     readString(data.short_description) ||
     readString(data.subtitle) ||

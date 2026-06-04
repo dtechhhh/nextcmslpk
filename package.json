@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "test:task8": "tsx scripts/run-tests.ts",
+    "maintenance:trim-summaries": "tsx scripts/trim-collection-summaries.ts",
     "lint": "eslint"
   },
   "prisma": {

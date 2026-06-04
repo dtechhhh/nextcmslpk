@@ -3,6 +3,10 @@ import {
   COLLECTIONS_JAPAN,
   type CollectionKey,
 } from "@/lib/constants";
+import {
+  EXCERPT_MAX_LENGTH,
+  SHORT_DESCRIPTION_MAX_LENGTH,
+} from "@/lib/content-summary-limits";
 import type { MediaCropPreset } from "@/lib/media-crop";
 import type { VariantKey } from "@/types";
 
@@ -152,7 +156,6 @@ const baseIdentity = {
   title: "",
   slug: "",
   subtitle: "",
-  excerpt: "",
   short_description: "",
   overview: "",
   thumbnail_image_id: "",
@@ -188,8 +191,12 @@ const identityFields: CollectionField[] = [
   { kind: "text", path: "title", label: "Title" },
   { kind: "text", path: "slug", label: "Slug" },
   { kind: "text", path: "subtitle", label: "Subtitle" },
-  { kind: "textarea", path: "excerpt", label: "Excerpt" },
-  { kind: "textarea", path: "short_description", label: "Short description" },
+  {
+    kind: "textarea",
+    path: "short_description",
+    label: "Short description",
+    max: SHORT_DESCRIPTION_MAX_LENGTH,
+  },
   { kind: "textarea", path: "overview", label: "Overview" },
 ];
 
@@ -249,7 +256,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     hasStartAt: false,
     thumbnailPath: "thumbnail_image_id",
     heroPath: "hero_image_id",
-    descriptionPath: "excerpt",
+    descriptionPath: "short_description",
     optionFilters: [
       { path: "program_type_option_id", label: "Program type", optionSetKey: "program_type" },
       { path: "gender_option_id", label: "Gender", optionSetKey: "gender" },
@@ -363,7 +370,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     hasStartAt: false,
     thumbnailPath: "thumbnail_image_id",
     heroPath: "hero_image_id",
-    descriptionPath: "excerpt",
+    descriptionPath: "short_description",
     optionFilters: [
       { path: "job_type_option_id", label: "Job type", optionSetKey: "job_type" },
       { path: "job_field_option_id", label: "Job field", optionSetKey: "job_field" },
@@ -481,7 +488,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     hasStartAt: true,
     thumbnailPath: "thumbnail_image_id",
     heroPath: "hero_image_id",
-    descriptionPath: "excerpt",
+    descriptionPath: "short_description",
     optionFilters: [
       { path: "offer_type_option_id", label: "Offer type", optionSetKey: "offer_type" },
       { path: "target_audience_option_id", label: "Target audience", optionSetKey: "target_audience" },
@@ -602,7 +609,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "title", label: "Title" },
           { kind: "text", path: "slug", label: "Slug" },
           { kind: "text", path: "subtitle", label: "Subtitle" },
-          { kind: "textarea", path: "excerpt", label: "Excerpt" },
+          { kind: "textarea", path: "excerpt", label: "Excerpt", max: EXCERPT_MAX_LENGTH },
           {
             kind: "media",
             path: "cover_image_id",
@@ -663,7 +670,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     hasStartAt: false,
     thumbnailPath: "thumbnail_image_id",
     heroPath: "hero_image_id",
-    descriptionPath: "excerpt",
+    descriptionPath: "short_description",
     optionFilters: [
       { path: "department_option_id", label: "Department", optionSetKey: "career_department" },
       { path: "employment_type_option_id", label: "Employment type", optionSetKey: "career_employment_type" },
@@ -784,7 +791,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "title", label: "Title" },
           { kind: "text", path: "slug", label: "Slug" },
           { kind: "text", path: "subtitle", label: "Subtitle" },
-          { kind: "textarea", path: "excerpt", label: "Excerpt" },
+          { kind: "textarea", path: "excerpt", label: "Excerpt", max: EXCERPT_MAX_LENGTH },
           {
             kind: "media",
             path: "cover_image_id",
@@ -873,7 +880,12 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "title", label: "Title" },
           { kind: "text", path: "slug", label: "Slug" },
           { kind: "text", path: "subtitle", label: "Subtitle" },
-          { kind: "textarea", path: "short_description", label: "Short description" },
+          {
+            kind: "textarea",
+            path: "short_description",
+            label: "Short description",
+            max: SHORT_DESCRIPTION_MAX_LENGTH,
+          },
           { kind: "textarea", path: "overview", label: "Overview" },
         ],
       },

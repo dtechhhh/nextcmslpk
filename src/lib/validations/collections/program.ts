@@ -13,6 +13,7 @@ import {
   sidebarFields,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
+import { SHORT_DESCRIPTION_MAX_LENGTH } from "@/lib/content-summary-limits";
 
 const sortFields = {
   is_enabled: z.boolean().default(true),
@@ -57,8 +58,7 @@ export const programSchema = z
     ...identityFields,
     ...ctaFields,
     ...sidebarFields,
-    excerpt: optionalString(600),
-    short_description: optionalString(600),
+    short_description: optionalString(SHORT_DESCRIPTION_MAX_LENGTH),
     overview: optionalString(2000),
     status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
     program_type_option_id: contentIdSchema,
@@ -96,7 +96,6 @@ export const programDefaults: ProgramData = {
   ...identityDefaults,
   ...ctaDefaults,
   ...sidebarDefaults,
-  excerpt: "",
   short_description: "",
   overview: "",
   status: "DRAFT",

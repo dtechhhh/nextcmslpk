@@ -6,6 +6,7 @@ import {
   optionalString,
   sidebarDefaults,
 } from "@/lib/validations/collections/_shared";
+import { EXCERPT_MAX_LENGTH } from "@/lib/content-summary-limits";
 import {
   headingBlockSchema,
   imageBlockSchema,
@@ -54,7 +55,7 @@ export const blogSchema = z
     title: optionalString(200),
     slug: optionalString(120),
     subtitle: optionalString(200),
-    excerpt: optionalString(600),
+    excerpt: optionalString(EXCERPT_MAX_LENGTH),
     cover_image_id: mediaIdSchema,
     status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
     is_featured: z.boolean().default(false),
