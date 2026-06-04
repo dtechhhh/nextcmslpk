@@ -5,18 +5,26 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { Prisma } from "@/generated/prisma/client";
 import { AppError, AuthError, ForbiddenError, ValidationError } from "@/lib/errors";
+import { getMediaProxyUrl } from "@/lib/media-url";
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import {
+  cleanupMedia as cleanupStorageMedia,
   createCroppedImage as createStorageCroppedImage,
   confirmUpload as confirmStorageUpload,
   deleteMedia as deleteStorageMedia,
   generatePresignedUploadUrl as generateStoragePresignedUploadUrl,
   getMediaReferences as getStorageMediaReferences,
-  getPublicUrl,
   getTotalReferenceCount,
+  MEDIA_CLEANUP_MAX_DELETE_ITEMS,
+  scanMediaCleanup as scanStorageMediaCleanup,
+  type MediaCleanupCandidate,
+  type MediaCleanupDeletedItem,
+  type MediaCleanupSkippedItem,
 } from "@/server/services/storage";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
+
+const tenantIdSchema = z.string().min(1);
 
 const mediaIdInputSchema = z.union([
   z.string().cuid().transform((mediaId) => ({ mediaId })),
@@ -69,6 +77,32 @@ const cropImageSchema = z.object({
   }),
 });
 
+const cleanupMediaSchema = z
+  .object({
+    tenantId: z.string().min(1),
+    mediaIds: z.array(z.string().cuid()).max(MEDIA_CLEANUP_MAX_DELETE_ITEMS).default([]),
+    orphanStoragePaths: z
+      .array(z.string().trim().min(1).max(500))
+      .max(MEDIA_CLEANUP_MAX_DELETE_ITEMS)
+      .default([]),
+  })
+  .refine(
+    (value) => value.mediaIds.length > 0 || value.orphanStoragePaths.length > 0,
+    {
+      message: "Pilih minimal satu media untuk cleanup.",
+      path: ["mediaIds"],
+    },
+  )
+  .refine(
+    (value) =>
+      value.mediaIds.length + value.orphanStoragePaths.length <=
+      MEDIA_CLEANUP_MAX_DELETE_ITEMS,
+    {
+      message: `Cleanup maksimal ${MEDIA_CLEANUP_MAX_DELETE_ITEMS} resource sekali jalan.`,
+      path: ["mediaIds"],
+    },
+  );
+
 export async function confirmUpload(input: unknown) {
   try {
     const session = await requireTenantSession();
@@ -97,7 +131,10 @@ export async function confirmUpload(input: unknown) {
 
     return {
       ok: true,
-      media: upload,
+      media: {
+        ...upload,
+        publicUrl: getMediaProxyUrl(upload.mediaId),
+      },
     };
   } catch (error) {
     return toActionError(error, "Upload gagal dikonfirmasi.");
@@ -138,6 +175,81 @@ export async function deleteMedia(input: unknown) {
   }
 }
 
+export async function scanMediaCleanup(tenantIdInput: unknown) {
+  try {
+    const parsed = tenantIdSchema.safeParse(tenantIdInput);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        tenantId: ["Tenant tidak valid."],
+      });
+    }
+
+    const session = await requireTenantSession(parsed.data);
+    const result = await scanStorageMediaCleanup(session.tenantId);
+
+    return {
+      ok: true,
+      candidates: result.candidates.map(serializeCleanupCandidate),
+      summary: result.summary,
+    };
+  } catch (error) {
+    return toActionError(error, "Scan cleanup media gagal.");
+  }
+}
+
+export async function cleanupMedia(input: unknown) {
+  try {
+    const parsed = cleanupMediaSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw new ValidationError({
+        mediaIds: ["Pilih minimal satu media untuk cleanup."],
+      });
+    }
+
+    const session = await requireTenantSession(parsed.data.tenantId);
+    const result = await cleanupStorageMedia(session.tenantId, {
+      mediaIds: parsed.data.mediaIds,
+      orphanStoragePaths: parsed.data.orphanStoragePaths,
+    });
+
+    await createAuditLog({
+      tenantId: session.tenantId,
+      userId: session.userId,
+      action: "media.cleanup",
+      targetType: "MediaAsset",
+      targetId: null,
+      metadata: {
+        deletedCount: result.deleted.length,
+        skippedCount: result.skipped.length,
+        totalBytes: result.totalBytes,
+        deleted: result.deleted.map((item) => ({
+          mediaId: item.mediaId,
+          storagePath: item.storagePath,
+          reason: item.reason,
+          fileSize: item.fileSize,
+        })),
+        skipped: result.skipped.map((item) => ({
+          candidateId: item.candidateId,
+          storagePath: item.storagePath,
+          reason: item.reason,
+        })),
+      },
+      ipAddress: null,
+    });
+
+    return {
+      ok: true,
+      deleted: result.deleted.map(serializeCleanupDeletedItem),
+      skipped: result.skipped.map(serializeCleanupSkippedItem),
+      totalBytes: result.totalBytes,
+    };
+  } catch (error) {
+    return toActionError(error, "Cleanup media gagal.");
+  }
+}
+
 export async function createCroppedImage(input: unknown) {
   try {
     const session = await requireTenantSession();
@@ -174,7 +286,10 @@ export async function createCroppedImage(input: unknown) {
 
     return {
       ok: true,
-      media: cropped,
+      media: {
+        ...cropped,
+        publicUrl: getMediaProxyUrl(cropped.mediaId),
+      },
     };
   } catch (error) {
     return toActionError(error, "Crop gambar gagal.");
@@ -255,7 +370,7 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
 
         return {
           ...item,
-          publicUrl: getPublicUrl(item.storagePath),
+          publicUrl: getMediaProxyUrl(item.id),
           usageCount: getTotalReferenceCount(references),
         };
       }),
@@ -357,13 +472,29 @@ export async function generatePresignedUploadUrl(input: unknown) {
       ok: true,
       mediaId: result.mediaId,
       presignedUrl: result.presignedUrl,
-      publicUrl: result.publicUrl,
+      publicUrl: getMediaProxyUrl(result.mediaId),
       storagePath: result.storagePath,
       expiresAt: result.expiresAt.toISOString(),
     };
   } catch (error) {
     return toActionError(error, "Presigned URL gagal dibuat.");
   }
+}
+
+function serializeCleanupCandidate(candidate: MediaCleanupCandidate) {
+  return {
+    ...candidate,
+    createdAt: candidate.createdAt?.toISOString() ?? null,
+    lastModified: candidate.lastModified?.toISOString() ?? null,
+  };
+}
+
+function serializeCleanupDeletedItem(item: MediaCleanupDeletedItem) {
+  return item;
+}
+
+function serializeCleanupSkippedItem(item: MediaCleanupSkippedItem) {
+  return item;
 }
 
 async function requireTenantSession(expectedTenantId?: string) {

@@ -4,6 +4,7 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   type HeadObjectCommandOutput,
 } from "@aws-sdk/client-s3";
@@ -70,6 +71,62 @@ export type MediaReferenceCounts = {
   globalConfigJson: number;
 };
 
+export type MediaCleanupReason = "STALE_UPLOAD" | "UNUSED_ACTIVE" | "ORPHAN_OBJECT";
+
+export type MediaCleanupCandidate = {
+  candidateId: string;
+  kind: "MEDIA_ASSET" | "R2_OBJECT";
+  mediaId: string | null;
+  fileName: string;
+  fileSize: number;
+  mediaType: "IMAGE" | "DOCUMENT" | "VIDEO" | "UNKNOWN";
+  mimeType: string | null;
+  status: "UPLOADING" | "ACTIVE" | "ORPHAN_OBJECT";
+  storagePath: string;
+  publicUrl: string;
+  createdAt: Date | null;
+  lastModified: Date | null;
+  usageCount: number;
+  reason: MediaCleanupReason;
+};
+
+export type MediaCleanupScanResult = {
+  candidates: MediaCleanupCandidate[];
+  summary: {
+    candidateCount: number;
+    totalBytes: number;
+    staleUploads: number;
+    unusedActive: number;
+    orphanObjects: number;
+    activeUnusedGraceDays: number;
+    staleUploadGraceHours: number;
+    orphanObjectGraceHours: number;
+  };
+};
+
+export type MediaCleanupDeletedItem = {
+  candidateId: string;
+  kind: "MEDIA_ASSET" | "R2_OBJECT";
+  mediaId: string | null;
+  fileName: string;
+  fileSize: number;
+  storagePath: string;
+  reason: MediaCleanupReason;
+};
+
+export type MediaCleanupSkippedItem = {
+  candidateId: string;
+  fileName: string;
+  storagePath: string;
+  reason: string;
+};
+
+export type MediaCleanupDeleteResult = {
+  deleted: MediaCleanupDeletedItem[];
+  skipped: MediaCleanupSkippedItem[];
+  totalBytes: number;
+};
+
 type MediaForStorage = {
   id: string;
   tenantId: string;
@@ -82,6 +139,11 @@ type MediaForStorage = {
 };
 
 const PRESIGNED_UPLOAD_EXPIRES_SECONDS = 10 * 60;
+export const MEDIA_CLEANUP_ACTIVE_UNUSED_DAYS = 7;
+export const MEDIA_CLEANUP_STALE_UPLOAD_HOURS = 1;
+export const MEDIA_CLEANUP_ORPHAN_OBJECT_HOURS = 1;
+export const MEDIA_CLEANUP_MAX_DELETE_ITEMS = 100;
+const MEDIA_CLEANUP_MAX_SCAN_ITEMS = 500;
 
 const EXTENSION_BY_MIME_TYPE: Record<AllowedUploadMimeType, string> = {
   "image/jpeg": "jpeg",
@@ -319,6 +381,184 @@ export async function deleteMedia(
   };
 }
 
+export async function scanMediaCleanup(
+  tenantId: string,
+): Promise<MediaCleanupScanResult> {
+  const now = new Date();
+  const staleUploadCutoff = getHoursAgo(now, MEDIA_CLEANUP_STALE_UPLOAD_HOURS);
+  const unusedActiveCutoff = getDaysAgo(now, MEDIA_CLEANUP_ACTIVE_UNUSED_DAYS);
+  const orphanObjectCutoff = getHoursAgo(now, MEDIA_CLEANUP_ORPHAN_OBJECT_HOURS);
+  const candidates: MediaCleanupCandidate[] = [];
+
+  const mediaAssets = await prisma.mediaAsset.findMany({
+    where: {
+      tenantId,
+      OR: [
+        {
+          status: "UPLOADING",
+          createdAt: {
+            lt: staleUploadCutoff,
+          },
+        },
+        {
+          status: "ACTIVE",
+          createdAt: {
+            lt: unusedActiveCutoff,
+          },
+        },
+      ],
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    take: MEDIA_CLEANUP_MAX_SCAN_ITEMS,
+    select: {
+      id: true,
+      fileName: true,
+      mimeType: true,
+      fileSize: true,
+      mediaType: true,
+      status: true,
+      storagePath: true,
+      createdAt: true,
+    },
+  });
+
+  for (const media of mediaAssets) {
+    const references = await getMediaReferences(tenantId, media.id);
+    const usageCount = getTotalReferenceCount(references);
+
+    if (usageCount > 0) {
+      continue;
+    }
+
+    const reason = getDbCleanupReason(media.status, media.createdAt, now);
+
+    if (!reason) {
+      continue;
+    }
+
+    candidates.push({
+      candidateId: media.id,
+      kind: "MEDIA_ASSET",
+      mediaId: media.id,
+      fileName: media.fileName,
+      fileSize: media.fileSize,
+      mediaType: media.mediaType,
+      mimeType: media.mimeType,
+      status: media.status,
+      storagePath: media.storagePath,
+      publicUrl: getPublicUrl(media.storagePath),
+      createdAt: media.createdAt,
+      lastModified: null,
+      usageCount,
+      reason,
+    });
+  }
+
+  const knownStoragePaths = new Set(
+    (
+      await prisma.mediaAsset.findMany({
+        where: { tenantId },
+        select: { storagePath: true },
+      })
+    ).map((media) => media.storagePath),
+  );
+
+  const orphanObjects = await listTenantMediaObjects(tenantId);
+
+  for (const object of orphanObjects) {
+    const storagePath = object.storagePath;
+
+    if (
+      knownStoragePaths.has(storagePath) ||
+      !object.lastModified ||
+      object.lastModified >= orphanObjectCutoff
+    ) {
+      continue;
+    }
+
+    const mediaId = extractMediaIdFromStoragePath(storagePath);
+    const usageCount = mediaId
+      ? getTotalReferenceCount(await getMediaReferences(tenantId, mediaId))
+      : 0;
+
+    if (usageCount > 0) {
+      continue;
+    }
+
+    candidates.push({
+      candidateId: storagePath,
+      kind: "R2_OBJECT",
+      mediaId,
+      fileName: getFileNameFromStoragePath(storagePath),
+      fileSize: object.fileSize,
+      mediaType: inferMediaTypeFromStoragePath(storagePath),
+      mimeType: null,
+      status: "ORPHAN_OBJECT",
+      storagePath,
+      publicUrl: getPublicUrl(storagePath),
+      createdAt: null,
+      lastModified: object.lastModified,
+      usageCount,
+      reason: "ORPHAN_OBJECT",
+    });
+
+    if (candidates.length >= MEDIA_CLEANUP_MAX_SCAN_ITEMS) {
+      break;
+    }
+  }
+
+  return buildMediaCleanupScanResult(candidates);
+}
+
+export async function cleanupMedia(
+  tenantId: string,
+  input: {
+    mediaIds?: string[];
+    orphanStoragePaths?: string[];
+  },
+): Promise<MediaCleanupDeleteResult> {
+  let remainingItems = MEDIA_CLEANUP_MAX_DELETE_ITEMS;
+  const mediaIds = [...new Set(input.mediaIds ?? [])].slice(
+    0,
+    remainingItems,
+  );
+  remainingItems -= mediaIds.length;
+  const orphanStoragePaths = [...new Set(input.orphanStoragePaths ?? [])].slice(
+    0,
+    remainingItems,
+  );
+  const deleted: MediaCleanupDeletedItem[] = [];
+  const skipped: MediaCleanupSkippedItem[] = [];
+
+  for (const mediaId of mediaIds) {
+    const result = await cleanupMediaAssetCandidate(tenantId, mediaId);
+
+    if (result.deleted) {
+      deleted.push(result.deleted);
+    } else {
+      skipped.push(result.skipped);
+    }
+  }
+
+  for (const storagePath of orphanStoragePaths) {
+    const result = await cleanupOrphanObjectCandidate(tenantId, storagePath);
+
+    if (result.deleted) {
+      deleted.push(result.deleted);
+    } else {
+      skipped.push(result.skipped);
+    }
+  }
+
+  return {
+    deleted,
+    skipped,
+    totalBytes: deleted.reduce((total, item) => total + item.fileSize, 0),
+  };
+}
+
 export function getPublicUrl(storagePath: string) {
   const baseUrl = R2_PUBLIC_URL.replace(/\/+$/, "");
   const path = storagePath.replace(/^\/+/, "");
@@ -475,6 +715,360 @@ async function findTenantMediaOrThrow(tenantId: string, mediaId: string) {
   return media;
 }
 
+type CleanupCandidateResult =
+  | { deleted: MediaCleanupDeletedItem; skipped?: never }
+  | { deleted?: never; skipped: MediaCleanupSkippedItem };
+
+async function cleanupMediaAssetCandidate(
+  tenantId: string,
+  mediaId: string,
+): Promise<CleanupCandidateResult> {
+  const media = await prisma.mediaAsset.findFirst({
+    where: {
+      id: mediaId,
+      tenantId,
+    },
+    select: {
+      id: true,
+      fileName: true,
+      fileSize: true,
+      status: true,
+      storagePath: true,
+      createdAt: true,
+    },
+  });
+
+  if (!media) {
+    return {
+      skipped: buildSkippedCleanupItem(mediaId, mediaId, "", "Media tidak ditemukan."),
+    };
+  }
+
+  const cleanupReason = getDbCleanupReason(media.status, media.createdAt, new Date());
+
+  if (!cleanupReason) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        media.id,
+        media.fileName,
+        media.storagePath,
+        "Media tidak lagi masuk kriteria cleanup.",
+      ),
+    };
+  }
+
+  const references = await getMediaReferences(tenantId, media.id);
+
+  if (getTotalReferenceCount(references) > 0) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        media.id,
+        media.fileName,
+        media.storagePath,
+        "Media sekarang sudah digunakan.",
+      ),
+    };
+  }
+
+  try {
+    await deleteMedia(tenantId, media.id);
+  } catch (error) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        media.id,
+        media.fileName,
+        media.storagePath,
+        getErrorMessage(error, "Media gagal dihapus."),
+      ),
+    };
+  }
+
+  return {
+    deleted: {
+      candidateId: media.id,
+      kind: "MEDIA_ASSET",
+      mediaId: media.id,
+      fileName: media.fileName,
+      fileSize: media.fileSize,
+      storagePath: media.storagePath,
+      reason: cleanupReason,
+    },
+  };
+}
+
+async function cleanupOrphanObjectCandidate(
+  tenantId: string,
+  storagePath: string,
+): Promise<CleanupCandidateResult> {
+  if (!isTenantMediaStoragePath(tenantId, storagePath)) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        storagePath,
+        getFileNameFromStoragePath(storagePath),
+        storagePath,
+        "Path object tidak sesuai tenant.",
+      ),
+    };
+  }
+
+  const existingMedia = await prisma.mediaAsset.findFirst({
+    where: {
+      tenantId,
+      storagePath,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingMedia) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        storagePath,
+        getFileNameFromStoragePath(storagePath),
+        storagePath,
+        "Object sekarang sudah punya record media.",
+      ),
+    };
+  }
+
+  const head = await headObjectOrNull(storagePath);
+
+  if (!head) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        storagePath,
+        getFileNameFromStoragePath(storagePath),
+        storagePath,
+        "Object sudah tidak ditemukan di R2.",
+      ),
+    };
+  }
+
+  const lastModified = head.LastModified ?? null;
+
+  if (!lastModified || lastModified >= getHoursAgo(new Date(), MEDIA_CLEANUP_ORPHAN_OBJECT_HOURS)) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        storagePath,
+        getFileNameFromStoragePath(storagePath),
+        storagePath,
+        "Object belum melewati masa aman cleanup.",
+      ),
+    };
+  }
+
+  const mediaId = extractMediaIdFromStoragePath(storagePath);
+
+  if (mediaId) {
+    const references = await getMediaReferences(tenantId, mediaId);
+
+    if (getTotalReferenceCount(references) > 0) {
+      return {
+        skipped: buildSkippedCleanupItem(
+          storagePath,
+          getFileNameFromStoragePath(storagePath),
+          storagePath,
+          "Media ID masih muncul di content.",
+        ),
+      };
+    }
+  }
+
+  try {
+    await r2Client.send(
+      new DeleteObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: storagePath,
+      }),
+    );
+  } catch (error) {
+    return {
+      skipped: buildSkippedCleanupItem(
+        storagePath,
+        getFileNameFromStoragePath(storagePath),
+        storagePath,
+        getErrorMessage(error, "Object R2 gagal dihapus."),
+      ),
+    };
+  }
+
+  return {
+    deleted: {
+      candidateId: storagePath,
+      kind: "R2_OBJECT",
+      mediaId,
+      fileName: getFileNameFromStoragePath(storagePath),
+      fileSize: typeof head.ContentLength === "number" ? head.ContentLength : 0,
+      storagePath,
+      reason: "ORPHAN_OBJECT",
+    },
+  };
+}
+
+function buildMediaCleanupScanResult(
+  candidates: MediaCleanupCandidate[],
+): MediaCleanupScanResult {
+  return {
+    candidates,
+    summary: {
+      candidateCount: candidates.length,
+      totalBytes: candidates.reduce((total, candidate) => total + candidate.fileSize, 0),
+      staleUploads: candidates.filter((candidate) => candidate.reason === "STALE_UPLOAD")
+        .length,
+      unusedActive: candidates.filter((candidate) => candidate.reason === "UNUSED_ACTIVE")
+        .length,
+      orphanObjects: candidates.filter((candidate) => candidate.reason === "ORPHAN_OBJECT")
+        .length,
+      activeUnusedGraceDays: MEDIA_CLEANUP_ACTIVE_UNUSED_DAYS,
+      staleUploadGraceHours: MEDIA_CLEANUP_STALE_UPLOAD_HOURS,
+      orphanObjectGraceHours: MEDIA_CLEANUP_ORPHAN_OBJECT_HOURS,
+    },
+  };
+}
+
+async function listTenantMediaObjects(tenantId: string) {
+  const prefix = getTenantMediaPrefix(tenantId);
+  const objects: Array<{
+    storagePath: string;
+    fileSize: number;
+    lastModified: Date | null;
+  }> = [];
+  let continuationToken: string | undefined;
+
+  do {
+    const response = await r2Client.send(
+      new ListObjectsV2Command({
+        Bucket: R2_BUCKET_NAME,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    );
+
+    for (const object of response.Contents ?? []) {
+      if (!object.Key || !isTenantMediaStoragePath(tenantId, object.Key)) {
+        continue;
+      }
+
+      objects.push({
+        storagePath: object.Key,
+        fileSize: object.Size ?? 0,
+        lastModified: object.LastModified ?? null,
+      });
+    }
+
+    continuationToken = response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined;
+  } while (continuationToken && objects.length < MEDIA_CLEANUP_MAX_SCAN_ITEMS);
+
+  return objects;
+}
+
+function getDbCleanupReason(
+  status: "UPLOADING" | "ACTIVE",
+  createdAt: Date,
+  now: Date,
+): MediaCleanupReason | null {
+  if (
+    status === "UPLOADING" &&
+    createdAt < getHoursAgo(now, MEDIA_CLEANUP_STALE_UPLOAD_HOURS)
+  ) {
+    return "STALE_UPLOAD";
+  }
+
+  if (
+    status === "ACTIVE" &&
+    createdAt < getDaysAgo(now, MEDIA_CLEANUP_ACTIVE_UNUSED_DAYS)
+  ) {
+    return "UNUSED_ACTIVE";
+  }
+
+  return null;
+}
+
+function buildSkippedCleanupItem(
+  candidateId: string,
+  fileName: string,
+  storagePath: string,
+  reason: string,
+): MediaCleanupSkippedItem {
+  return {
+    candidateId,
+    fileName,
+    storagePath,
+    reason,
+  };
+}
+
+function getTenantMediaPrefix(tenantId: string) {
+  return `tenants/${tenantId}/media/`;
+}
+
+function isTenantMediaStoragePath(tenantId: string, storagePath: string) {
+  return (
+    storagePath.startsWith(getTenantMediaPrefix(tenantId)) &&
+    !storagePath.includes("\\") &&
+    !storagePath.includes("..")
+  );
+}
+
+function extractMediaIdFromStoragePath(storagePath: string) {
+  const fileName = getFileNameFromStoragePath(storagePath);
+  const match = /^([^/.]+)\.[^.]+$/.exec(fileName);
+
+  return match?.[1] ?? null;
+}
+
+function getFileNameFromStoragePath(storagePath: string) {
+  return storagePath.split("/").filter(Boolean).at(-1) ?? storagePath;
+}
+
+function inferMediaTypeFromStoragePath(
+  storagePath: string,
+): "IMAGE" | "DOCUMENT" | "VIDEO" | "UNKNOWN" {
+  const extension = storagePath.split(".").at(-1)?.toLowerCase();
+
+  if (extension === "jpg" || extension === "jpeg" || extension === "png" || extension === "webp") {
+    return "IMAGE";
+  }
+
+  if (extension === "pdf") {
+    return "DOCUMENT";
+  }
+
+  if (extension === "mp4" || extension === "webm" || extension === "mov") {
+    return "VIDEO";
+  }
+
+  return "UNKNOWN";
+}
+
+function getHoursAgo(now: Date, hours: number) {
+  return new Date(now.getTime() - hours * 60 * 60 * 1000);
+}
+
+function getDaysAgo(now: Date, days: number) {
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+}
+
+async function headObjectOrNull(storagePath: string) {
+  try {
+    return await r2Client.send(
+      new HeadObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: storagePath,
+      }),
+    );
+  } catch (error) {
+    if (isS3NotFoundError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
 async function headObjectOrThrow(storagePath: string) {
   try {
     return await r2Client.send(
@@ -490,6 +1084,14 @@ async function headObjectOrThrow(storagePath: string) {
 
     throw error;
   }
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof AppError || error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
 }
 
 function validateUploadedObjectMetadata(
