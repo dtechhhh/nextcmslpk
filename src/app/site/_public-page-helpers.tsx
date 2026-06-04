@@ -172,7 +172,9 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     resolveOfferSectionPayload(context.variantId, offerSection),
   ]);
   const offerItem = offerPayload.item;
-  const offerData = offerItem?.dataJson ?? {};
+  const offerBadgeLabel = offerItem
+    ? await resolveOfferBannerBadge(offerItem, context.variantId)
+    : stringValue(offerSection.fallback_badge_label);
 
   return (
     <>
@@ -227,7 +229,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
             Boolean(offerItem || stringValue(offerSection.fallback_headline)),
           )
         }
-        badgeLabel={stringValue(offerData.badge_label) || stringValue(offerSection.fallback_badge_label)}
+        badgeLabel={offerBadgeLabel}
         headline={
           offerItem?.title ||
           stringValue(offerSection.fallback_headline) ||
@@ -252,23 +254,16 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       <CardGrid
         title="Program Unggulan"
         items={await Promise.all(
-          programs.items.map((item) =>
-            collectionCard(item, "/program", ["program_type"], context.variantId),
-          ),
+          programs.items.map((item) => programCollectionCard(item, context.variantId)),
         )}
         ctaLabel="Lihat Semua Program"
         ctaHref="/program"
       />
       <CollectionList
         title="Lowongan Terbaru"
-        items={await Promise.all(jobs.items.map(async (item) => {
-          const labels = await resolveItemLabels(
-            item,
-            ["job_field", "job_type"],
-            context.variantId,
-          );
-          return toListItem(item, labels, ["location_label"]);
-        }))}
+        items={await Promise.all(
+          jobs.items.map((item) => toCollectionListItem(item, "job", context.variantId)),
+        )}
         total={jobs.total}
         page={jobs.page}
         pageSize={jobs.pageSize}
@@ -381,19 +376,18 @@ export async function renderListPage(options: ListPageOptions) {
     resolvedHeroImage ?? getListPageFallbackHeroImage(options.pageKey, collection.items);
   const offerItem = offerPayload.item;
   const offerData = offerItem?.dataJson ?? {};
+  const offerBadgeLabel = offerItem
+    ? await resolveOfferBannerBadge(offerItem, context.variantId)
+    : "";
 
-  const itemsWithLabels = options.cardLabelOptionKeys?.length
-    ? await Promise.all(
-        collection.items.map(async (item) => {
-          const labels = await resolveItemLabels(
-            item,
-            options.cardLabelOptionKeys!,
-            context.variantId,
-          );
-          return toListItem(item, labels, options.cardMetaKeys);
-        }),
-      )
-    : collection.items.map((item) => toListItem(item, undefined, options.cardMetaKeys));
+  const itemsWithLabels = await Promise.all(
+    collection.items.map((item) =>
+      toCollectionListItem(item, options.collectionKey, context.variantId, {
+        labelKeys: options.cardLabelOptionKeys,
+        metaKeys: options.cardMetaKeys,
+      }),
+    ),
+  );
 
   const heroHeadline = stringValue(hero.headline) || page.title;
   const heroSubheadline = stringValue(hero.subheadline);
@@ -429,7 +423,7 @@ export async function renderListPage(options: ListPageOptions) {
       {shouldResolveOffer ? (
         <OfferBanner
           isEnabled={Boolean(offerItem)}
-          badgeLabel={stringValue(offerData.badge_label)}
+          badgeLabel={offerBadgeLabel}
           headline={offerItem?.title || "Promo Program"}
           description={offerItem?.excerpt || stringValue(offerData.short_description)}
           imageSrc={offerItem?.thumbnailSrc}
@@ -3208,17 +3202,77 @@ function MetaRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function toListItem(item: PublicCollectionItem, labels?: string[], metaKeys?: string[]) {
+type ListItemOptions = {
+  labelKeys?: string[];
+  labels?: string[];
+  metaKeys?: string[];
+  badge?: string | null;
+  usePublishedAtFallback?: boolean;
+};
+
+async function toCollectionListItem(
+  item: PublicCollectionItem,
+  collectionKey: string,
+  variantId: string,
+  options: ListItemOptions = {},
+) {
+  if (collectionKey === "program") {
+    return toListItem(item, {
+      labels: await resolveProgramLabels(item, variantId),
+      badge: null,
+      usePublishedAtFallback: false,
+    });
+  }
+
+  if (collectionKey === "job") {
+    return toListItem(item, {
+      labels: await resolveJobLabels(item, variantId),
+      metaKeys: ["location_label", "salary_range_label", "deadline_label"],
+      badge: null,
+      usePublishedAtFallback: false,
+    });
+  }
+
+  if (collectionKey === "karir") {
+    return toListItem(item, {
+      labels: await resolveKarirLabels(item, variantId),
+      metaKeys: ["location_label", "salary_label", "experience_label", "deadline_label"],
+      badge: null,
+      usePublishedAtFallback: false,
+    });
+  }
+
+  const labels = options.labels ?? (
+    options.labelKeys?.length
+      ? await resolveItemLabels(item, options.labelKeys, variantId)
+      : undefined
+  );
+
+  return toListItem(item, {
+    labels,
+    metaKeys: options.metaKeys,
+    usePublishedAtFallback: true,
+  });
+}
+
+function toListItem(item: PublicCollectionItem, options: ListItemOptions = {}) {
+  const labels = options.labels;
+  const metaKeys = options.metaKeys;
   let meta: string | undefined;
   if (metaKeys?.length) {
     const values = metaKeys
       .map((key) => stringValue(item.dataJson[key]))
       .filter((v) => v !== "");
-    meta = values.length > 0 ? values.join(" · ") : undefined;
+    meta = values.length > 0 ? values.join(" / ") : undefined;
   }
-  if (!meta) {
+  if (!meta && options.usePublishedAtFallback !== false) {
     meta = item.publishedAt ? formatDate(item.publishedAt) : undefined;
   }
+  const badge =
+    options.badge === null
+      ? undefined
+      : options.badge ?? stringValue(item.dataJson.highlight_label);
+
   return {
     id: item.id,
     title: item.title,
@@ -3230,7 +3284,7 @@ function toListItem(item: PublicCollectionItem, labels?: string[], metaKeys?: st
     expiredAt: item.expiredAt ? `Berakhir ${formatDate(item.expiredAt)}` : undefined,
     isExpired: item.isExpired,
     isFeatured: item.isFeatured,
-    badge: stringValue(item.dataJson.highlight_label),
+    badge,
     labels,
   };
 }
@@ -3262,6 +3316,67 @@ async function resolveItemLabels(
   return resolved.map((r) => r?.label ?? "").filter(Boolean);
 }
 
+async function resolveItemLabel(
+  item: PublicCollectionItem,
+  key: string,
+  variantId: string,
+) {
+  const labels = await resolveItemLabels(item, [key], variantId);
+  return labels[0] ?? "";
+}
+
+async function resolveProgramLabels(item: PublicCollectionItem, variantId: string) {
+  const [programType, gender, education, language] = await Promise.all([
+    resolveItemLabel(item, "program_type", variantId),
+    resolveItemLabel(item, "gender", variantId),
+    resolveItemLabel(item, "education_level", variantId),
+    resolveItemLabel(item, "language_level", variantId),
+  ]);
+
+  return compactStrings([
+    programType,
+    gender,
+    formatAgeRangeLabel(item.dataJson),
+    education,
+    language,
+  ]);
+}
+
+async function resolveJobLabels(item: PublicCollectionItem, variantId: string) {
+  const [jobField, jobType, gender, language, education] = await Promise.all([
+    resolveItemLabel(item, "job_field", variantId),
+    resolveItemLabel(item, "job_type", variantId),
+    resolveItemLabel(item, "gender", variantId),
+    resolveItemLabel(item, "language_level", variantId),
+    resolveItemLabel(item, "education_level", variantId),
+  ]);
+
+  return compactStrings([jobField, jobType, gender, language, education]);
+}
+
+async function resolveKarirLabels(item: PublicCollectionItem, variantId: string) {
+  return resolveItemLabels(item, ["department", "employment_type", "work_arrangement"], variantId);
+}
+
+function formatAgeRangeLabel(data: PublicJson) {
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+
+  if (minAge && maxAge) {
+    return `Usia ${minAge}-${maxAge}`;
+  }
+
+  if (minAge) {
+    return `Usia min ${minAge}`;
+  }
+
+  if (maxAge) {
+    return `Usia max ${maxAge}`;
+  }
+
+  return "";
+}
+
 async function collectionCard(
   item: PublicCollectionItem,
   pathPrefix: string,
@@ -3282,6 +3397,36 @@ async function collectionCard(
     labels,
     isEnabled: true,
   };
+}
+
+async function programCollectionCard(item: PublicCollectionItem, variantId: string) {
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.excerpt,
+    href: `/program/${item.slug}`,
+    imageSrc: item.thumbnailSrc,
+    labels: await resolveProgramLabels(item, variantId),
+    isEnabled: true,
+  };
+}
+
+async function resolveOfferBannerBadge(item: PublicCollectionItem, variantId: string) {
+  const [offerType, targetAudience] = await Promise.all([
+    resolveItemLabel(item, "offer_type", variantId),
+    resolveItemLabel(item, "target_audience", variantId),
+  ]);
+
+  return compactStrings([
+    stringValue(item.dataJson.price_label),
+    stringValue(item.dataJson.urgency_label),
+    offerType,
+    targetAudience,
+  ])[0] ?? "";
+}
+
+function compactStrings(values: string[]) {
+  return values.map((value) => value.trim()).filter((value) => value !== "");
 }
 
 function getPublicOptionSetKey(key: string) {
