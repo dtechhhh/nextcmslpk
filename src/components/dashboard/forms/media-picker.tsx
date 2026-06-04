@@ -74,6 +74,8 @@ const DEFAULT_CROP_RECT: MediaCropRect = {
   height: 1,
 };
 
+const MEDIA_PICKER_PAGE_SIZE = 24;
+
 export function MediaPicker({
   tenantId,
   value,
@@ -140,7 +142,7 @@ export function MediaPicker({
         },
         {
           page,
-          pageSize: 12,
+          pageSize: MEDIA_PICKER_PAGE_SIZE,
         },
       );
 
@@ -327,7 +329,8 @@ export function MediaPicker({
         >
           <PickerIcon />
           <span className="truncate">
-            {selectedItem?.fileName ?? (value ? `Selected: ${value}` : "Select media")}
+            {selectedItem?.fileName ??
+              (value ? getSelectedFallbackLabel(mediaType) : "Select media")}
           </span>
         </Button>
         {value && (
@@ -345,8 +348,8 @@ export function MediaPicker({
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85vh] max-w-4xl overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="flex h-[min(85vh,760px)] max-h-[85vh] max-w-4xl flex-col overflow-hidden">
+          <DialogHeader className="shrink-0 pr-8">
             <DialogTitle>
               {getMediaPickerTitle(mediaType)}
             </DialogTitle>
@@ -357,9 +360,9 @@ export function MediaPicker({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-4 overflow-hidden">
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+            <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
                 <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={query}
@@ -399,17 +402,17 @@ export function MediaPicker({
               <p className="text-xs text-destructive">{uploadError}</p>
             ) : null}
 
-            <div className="min-h-72 overflow-y-auto pr-1">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
               {loading ? (
-                <div className="grid min-h-72 place-items-center text-sm text-muted-foreground">
+                <div className="grid h-full min-h-48 place-items-center text-sm text-muted-foreground">
                   <Loader2Icon className="size-5 animate-spin" />
                 </div>
               ) : items.length === 0 ? (
-                <div className="grid min-h-72 place-items-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                <div className="grid h-full min-h-48 place-items-center rounded-lg border border-dashed text-sm text-muted-foreground">
                   No active media found.
                 </div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 pb-1 sm:grid-cols-2 lg:grid-cols-3">
                   {items.map((item) => {
                     const presetErrors = getPresetErrors(item, mediaPreset);
                     const isInvalidForPreset = presetErrors.length > 0;
@@ -478,7 +481,7 @@ export function MediaPicker({
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t pt-3">
+            <div className="flex shrink-0 items-center justify-between border-t pt-3">
               <span className="text-sm text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
@@ -881,6 +884,18 @@ function getMediaPickerDescription(mediaType: MediaType) {
   }
 
   return "Choose an active asset from the tenant media library.";
+}
+
+function getSelectedFallbackLabel(mediaType: MediaType) {
+  if (mediaType === "IMAGE") {
+    return "Image selected";
+  }
+
+  if (mediaType === "VIDEO") {
+    return "Video selected";
+  }
+
+  return "Document selected";
 }
 
 function isMediaType(value: unknown): value is MediaType {

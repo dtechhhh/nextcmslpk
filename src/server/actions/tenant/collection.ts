@@ -15,6 +15,7 @@ import {
 } from "@/lib/collection-definitions";
 import type { CollectionKey } from "@/lib/constants";
 import { AppError, AuthError, ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
+import { getMediaProxyUrl } from "@/lib/media-url";
 import { generateSlug } from "@/lib/slugify";
 import { getCollectionSchema } from "@/lib/validations/collections";
 import { zodErrorToFieldErrors } from "@/lib/validations/global/_shared";
@@ -22,7 +23,6 @@ import { prisma } from "@/server/db/client";
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import { signPreviewToken } from "@/server/services/preview-token";
-import { getPublicUrl } from "@/server/services/storage";
 import { verifySecurityStamp } from "@/server/services/security-stamp";
 import type { VariantKey } from "@/types";
 
@@ -1214,7 +1214,7 @@ function normalizeListItem(item: {
       ? {
           id: item.thumbnailImage.id,
           fileName: item.thumbnailImage.fileName,
-          publicUrl: getPublicUrl(item.thumbnailImage.storagePath),
+          publicUrl: getMediaProxyUrl(item.thumbnailImage.id),
         }
       : null,
   };

@@ -38,6 +38,7 @@ export async function LayoutJapan({
   const appearanceStyle = getVariantAppearanceStyle("japan", brandHeader.appearance);
 
   const lpkName = stringValue(brand.lpk_name) || tenant.name;
+  const tagline = stringValue(brand.tagline);
   const lineAccountId = stringValue(lineContact.line_official_account_id);
   const defaultLineMessage =
     stringValue(lineContact.default_message_template) ||
@@ -76,7 +77,7 @@ export async function LayoutJapan({
     >
       <HeaderJapan
         lpkName={lpkName}
-        tagline={stringValue(brand.tagline)}
+        tagline={tagline}
         logoSrc={logoSrc ?? undefined}
         logoLightSrc={logoLightSrc ?? undefined}
         topbar={{
@@ -113,6 +114,7 @@ export async function LayoutJapan({
       <main>{children}</main>
       <FooterJapan
         lpkName={stringValue(footerBrand.lpk_name) || lpkName}
+        tagline={tagline}
         logoSrc={footerLogoSrc ?? logoSrc ?? undefined}
         shortDescription={stringValue(footerBrand.short_description)}
         companyLinks={arrayOfRecords(footer.company_links).map((item) => ({

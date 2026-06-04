@@ -81,6 +81,7 @@ const TERM_LABELS: Record<string, string> = {
   Document: "Dokumen",
   Enabled: "Aktif",
   FAQ: "FAQ",
+  "Gallery images": "Galeri foto",
   Image: "Gambar",
   Item: "Item",
   "Media ID": "ID media",
@@ -151,7 +152,7 @@ const FIELD_LABELS_BY_PATH: Record<string, string> = {
   ex_japan_required: "Wajib pernah ke Jepang",
   faqs: "FAQ",
   format_label: "Format",
-  gallery_media_ids: "ID media galeri",
+  gallery_media_ids: "Galeri foto",
   gender_option_id: "Gender",
   hero_image_id: "Gambar hero",
   highlight_label: "Label sorotan",
@@ -315,6 +316,10 @@ const GUIDANCE_BY_PATH: Record<string, CmsFieldGuidance> = {
     helpText: "Pilih gambar kecil yang kuat untuk kartu daftar.",
     usage: "Muncul di kartu, list, dan beberapa section homepage.",
   },
+  gallery_media_ids: {
+    helpText: "Pilih satu atau beberapa gambar dari media library.",
+    usage: "Muncul sebagai galeri foto di halaman detail lowongan.",
+  },
   title: {
     helpText: "Isi judul utama yang akan dilihat pengunjung.",
     usage: "Muncul di kartu, daftar, detail, dan preview.",
@@ -342,6 +347,9 @@ const GUIDANCE_BY_KIND: Partial<Record<CollectionField["kind"], CmsFieldGuidance
   },
   media: {
     helpText: "Pilih media dari library. Crop akan mengikuti kebutuhan field ini.",
+  },
+  "media-array": {
+    helpText: "Tambahkan beberapa gambar dari media library.",
   },
   multiselect: {
     helpText: "Pilih satu atau beberapa opsi yang paling sesuai.",
@@ -396,7 +404,9 @@ export function getCmsItemLabel(label?: string) {
   return label ? translateCmsTerm(label) : "item";
 }
 
-export function getCmsAddLabel(field: Extract<CollectionField, { kind: "array" | "string-array" }>) {
+export function getCmsAddLabel(
+  field: Extract<CollectionField, { kind: "array" | "string-array" | "media-array" }>,
+) {
   return field.addLabel
     ? translateCmsTerm(field.addLabel)
     : `Tambah ${getCmsItemLabel(field.itemLabel)}`;
