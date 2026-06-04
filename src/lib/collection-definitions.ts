@@ -63,6 +63,14 @@ export type CollectionField = (
       cropPreset?: MediaCropPreset;
     }
   | {
+      kind: "media-array";
+      path: string;
+      label: string;
+      itemLabel?: string;
+      addLabel?: string;
+      cropPreset?: MediaCropPreset;
+    }
+  | {
       kind: "select";
       path: string;
       label: string;
@@ -235,12 +243,6 @@ const lineCtaFields: CollectionField[] = [
   },
 ];
 
-const relatedSourceOptions = [
-  { value: "same_category", label: "Same category" },
-  { value: "same_tags", label: "Same tags" },
-  { value: "manual", label: "Manual" },
-];
-
 export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition> = {
   program: {
     key: "program",
@@ -301,7 +303,6 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
         title: "Classification",
         fields: [
           { kind: "select", path: "program_type_option_id", label: "Program type", optionSetKey: "program_type" },
-          { kind: "text", path: "location_option_id", label: "Location option ID" },
           { kind: "select", path: "gender_option_id", label: "Gender", optionSetKey: "gender" },
           { kind: "number", path: "min_age", label: "Minimum age", min: 0, max: 100 },
           { kind: "number", path: "max_age", label: "Maximum age", min: 0, max: 100 },
@@ -422,12 +423,10 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
         title: "Classification",
         fields: [
           { kind: "select", path: "job_type_option_id", label: "Job type", optionSetKey: "job_type" },
-          { kind: "text", path: "location_option_id", label: "Location option ID" },
           { kind: "select", path: "job_field_option_id", label: "Job field", optionSetKey: "job_field" },
           { kind: "select", path: "gender_option_id", label: "Gender", optionSetKey: "gender" },
           { kind: "select", path: "language_level_option_id", label: "Language level", optionSetKey: "language_level" },
           { kind: "select", path: "education_level_option_id", label: "Education level", optionSetKey: "education_level" },
-          { kind: "text", path: "related_program_id", label: "Related program ID" },
         ],
       },
       {
@@ -467,7 +466,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "array", path: "benefit_items", label: "Benefit items", itemLabel: "Benefit", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "qualification_items", label: "Qualification items", itemLabel: "Qualification", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "recruitment_steps", label: "Recruitment steps", itemLabel: "Step", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "string-array", path: "gallery_media_ids", label: "Gallery media IDs", itemLabel: "Media ID" },
+          { kind: "media-array", path: "gallery_media_ids", label: "Gallery images", itemLabel: "Image", addLabel: "Add image", cropPreset: "thumbnail" },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
         ],
       },
@@ -646,14 +645,6 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           },
         ],
       },
-      {
-        title: "Related articles",
-        fields: [
-          { kind: "select", path: "related_source", label: "Source", options: relatedSourceOptions },
-          { kind: "string-array", path: "manual_blog_ids", label: "Manual blog IDs", itemLabel: "Blog ID" },
-          { kind: "number", path: "related_max_items", label: "Max items", min: 1, max: 10 },
-        ],
-      },
     ],
   },
   karir: {
@@ -711,8 +702,6 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       {
         title: "Classification",
         fields: [
-          { kind: "text", path: "karir_type_option_id", label: "Karir type option ID" },
-          { kind: "text", path: "location_option_id", label: "Location option ID" },
           { kind: "select", path: "department_option_id", label: "Department", optionSetKey: "career_department" },
           { kind: "select", path: "employment_type_option_id", label: "Employment type", optionSetKey: "career_employment_type" },
           { kind: "select", path: "work_arrangement_option_id", label: "Work arrangement", optionSetKey: "career_work_arrangement" },
@@ -830,9 +819,6 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       {
         title: "Related articles",
         fields: [
-          { kind: "select", path: "related_source", label: "Source", options: relatedSourceOptions },
-          { kind: "string-array", path: "manual_news_ids", label: "Manual news IDs", itemLabel: "News ID" },
-          { kind: "string-array", path: "related_articles", label: "Related articles", itemLabel: "Article ID" },
           { kind: "number", path: "related_max_items", label: "Max items", min: 1, max: 10 },
         ],
       },

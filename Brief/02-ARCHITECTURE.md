@@ -473,7 +473,11 @@ Shared patterns:
 Orphaned file policy (lihat DEC-019):
   - Jika confirm step gagal, file tetap di R2 tanpa record ACTIVE
   - MVP: accept orphans, manual cleanup via R2 dashboard
+  - Dashboard Media Library: manual scan + delete selected cleanup candidates
   - MediaAsset records dengan status UPLOADING > 1 jam = kemungkinan orphan
+  - ACTIVE media yang usage count = 0 dan berumur > 7 hari = kandidat unused cleanup
+  - R2 object di prefix tenant tanpa record media = kandidat orphan object cleanup
+  - Delete action wajib re-check reference count tepat sebelum hapus
   - Post-MVP: cron job delete UPLOADING records > 1 hour + R2 file cleanup
 ```
 

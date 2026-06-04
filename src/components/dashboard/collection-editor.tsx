@@ -796,6 +796,7 @@ function FieldRenderer({
     field.kind === "textarea" ||
     field.kind === "array" ||
     field.kind === "string-array" ||
+    field.kind === "media-array" ||
     field.kind === "content-blocks" ||
     field.kind === "multiselect";
   const label = getCmsFieldLabel(field);
@@ -887,6 +888,43 @@ function FieldRenderer({
 
                 nextItems[index] = event.target.value;
                 setValue(path, nextItems);
+              }}
+            />
+          )}
+        />
+        <FieldError>{error}</FieldError>
+      </Field>
+    );
+  }
+
+  if (field.kind === "media-array") {
+    const items = normalizeStringArray(getAtPath(data, path));
+
+    return (
+      <Field className="md:col-span-2" data-invalid={Boolean(error)}>
+        <FieldLabel>{label}</FieldLabel>
+        <FieldGuidance field={field} />
+        <SortableList
+          items={items}
+          addLabel={getCmsAddLabel(field)}
+          emptyLabel={getCmsEmptyLabel(field)}
+          createItem={() => ""}
+          getItemLabel={(_item, index) =>
+            `${getCmsItemLabel(field.itemLabel)} ${index + 1}`
+          }
+          getItemKey={(item, index) => `${item || "media"}-${index}`}
+          onChange={(nextItems) => setValue(path, nextItems)}
+          renderItem={(_item, index) => (
+            <MediaPicker
+              tenantId={tenantId}
+              value={items[index] ?? ""}
+              mediaType="IMAGE"
+              cropPreset={field.cropPreset}
+              onChange={(mediaId) => {
+                const nextItems = [...items];
+
+                nextItems[index] = mediaId;
+                setValue(path, nextItems.filter((item) => item !== ""));
               }}
             />
           )}
@@ -1045,7 +1083,15 @@ function renderControl({
 }: {
   field: Exclude<
     CollectionField,
-    { kind: "array" | "string-array" | "content-blocks" | "multiselect" | "switch" }
+    {
+      kind:
+        | "array"
+        | "string-array"
+        | "media-array"
+        | "content-blocks"
+        | "multiselect"
+        | "switch";
+    }
   >;
   data: Record<string, unknown>;
   error: string | null;

@@ -11,6 +11,7 @@ import { SocialIcon } from "@/themes/starter/components/icons/SocialIcon";
 
 type FooterJapanProps = {
   lpkName: string;
+  tagline?: string;
   logoSrc?: string;
   shortDescription?: string;
   companyLinks: Array<{
@@ -49,6 +50,7 @@ type FooterJapanProps = {
 
 export function FooterJapan({
   lpkName,
+  tagline,
   logoSrc,
   shortDescription,
   companyLinks,
@@ -74,17 +76,27 @@ export function FooterJapan({
     <footer className="bg-neutral-900 text-white">
       <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
-          {logoSrc ? (
-            <Image
-              src={logoSrc}
-              alt={lpkName}
-              width={180}
-              height={52}
-              className="h-12 w-auto object-contain"
-            />
-          ) : (
-            <p className="text-xl font-bold">{lpkName}</p>
-          )}
+          <div className="flex min-w-0 items-center gap-3">
+            {logoSrc ? (
+              <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden">
+                <Image
+                  src={logoSrc}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="max-h-12 max-w-14 object-contain"
+                />
+              </span>
+            ) : null}
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-lg font-bold text-white">{lpkName}</p>
+              {tagline ? (
+                <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-neutral-400">
+                  {tagline}
+                </p>
+              ) : null}
+            </div>
+          </div>
           {shortDescription ? (
             <p className="mt-4 text-sm leading-6 text-neutral-300">
               {shortDescription}
