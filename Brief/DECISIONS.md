@@ -270,11 +270,15 @@ Status:    Accepted
 Konteks:   Upload flow: client uploads to R2, then confirms. Jika confirm step gagal,
            file tetap ada di R2 tanpa record aktif di database.
 Keputusan: Accept orphaned files di MVP. Cleanup manual via R2 dashboard atau Supabase query.
+           Setelah implementasi dashboard cleanup, tenant admin bisa scan kandidat cleanup
+           dari Media Library lalu menghapus resource terpilih.
 Alasan:    Orphan rate sangat rendah (hanya terjadi jika upload sukses tapi confirm gagal).
            R2 free tier 10GB cukup besar untuk MVP.
            Cron job = complexity + infrastruktur tambahan.
 Dampak:    MediaAsset records dengan status UPLOADING > 1 jam = kemungkinan orphan.
-           Super admin bisa query orphan records dan delete manual.
+           Media Library cleanup menampilkan UPLOADING > 1 jam, ACTIVE unused > 7 hari,
+           dan object R2 tanpa record media sebagai kandidat delete manual.
+           Delete tetap melakukan re-check referensi sebelum hapus.
            Agent TIDAK perlu implement background cleanup job.
            Post-MVP: cron job to delete UPLOADING records > 1 hour + R2 file cleanup.
 ```

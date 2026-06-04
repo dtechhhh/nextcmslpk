@@ -41,6 +41,7 @@ export async function LayoutIndonesia({
   );
 
   const lpkName = stringValue(brand.lpk_name) || tenant.name;
+  const tagline = stringValue(brand.tagline);
   const whatsappNumber = stringValue(whatsapp.number);
   const defaultMessage =
     stringValue(whatsapp.default_message_template) ||
@@ -67,7 +68,7 @@ export async function LayoutIndonesia({
     >
       <HeaderIndonesia
         lpkName={lpkName}
-        tagline={stringValue(brand.tagline)}
+        tagline={tagline}
         logoSrc={logoSrc ?? undefined}
         logoLightSrc={logoLightSrc ?? undefined}
         navItems={arrayOfRecords(brandHeader.navbar).map((item) => ({
@@ -99,6 +100,7 @@ export async function LayoutIndonesia({
       <main>{children}</main>
       <FooterIndonesia
         lpkName={stringValue(footerBrand.lpk_name) || lpkName}
+        tagline={tagline}
         logoSrc={footerLogoSrc ?? logoSrc ?? undefined}
         shortDescription={stringValue(footerBrand.short_description)}
         quickLinks={arrayOfRecords(footer.quick_links).map((item) => ({

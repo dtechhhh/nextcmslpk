@@ -4,10 +4,13 @@ import {
   CheckIcon,
   FileTextIcon,
   Grid3x3Icon,
+  HardDriveIcon,
   ListIcon,
   Loader2Icon,
   PencilIcon,
+  RefreshCwIcon,
   SearchIcon,
+  ShieldCheckIcon,
   Trash2Icon,
   UploadIcon,
   VideoIcon,
@@ -32,11 +35,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  cleanupMedia,
   confirmUpload,
   deleteMedia,
   generatePresignedUploadUrl,
   getMediaReferences,
   listMedia,
+  scanMediaCleanup,
   updateMediaAltText,
 } from "@/server/actions/tenant/media";
 import { cn } from "@/lib/utils";
@@ -71,6 +76,53 @@ type UploadEntry = {
   error?: string;
 };
 
+type CleanupReason = "STALE_UPLOAD" | "UNUSED_ACTIVE" | "ORPHAN_OBJECT";
+
+type CleanupCandidate = {
+  candidateId: string;
+  kind: "MEDIA_ASSET" | "R2_OBJECT";
+  mediaId: string | null;
+  fileName: string;
+  fileSize: number;
+  mediaType: MediaType | "UNKNOWN";
+  mimeType: string | null;
+  status: "UPLOADING" | "ACTIVE" | "ORPHAN_OBJECT";
+  storagePath: string;
+  publicUrl: string;
+  createdAt: string | null;
+  lastModified: string | null;
+  usageCount: number;
+  reason: CleanupReason;
+};
+
+type CleanupSummary = {
+  candidateCount: number;
+  totalBytes: number;
+  staleUploads: number;
+  unusedActive: number;
+  orphanObjects: number;
+  activeUnusedGraceDays: number;
+  staleUploadGraceHours: number;
+  orphanObjectGraceHours: number;
+};
+
+type CleanupDeletedItem = {
+  candidateId: string;
+  kind: "MEDIA_ASSET" | "R2_OBJECT";
+  mediaId: string | null;
+  fileName: string;
+  fileSize: number;
+  storagePath: string;
+  reason: CleanupReason;
+};
+
+type CleanupSkippedItem = {
+  candidateId: string;
+  fileName: string;
+  storagePath: string;
+  reason: string;
+};
+
 type MediaLibraryProps = {
   tenantId: string;
 };
@@ -92,6 +144,12 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   const [deleteRefCount, setDeleteRefCount] = useState(0);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false);
+  const [cleanupCandidates, setCleanupCandidates] = useState<CleanupCandidate[]>([]);
+  const [cleanupSummary, setCleanupSummary] = useState<CleanupSummary | null>(null);
+  const [selectedCleanupIds, setSelectedCleanupIds] = useState<string[]>([]);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [cleanupDeleting, setCleanupDeleting] = useState(false);
+  const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -273,6 +331,91 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
     }
   }
 
+  async function handleScanCleanup() {
+    setCleanupLoading(true);
+    const stopBusy = start("Memindai media tidak terpakai...");
+
+    try {
+      const result = await scanMediaCleanup(tenantId);
+
+      if (isCleanupScanSuccess(result)) {
+        setCleanupCandidates(result.candidates);
+        setCleanupSummary(result.summary);
+        setSelectedCleanupIds(result.candidates.map((candidate) => candidate.candidateId));
+
+        if (result.summary.candidateCount > 0) {
+          toast.success(`${result.summary.candidateCount} kandidat cleanup ditemukan.`);
+        } else {
+          toast.success("Tidak ada kandidat cleanup.");
+        }
+      } else {
+        toast.error(getErrorMessage(result, "Scan cleanup gagal."));
+      }
+    } finally {
+      setCleanupLoading(false);
+      stopBusy();
+    }
+  }
+
+  function toggleCleanupCandidate(candidateId: string, checked: boolean) {
+    setSelectedCleanupIds((current) => {
+      if (!checked) {
+        return current.filter((id) => id !== candidateId);
+      }
+
+      return [...new Set([...current, candidateId])];
+    });
+  }
+
+  function toggleAllCleanupCandidates(checked: boolean) {
+    setSelectedCleanupIds(checked ? cleanupCandidates.map((candidate) => candidate.candidateId) : []);
+  }
+
+  async function confirmCleanupDelete() {
+    const selectedCandidates = cleanupCandidates.filter((candidate) =>
+      selectedCleanupIds.includes(candidate.candidateId),
+    );
+
+    if (selectedCandidates.length === 0) {
+      toast.error("Pilih minimal satu media untuk cleanup.");
+      return;
+    }
+
+    setCleanupDeleting(true);
+    const stopBusy = start("Membersihkan media tidak terpakai...");
+
+    try {
+      const result = await cleanupMedia({
+        tenantId,
+        mediaIds: selectedCandidates
+          .filter((candidate) => candidate.kind === "MEDIA_ASSET" && candidate.mediaId)
+          .map((candidate) => candidate.mediaId as string),
+        orphanStoragePaths: selectedCandidates
+          .filter((candidate) => candidate.kind === "R2_OBJECT")
+          .map((candidate) => candidate.storagePath),
+      });
+
+      if (isCleanupDeleteSuccess(result)) {
+        const skippedLabel =
+          result.skipped.length > 0 ? `, ${result.skipped.length} dilewati` : "";
+
+        toast.success(
+          `Cleanup selesai: ${result.deleted.length} resource dihapus${skippedLabel}.`,
+        );
+        setCleanupDialogOpen(false);
+        setSelectedCleanupIds([]);
+        setLoading(true);
+        await loadItems();
+        await handleScanCleanup();
+      } else {
+        toast.error(getErrorMessage(result, "Cleanup media gagal."));
+      }
+    } finally {
+      setCleanupDeleting(false);
+      stopBusy();
+    }
+  }
+
   async function handleSaveAltText(mediaId: string) {
     if (editingAltValue.trim().length > 200) {
       toast.error("Alt text maksimal 200 karakter.");
@@ -307,6 +450,16 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   const activeUploads = uploads.filter((u) => u.status !== "done").length;
   const canDelete =
     deleteTarget && deleteRefCount === 0 && !deleteLoading && !confirmDeleteLoading;
+  const selectedCleanupIdSet = new Set(selectedCleanupIds);
+  const selectedCleanupCandidates = cleanupCandidates.filter((candidate) =>
+    selectedCleanupIdSet.has(candidate.candidateId),
+  );
+  const selectedCleanupBytes = selectedCleanupCandidates.reduce(
+    (total, candidate) => total + candidate.fileSize,
+    0,
+  );
+  const allCleanupSelected =
+    cleanupCandidates.length > 0 && selectedCleanupCandidates.length === cleanupCandidates.length;
 
   return (
     <div className="flex flex-col gap-5">
@@ -393,6 +546,106 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
           </div>
         </div>
       ) : null}
+
+      <div className="flex flex-col gap-3 rounded-lg border p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-md bg-muted">
+              <HardDriveIcon className="size-5 text-muted-foreground" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium">Storage cleanup</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>Unused active: {cleanupSummary?.unusedActive ?? 0}</span>
+                <span>Stale uploads: {cleanupSummary?.staleUploads ?? 0}</span>
+                <span>R2 orphans: {cleanupSummary?.orphanObjects ?? 0}</span>
+                {cleanupSummary ? (
+                  <span>Potential reclaim: {formatFileSize(cleanupSummary.totalBytes)}</span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={cleanupLoading || cleanupDeleting}
+              onClick={handleScanCleanup}
+            >
+              {cleanupLoading ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <RefreshCwIcon className="size-4" />
+              )}
+              Scan
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={selectedCleanupCandidates.length === 0 || cleanupLoading || cleanupDeleting}
+              onClick={() => setCleanupDialogOpen(true)}
+            >
+              <Trash2Icon className="size-4" />
+              Delete selected
+            </Button>
+          </div>
+        </div>
+
+        {cleanupSummary ? (
+          <div className="grid gap-2 sm:grid-cols-3">
+            <CleanupMetric
+              label="Candidates"
+              value={String(cleanupSummary.candidateCount)}
+              detail={`${formatFileSize(cleanupSummary.totalBytes)} total`}
+            />
+            <CleanupMetric
+              label="Active grace"
+              value={`${cleanupSummary.activeUnusedGraceDays} days`}
+              detail="usage count must be zero"
+            />
+            <CleanupMetric
+              label="Upload grace"
+              value={`${cleanupSummary.staleUploadGraceHours} hour`}
+              detail="for unfinished uploads"
+            />
+          </div>
+        ) : null}
+
+        {cleanupCandidates.length > 0 ? (
+          <>
+            <div className="flex flex-col gap-2 rounded-md bg-muted/40 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border"
+                  checked={allCleanupSelected}
+                  onChange={(event) => toggleAllCleanupCandidates(event.target.checked)}
+                />
+                Select all safe candidates
+              </label>
+              <span className="text-xs text-muted-foreground">
+                {selectedCleanupCandidates.length} selected &middot; {formatFileSize(selectedCleanupBytes)}
+              </span>
+            </div>
+            <div className="max-h-80 overflow-auto rounded-md border">
+              {cleanupCandidates.map((candidate, index) => (
+                <CleanupCandidateRow
+                  key={candidate.candidateId}
+                  candidate={candidate}
+                  checked={selectedCleanupIdSet.has(candidate.candidateId)}
+                  bordered={index < cleanupCandidates.length - 1}
+                  onCheckedChange={toggleCleanupCandidate}
+                />
+              ))}
+            </div>
+          </>
+        ) : cleanupSummary ? (
+          <div className="grid min-h-20 place-items-center rounded-md border border-dashed text-sm text-muted-foreground">
+            No cleanup candidates.
+          </div>
+        ) : null}
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1 rounded-lg border p-0.5">
@@ -569,8 +822,121 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={cleanupDialogOpen} onOpenChange={setCleanupDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete selected cleanup candidates</AlertDialogTitle>
+            <AlertDialogDescription>
+              {cleanupDeleting ? (
+                "Deleting selected resources..."
+              ) : (
+                <>
+                  Delete <span className="font-medium">{selectedCleanupCandidates.length}</span>{" "}
+                  resource(s) and reclaim{" "}
+                  <span className="font-medium">{formatFileSize(selectedCleanupBytes)}</span>? The server will check references again before deleting.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cleanupDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={selectedCleanupCandidates.length === 0 || cleanupDeleting}
+              onClick={confirmCleanupDelete}
+            >
+              {cleanupDeleting ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <Trash2Icon className="size-4" />
+              )}
+              Delete selected
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+}
+
+function CleanupMetric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-md border bg-background px-3 py-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-medium">{value}</p>
+      <p className="text-xs text-muted-foreground">{detail}</p>
+    </div>
+  );
+}
+
+function CleanupCandidateRow({
+  candidate,
+  checked,
+  bordered,
+  onCheckedChange,
+}: {
+  candidate: CleanupCandidate;
+  checked: boolean;
+  bordered: boolean;
+  onCheckedChange: (candidateId: string, checked: boolean) => void;
+}) {
+  return (
+    <label
+      className={cn(
+        "flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-muted/40",
+        bordered && "border-b",
+      )}
+    >
+      <input
+        type="checkbox"
+        className="size-4 shrink-0 rounded border"
+        checked={checked}
+        onChange={(event) => onCheckedChange(candidate.candidateId, event.target.checked)}
+      />
+      <CleanupCandidateIcon candidate={candidate} />
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <p className="min-w-0 truncate font-medium" title={candidate.fileName}>
+            {candidate.fileName}
+          </p>
+          <Badge variant="secondary" className="text-[10px]">
+            {getCleanupReasonLabel(candidate.reason)}
+          </Badge>
+        </div>
+        <p className="truncate text-xs text-muted-foreground" title={candidate.storagePath}>
+          {candidate.storagePath}
+        </p>
+      </div>
+      <div className="hidden min-w-32 text-right text-xs text-muted-foreground sm:block">
+        <p>{formatFileSize(candidate.fileSize)}</p>
+        <p>{formatCleanupTimestamp(candidate)}</p>
+      </div>
+    </label>
+  );
+}
+
+function CleanupCandidateIcon({ candidate }: { candidate: CleanupCandidate }) {
+  if (candidate.reason === "UNUSED_ACTIVE") {
+    return <ShieldCheckIcon className="size-5 shrink-0 text-emerald-600" />;
+  }
+
+  if (candidate.mediaType === "VIDEO") {
+    return <VideoIcon className="size-5 shrink-0 text-muted-foreground" />;
+  }
+
+  if (candidate.mediaType === "DOCUMENT") {
+    return <FileTextIcon className="size-5 shrink-0 text-muted-foreground" />;
+  }
+
+  return <HardDriveIcon className="size-5 shrink-0 text-muted-foreground" />;
 }
 
 function MediaCard({
@@ -866,6 +1232,18 @@ function formatUsageCount(count: number) {
   return `Used in ${count} item${count === 1 ? "" : "s"}`;
 }
 
+function getCleanupReasonLabel(reason: CleanupReason) {
+  if (reason === "STALE_UPLOAD") return "Stale upload";
+  if (reason === "UNUSED_ACTIVE") return "Unused";
+  return "R2 orphan";
+}
+
+function formatCleanupTimestamp(candidate: CleanupCandidate) {
+  const value = candidate.createdAt ?? candidate.lastModified;
+
+  return value ? formatDateTime(value) : "";
+}
+
 function getFilterLabel(type: FilterType) {
   if (type === "ALL") return "All";
   if (type === "IMAGE") return "Images";
@@ -931,6 +1309,34 @@ function isAltTextSuccess(value: unknown): value is {
   media: { id: string; altText: string | null };
 } {
   return isRecord(value) && value.ok === true && isRecord(value.media);
+}
+
+function isCleanupScanSuccess(value: unknown): value is {
+  ok: true;
+  candidates: CleanupCandidate[];
+  summary: CleanupSummary;
+} {
+  return (
+    isRecord(value) &&
+    value.ok === true &&
+    Array.isArray(value.candidates) &&
+    isRecord(value.summary)
+  );
+}
+
+function isCleanupDeleteSuccess(value: unknown): value is {
+  ok: true;
+  deleted: CleanupDeletedItem[];
+  skipped: CleanupSkippedItem[];
+  totalBytes: number;
+} {
+  return (
+    isRecord(value) &&
+    value.ok === true &&
+    Array.isArray(value.deleted) &&
+    Array.isArray(value.skipped) &&
+    typeof value.totalBytes === "number"
+  );
 }
 
 function getErrorMessage(value: unknown, fallback: string): string {
