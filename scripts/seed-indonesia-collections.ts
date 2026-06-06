@@ -341,6 +341,7 @@ function buildItems(media: MediaIds, options: OptionIds, now: Date): SeedItem[] 
         primary_cta_label: "Daftar Program Ini",
         whatsapp_message_template:
           "Halo Hashimoto Indo Trust, saya tertarik dengan program Program Magang Manufaktur & Otomotif. Boleh saya mendapatkan informasi lebih lanjut?",
+        brochure_url: "",
         brochure_file_id: null,
         brochure_enabled: false,
       },

@@ -18,6 +18,10 @@ import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
 import { StatusBadge } from "@/components/dashboard/collection-list";
 import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
+import {
+  useEditorExitGuard,
+  useLongRunningOperationNotice,
+} from "@/components/dashboard/use-editor-operation-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,6 +137,7 @@ export function CollectionEditor({
   const saveSequenceRef = useRef(0);
   const pendingSaveCountRef = useRef(0);
   const { start, startNavigation } = useCmsBusy();
+  const { operationNotice, watchOperation } = useLongRunningOperationNotice();
 
   useEffect(() => {
     dataRef.current = data;
@@ -193,6 +198,12 @@ export function CollectionEditor({
       const stopBusy = start(
         existingItemId ? "Menyimpan item..." : "Membuat item...",
       );
+      const stopNotice = watchOperation(
+        existingItemId
+          ? "Koneksi lambat. Item masih disimpan, mohon tunggu."
+          : "Koneksi lambat. Item baru masih dibuat, mohon tunggu.",
+        "Belum ada respons dari server. Jangan tutup halaman sampai proses selesai atau gagal.",
+      );
 
       try {
         const response = existingItemId
@@ -244,9 +255,10 @@ export function CollectionEditor({
           form: ["Gagal menyimpan. Coba lagi."],
         });
         setSaveState("error");
-        toast.error("Gagal menyimpan.");
+        toast.error("Gagal menyimpan. Coba lagi.");
         return null;
       } finally {
+        stopNotice();
         stopBusy();
         pendingSaveCountRef.current = Math.max(pendingSaveCountRef.current - 1, 0);
         setIsSaving(pendingSaveCountRef.current > 0);
@@ -260,6 +272,7 @@ export function CollectionEditor({
       start,
       startNavigation,
       variantId,
+      watchOperation,
     ],
   );
 
@@ -274,71 +287,22 @@ export function CollectionEditor({
     setSaveState((current) => (current === "saving" ? current : "dirty"));
   }, [data]);
 
-  useEffect(() => {
-    function handleBeforeUnload(event: BeforeUnloadEvent) {
-      if (!hasUnsavedChanges()) {
-        return;
+  const hasPendingOperation =
+    isSaving || isPublishing || isUnpublishing || isChangingStatus;
+
+  useEditorExitGuard(
+    useCallback(() => {
+      if (hasPendingOperation) {
+        return "Proses masih berjalan. Tinggalkan halaman sekarang bisa membuat hasil simpan belum pasti.";
       }
 
-      event.preventDefault();
-      event.returnValue = "";
-    }
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasUnsavedChanges]);
-
-  useEffect(() => {
-    function handleDocumentClick(event: MouseEvent) {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey ||
-        !hasUnsavedChanges()
-      ) {
-        return;
+      if (hasUnsavedChanges()) {
+        return "Ada perubahan belum disimpan. Tinggalkan halaman tanpa menyimpan?";
       }
 
-      if (!(event.target instanceof Element)) {
-        return;
-      }
-
-      const anchor = event.target.closest<HTMLAnchorElement>("a[href]");
-
-      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) {
-        return;
-      }
-
-      const href = anchor.getAttribute("href");
-
-      if (!href || href.startsWith("#")) {
-        return;
-      }
-
-      const url = new URL(anchor.href, window.location.href);
-
-      if (url.origin !== window.location.origin || url.href === window.location.href) {
-        return;
-      }
-
-      const confirmed = window.confirm(
-        "Ada perubahan belum disimpan. Tinggalkan halaman tanpa menyimpan?",
-      );
-
-      if (!confirmed) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    }
-
-    document.addEventListener("click", handleDocumentClick, true);
-
-    return () => document.removeEventListener("click", handleDocumentClick, true);
-  }, [hasUnsavedChanges]);
+      return null;
+    }, [hasPendingOperation, hasUnsavedChanges]),
+  );
 
   useEffect(() => {
     const slug = readString(getAtPath(data, "slug"));
@@ -387,6 +351,7 @@ export function CollectionEditor({
         ? "Menerbitkan perubahan item..."
         : "Menerbitkan item...",
     );
+    let stopNotice: (() => void) | null = null;
 
     try {
       const savedItemId = await save(false);
@@ -395,6 +360,10 @@ export function CollectionEditor({
         return;
       }
 
+      stopNotice = watchOperation(
+        "Koneksi lambat. Publish item masih diproses, mohon tunggu.",
+        "Belum ada respons dari server. Jangan tutup halaman sampai publish selesai atau gagal.",
+      );
       const response = await publishItem(savedItemId);
 
       if (!isItemMutationSuccess(response)) {
@@ -417,6 +386,7 @@ export function CollectionEditor({
       setLastSavedAt(response.item.updatedAt);
       toast.success("Item diterbitkan.");
     } finally {
+      stopNotice?.();
       stopBusy();
       setIsPublishing(false);
     }
@@ -431,6 +401,10 @@ export function CollectionEditor({
 
     setIsUnpublishing(true);
     const stopBusy = start("Mengembalikan item ke draft...");
+    const stopNotice = watchOperation(
+      "Koneksi lambat. Perubahan status item masih diproses.",
+      "Belum ada respons dari server. Jangan tutup halaman sampai proses selesai atau gagal.",
+    );
 
     try {
       const response = await unpublishItem(savedItemId);
@@ -444,6 +418,7 @@ export function CollectionEditor({
       setLastSavedAt(response.item.updatedAt);
       toast.success("Item kembali ke draft.");
     } finally {
+      stopNotice();
       stopBusy();
       setIsUnpublishing(false);
     }
@@ -472,6 +447,10 @@ export function CollectionEditor({
 
     setIsChangingStatus(true);
     const stopBusy = start("Mengubah status item...");
+    const stopNotice = watchOperation(
+      "Koneksi lambat. Status item masih diubah, mohon tunggu.",
+      "Belum ada respons dari server. Jangan tutup halaman sampai proses selesai atau gagal.",
+    );
 
     try {
       const response = await changeItemStatus(savedItemId, value);
@@ -485,6 +464,7 @@ export function CollectionEditor({
       setLastSavedAt(response.item.updatedAt);
       toast.success("Status diubah.");
     } finally {
+      stopNotice();
       stopBusy();
       setIsChangingStatus(false);
     }
@@ -593,6 +573,15 @@ export function CollectionEditor({
           ) : null}
         </div>
       </div>
+
+      {operationNotice ? (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100"
+        >
+          {operationNotice}
+        </div>
+      ) : null}
 
       {formError ? (
         <FieldError className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
@@ -1108,6 +1097,7 @@ function renderControl({
       return (
         <Input
           value={toInputValue(rawValue)}
+          type={field.inputType ?? "text"}
           maxLength={field.max}
           placeholder={getCmsPlaceholder(field)}
           aria-invalid={Boolean(error)}
@@ -1194,13 +1184,12 @@ function renderControl({
       );
     }
     case "media":
-    case "document":
       return (
         <MediaPicker
           tenantId={tenantId}
           value={toInputValue(rawValue)}
-          mediaType={field.kind === "document" ? "DOCUMENT" : "IMAGE"}
-          cropPreset={field.kind === "media" ? field.cropPreset : undefined}
+          mediaType="IMAGE"
+          cropPreset={field.cropPreset}
           onChange={(mediaId) => setValue(path, mediaId)}
         />
       );

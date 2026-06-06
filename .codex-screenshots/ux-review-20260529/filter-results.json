@@ -1,0 +1,403 @@
+[
+  {
+    "name": "program",
+    "url": "http://hit-indonesia.lpk.local:3000/program",
+    "before": {
+      "url": "http://hit-indonesia.lpk.local:3000/program",
+      "selects": [
+        {
+          "i": 0,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6cx000bn4k6s8574m45",
+              "text": "Magang"
+            },
+            {
+              "value": "cmpm3n6cx000cn4k6bxk3xrz9",
+              "text": "Tokutei Ginou"
+            },
+            {
+              "value": "cmpm3n6cy000dn4k6ucbxrqoj",
+              "text": "Gijinkoku"
+            },
+            {
+              "value": "cmpm3n6cy000en4k660s76pkl",
+              "text": "Kelas Bahasa"
+            }
+          ]
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6in000gn4k60d8j16zi",
+              "text": "Laki-laki"
+            },
+            {
+              "value": "cmpm3n6in000hn4k6n4dl2bb1",
+              "text": "Perempuan"
+            },
+            {
+              "value": "cmpm3n6in000in4k67qfiinnl",
+              "text": "Laki-laki & Perempuan"
+            }
+          ]
+        },
+        {
+          "i": 2,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6o7000kn4k6m65h7epa",
+              "text": "SMA/SMK"
+            },
+            {
+              "value": "cmpm3n6o7000ln4k6pi88e1jw",
+              "text": "D3"
+            },
+            {
+              "value": "cmpm3n6o7000mn4k6lmw63c0n",
+              "text": "S1"
+            }
+          ]
+        },
+        {
+          "i": 3,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6tp000on4k6yd0rqmtr",
+              "text": "N5"
+            },
+            {
+              "value": "cmpm3n6tp000pn4k655ibbsbr",
+              "text": "N4"
+            },
+            {
+              "value": "cmpm3n6tp000qn4k6ybmmzyxt",
+              "text": "N3"
+            },
+            {
+              "value": "cmpm3n6tp000rn4k6fmxt2djx",
+              "text": "N2"
+            },
+            {
+              "value": "cmpm3n6tp000sn4k6bl546or1",
+              "text": "N1"
+            }
+          ]
+        }
+      ],
+      "visibleText": "Program Pelatihan Kerja ke Jepang\n\nTemukan program yang paling sesuai dengan latar belakang dan impianmu. Semua program HIT resmi, terstruktur, dan didampingi profesional.\n\nTanya Program via WhatsApp\nLihat Semua Program\nPROGRAM TYPE\nSemua\nMagang\nTokutei Ginou\nGijinkoku\nKelas Bahasa\nGENDER\nSemua\nLaki-laki\nPerempuan\nLaki-laki & Perempuan\nEDUCATION LEVEL\nSemua\nSMA/SMK\nD3\nS1\nLANGUAGE LEVEL\nSemua\nN5\nN4\nN3\nN2\nN1\nMenampilkan 1-3 dari 3 data\nUnggulan\nPabrik otomotif terkemuka Jepang\nMagang\nProgram Magang Manufaktur & Otomotif\n\nProgram magang 3 tahun di sektor manufaktur dan otomotif. Cocok untuk lulusan SMK/SMA teknik yang ingin pengalaman kerja internasional.\n\nLihat Detail\nUnggulan\nHotel & restoran berbintang Tokyo, Osaka, Kyoto\nTokutei Ginou\nTokutei Ginou — Perhotelan & Restoran\n\nBekerja di hotel bintang 4-5 dan restoran premium di Jepang. Kontrak dapat diperpanjang untuk peserta dengan performa terbaik.\n\nLihat Detail\nInstruktur penutur asli + latihan JLPT\nKelas Bahasa\nKelas Bahasa Jepang Intensif\n\nKelas bahasa Jepang terstruktur sebagai fondasi sebelum mengikuti program magang atau Tokutei Ginou. Tersedia kelas reguler dan intensif.\n\nLihat Detail\n\nLPK resmi terpercaya yang membantu tena"
+    },
+    "cardBefore": 3,
+    "changed": true,
+    "after": {
+      "url": "http://hit-indonesia.lpk.local:3000/program",
+      "selects": [
+        {
+          "i": 0,
+          "value": "cmpm3n6cx000bn4k6s8574m45",
+          "text": "Magang"
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua"
+        },
+        {
+          "i": 2,
+          "value": "",
+          "text": "Semua"
+        },
+        {
+          "i": 3,
+          "value": "",
+          "text": "Semua"
+        }
+      ],
+      "visibleText": "Program Pelatihan Kerja ke Jepang\n\nTemukan program yang paling sesuai dengan latar belakang dan impianmu. Semua program HIT resmi, terstruktur, dan didampingi profesional.\n\nTanya Program via WhatsApp\nLihat Semua Program\nPROGRAM TYPE\nSemua\nMagang\nTokutei Ginou\nGijinkoku\nKelas Bahasa\nGENDER\nSemua\nLaki-laki\nPerempuan\nLaki-laki & Perempuan\nEDUCATION LEVEL\nSemua\nSMA/SMK\nD3\nS1\nLANGUAGE LEVEL\nSemua\nN5\nN4\nN3\nN2\nN1\nMenampilkan 1-3 dari 3 data\nUnggulan\nPabrik otomotif terkemuka Jepang\nMagang\nProgram Magang Manufaktur & Otomotif\n\nProgram magang 3 tahun di sektor manufaktur dan otomotif. Cocok untuk lulusan SMK/SMA teknik yang ingin pengalaman kerja internasional.\n\nLihat Detail\nUnggulan\nHotel & restoran berbintang Tokyo, Osaka, Kyoto\nTokutei Ginou\nTokutei Ginou — Perhotelan & Restoran\n\nBekerja di hotel bintang 4-5 dan restoran premium di Jepang. Kontrak dapat diperpanjang untuk peserta dengan performa terbaik.\n\nLihat Detail\nInstruktur penutur asli + latihan JLPT\nKelas Bahasa\nKelas Bahasa Jepang Intensif\n\nKelas bahasa Jepang terstruktur sebagai fondasi sebelum mengikuti program magang atau Tokutei Ginou. Tersedia kelas reguler dan intensif.\n\nLihat Detail\n\nLPK resmi terpercaya yang membantu tena"
+    },
+    "cardAfter": 3,
+    "error": null,
+    "screenshot": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\id-program-filter-after.png"
+  },
+  {
+    "name": "job",
+    "url": "http://hit-indonesia.lpk.local:3000/job",
+    "before": {
+      "url": "http://hit-indonesia.lpk.local:3000/job",
+      "selects": [
+        {
+          "i": 0,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6zc000un4k6h3fcxru0",
+              "text": "Full-time"
+            },
+            {
+              "value": "cmpm3n6zc000vn4k60tkyabmo",
+              "text": "Part-time"
+            },
+            {
+              "value": "cmpm3n6zc000wn4k6si30vtbl",
+              "text": "Kontrak"
+            }
+          ]
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n752000yn4k6v61di5vm",
+              "text": "Manufaktur"
+            },
+            {
+              "value": "cmpm3n752000zn4k6w25kp47u",
+              "text": "Konstruksi"
+            },
+            {
+              "value": "cmpm3n7520010n4k6dp524qbi",
+              "text": "Pertanian"
+            },
+            {
+              "value": "cmpm3n7520011n4k6h6xacnji",
+              "text": "Perikanan"
+            },
+            {
+              "value": "cmpm3n7520012n4k696twabqa",
+              "text": "Makanan"
+            },
+            {
+              "value": "cmpm3n7520013n4k6yculqpyc",
+              "text": "Perhotelan"
+            },
+            {
+              "value": "cmpm3n7520014n4k6yryp24lv",
+              "text": "Perawatan"
+            }
+          ]
+        },
+        {
+          "i": 2,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6in000gn4k60d8j16zi",
+              "text": "Laki-laki"
+            },
+            {
+              "value": "cmpm3n6in000hn4k6n4dl2bb1",
+              "text": "Perempuan"
+            },
+            {
+              "value": "cmpm3n6in000in4k67qfiinnl",
+              "text": "Laki-laki & Perempuan"
+            }
+          ]
+        },
+        {
+          "i": 3,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            },
+            {
+              "value": "cmpm3n6tp000on4k6yd0rqmtr",
+              "text": "N5"
+            },
+            {
+              "value": "cmpm3n6tp000pn4k655ibbsbr",
+              "text": "N4"
+            },
+            {
+              "value": "cmpm3n6tp000qn4k6ybmmzyxt",
+              "text": "N3"
+            },
+            {
+              "value": "cmpm3n6tp000rn4k6fmxt2djx",
+              "text": "N2"
+            },
+            {
+              "value": "cmpm3n6tp000sn4k6bl546or1",
+              "text": "N1"
+            }
+          ]
+        }
+      ],
+      "visibleText": "Lowongan Kerja Terbaru di Jepang\n\nUpdate lowongan setiap minggu dari perusahaan mitra terpercaya di seluruh wilayah Jepang.\n\nTanya Lowongan via WhatsApp\nJOB TYPE\nSemua\nFull-time\nPart-time\nKontrak\nJOB FIELD\nSemua\nManufaktur\nKonstruksi\nPertanian\nPerikanan\nMakanan\nPerhotelan\nPerawatan\nGENDER\nSemua\nLaki-laki\nPerempuan\nLaki-laki & Perempuan\nLANGUAGE LEVEL\nSemua\nN5\nN4\nN3\nN2\nN1\nMenampilkan 1-3 dari 3 data\nUnggulan\nPerawatan\nFull-time\nCaregiver / Perawat Lansia — Tokyo\n\nBergabunglah sebagai caregiver profesional di panti wreda modern Tokyo. Permintaan sangat tinggi, peluang karir jangka panjang.\n\nTokyo, Jepang - Berakhir 26 Sep 2026\n\nLihat Detail\nPertanian\nFull-time\nPekerja Pertanian Organik — Hokkaido\n\nKesempatan emas bekerja di kebun pertanian organik premium di Hokkaido. Lingkungan kerja bersih, makan organik, dan pemandangan alam indah.\n\nHokkaido, Jepang - Berakhir 26 Jul 2026\n\nLihat Detail\nUnggulan\nManufaktur\nFull-time\nOperator Produksi — Pabrik Otomotif, Aichi\n\nDicari operator produksi untuk pabrik suku cadang otomotif di Aichi, Jepang. Kuota 15 orang, keberangkatan angkatan Oktober 2026.\n\nPrefektur Aichi, Jepang - Berakhir 26 Agu 2026\n\nLihat Detail\n\nLPK resmi terpercaya yang membant"
+    },
+    "cardBefore": 3,
+    "changed": true,
+    "after": {
+      "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation"
+    },
+    "cardAfter": 0,
+    "error": null,
+    "screenshot": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\id-job-filter-after.png"
+  },
+  {
+    "name": "blog",
+    "url": "http://hit-indonesia.lpk.local:3000/blog",
+    "before": {
+      "url": "http://hit-indonesia.lpk.local:3000/blog",
+      "selects": [
+        {
+          "i": 0,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            }
+          ]
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            }
+          ]
+        }
+      ],
+      "visibleText": "Blog & Informasi Seputar Kerja di Jepang\n\nTips, pengalaman, dan berita terkini yang membantu kamu mempersiapkan diri untuk kerja di Jepang.\n\nCATEGORY\nSemua\nTAG\nSemua\nMenampilkan 1-3 dari 3 data\nPengalaman\nKehidupan Sehari-hari di Jepang — Apa yang Harus Kamu Siapkan?\n\nDari cara berbelanja, transportasi, hingga mengurus SIM dan rekening bank — semua yang perlu kamu ketahui sebelum berangkat ke Jepang.\n\n26 Mei 2026\n\nLihat Detail\nUnggulan\nEdukasi\nBerapa Gaji Kerja di Jepang? Panduan Lengkap 2026\n\nSalah satu pertanyaan paling sering dari calon peserta: berapa sebenarnya gaji yang diterima di Jepang setelah semua potongan? Kami rincikan selengkapnya.\n\n26 Mei 2026\n\nLihat Detail\nUnggulan\nTips\n5 Tips Persiapan Mental Sebelum Berangkat ke Jepang\n\nBanyak calon pekerja hanya fokus pada persiapan dokumen dan bahasa. Padahal persiapan mental adalah kunci keberhasilan jangka panjang di Jepang.\n\n26 Mei 2026\n\nLihat Detail\n\nLPK resmi terpercaya yang membantu tenaga kerja Indonesia meraih karir profesional di Jepang sejak 2015.\n\nQUICK LINKS\nBeranda\nProgram\nInfo Job\nTentang Kami\nBlog\nKarir di HIT\nPROGRAM\nProgram Magang Manufaktur & Otomotif\nTokutei Ginou — Perhotelan & Restoran\nKONTAK\n+62 812-3456-78"
+    },
+    "cardBefore": 3,
+    "changed": false,
+    "after": {
+      "url": "http://hit-indonesia.lpk.local:3000/blog",
+      "selects": [
+        {
+          "i": 0,
+          "value": "",
+          "text": "Semua"
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua"
+        }
+      ],
+      "visibleText": "Blog & Informasi Seputar Kerja di Jepang\n\nTips, pengalaman, dan berita terkini yang membantu kamu mempersiapkan diri untuk kerja di Jepang.\n\nCATEGORY\nSemua\nTAG\nSemua\nMenampilkan 1-3 dari 3 data\nPengalaman\nKehidupan Sehari-hari di Jepang — Apa yang Harus Kamu Siapkan?\n\nDari cara berbelanja, transportasi, hingga mengurus SIM dan rekening bank — semua yang perlu kamu ketahui sebelum berangkat ke Jepang.\n\n26 Mei 2026\n\nLihat Detail\nUnggulan\nEdukasi\nBerapa Gaji Kerja di Jepang? Panduan Lengkap 2026\n\nSalah satu pertanyaan paling sering dari calon peserta: berapa sebenarnya gaji yang diterima di Jepang setelah semua potongan? Kami rincikan selengkapnya.\n\n26 Mei 2026\n\nLihat Detail\nUnggulan\nTips\n5 Tips Persiapan Mental Sebelum Berangkat ke Jepang\n\nBanyak calon pekerja hanya fokus pada persiapan dokumen dan bahasa. Padahal persiapan mental adalah kunci keberhasilan jangka panjang di Jepang.\n\n26 Mei 2026\n\nLihat Detail\n\nLPK resmi terpercaya yang membantu tenaga kerja Indonesia meraih karir profesional di Jepang sejak 2015.\n\nQUICK LINKS\nBeranda\nProgram\nInfo Job\nTentang Kami\nBlog\nKarir di HIT\nPROGRAM\nProgram Magang Manufaktur & Otomotif\nTokutei Ginou — Perhotelan & Restoran\nKONTAK\n+62 812-3456-78"
+    },
+    "cardAfter": 3,
+    "error": null,
+    "screenshot": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\id-blog-filter-after.png"
+  },
+  {
+    "name": "karir",
+    "url": "http://hit-indonesia.lpk.local:3000/karir",
+    "before": {
+      "url": "http://hit-indonesia.lpk.local:3000/karir",
+      "selects": [
+        {
+          "i": 0,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            }
+          ]
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            }
+          ]
+        },
+        {
+          "i": 2,
+          "value": "",
+          "text": "Semua",
+          "options": [
+            {
+              "value": "",
+              "text": "Semua"
+            }
+          ]
+        }
+      ],
+      "visibleText": "Bergabung dengan Tim HIT\n\nKami mencari individu bersemangat yang ingin berkontribusi dalam mendorong perubahan positif bagi tenaga kerja Indonesia.\n\nLamar via WhatsApp\nDEPARTMENT\nSemua\nEMPLOYMENT TYPE\nSemua\nWORK ARRANGEMENT\nSemua\nMenampilkan 1-2 dari 2 data\nPemasaran\nFull-time\nHybrid\nStaf Pemasaran & Rekrutmen\n\nPenuh waktu | Kerja campuran | Soreang, Bandung\n\nBerakhir 26 Jul 2026\n\nLihat Detail\nUnggulan\nPengajar\nFull-time\nOn-site\nInstruktur Bahasa Jepang\n\nHIT membuka posisi Instruktur Bahasa Jepang untuk mengajar peserta program magang dan Tokutei Ginou.\n\nBerakhir 26 Agu 2026\n\nLihat Detail\n\nLPK resmi terpercaya yang membantu tenaga kerja Indonesia meraih karir profesional di Jepang sejak 2015.\n\nQUICK LINKS\nBeranda\nProgram\nInfo Job\nTentang Kami\nBlog\nKarir di HIT\nPROGRAM\nProgram Magang Manufaktur & Otomotif\nTokutei Ginou — Perhotelan & Restoran\nKONTAK\n+62 812-3456-7890\ninfo@hashimotoindotrust.co.id\n\nJl. Raya Soreang No. 45, Soreang, Bandung, Jawa Barat 40911\n\nSenin–Jumat: 08.00–17.00 WIB | Sabtu: 08.00–13.00 WIB\n\n© 2026 Hashimoto Indo Trust. Semua hak dilindungi. Powered by NextCMS LPK.\nKonsultasi Sekarang"
+    },
+    "cardBefore": 2,
+    "changed": false,
+    "after": {
+      "url": "http://hit-indonesia.lpk.local:3000/karir",
+      "selects": [
+        {
+          "i": 0,
+          "value": "",
+          "text": "Semua"
+        },
+        {
+          "i": 1,
+          "value": "",
+          "text": "Semua"
+        },
+        {
+          "i": 2,
+          "value": "",
+          "text": "Semua"
+        }
+      ],
+      "visibleText": "Bergabung dengan Tim HIT\n\nKami mencari individu bersemangat yang ingin berkontribusi dalam mendorong perubahan positif bagi tenaga kerja Indonesia.\n\nLamar via WhatsApp\nDEPARTMENT\nSemua\nEMPLOYMENT TYPE\nSemua\nWORK ARRANGEMENT\nSemua\nMenampilkan 1-2 dari 2 data\nPemasaran\nFull-time\nHybrid\nStaf Pemasaran & Rekrutmen\n\nPenuh waktu | Kerja campuran | Soreang, Bandung\n\nBerakhir 26 Jul 2026\n\nLihat Detail\nUnggulan\nPengajar\nFull-time\nOn-site\nInstruktur Bahasa Jepang\n\nHIT membuka posisi Instruktur Bahasa Jepang untuk mengajar peserta program magang dan Tokutei Ginou.\n\nBerakhir 26 Agu 2026\n\nLihat Detail\n\nLPK resmi terpercaya yang membantu tenaga kerja Indonesia meraih karir profesional di Jepang sejak 2015.\n\nQUICK LINKS\nBeranda\nProgram\nInfo Job\nTentang Kami\nBlog\nKarir di HIT\nPROGRAM\nProgram Magang Manufaktur & Otomotif\nTokutei Ginou — Perhotelan & Restoran\nKONTAK\n+62 812-3456-7890\ninfo@hashimotoindotrust.co.id\n\nJl. Raya Soreang No. 45, Soreang, Bandung, Jawa Barat 40911\n\nSenin–Jumat: 08.00–17.00 WIB | Sabtu: 08.00–13.00 WIB\n\n© 2026 Hashimoto Indo Trust. Semua hak dilindungi. Powered by NextCMS LPK.\nKonsultasi Sekarang"
+    },
+    "cardAfter": 2,
+    "error": null,
+    "screenshot": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\id-karir-filter-after.png"
+  }
+]

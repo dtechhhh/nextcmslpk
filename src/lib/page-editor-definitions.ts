@@ -271,107 +271,107 @@ const japanHeroFields: PageEditorField[] = [
   {
     kind: "select",
     path: "media_type",
-    label: "Media type",
+    label: "Jenis media",
     options: japanMediaTypeOptions,
   },
   { kind: "media", path: "media_id", label: "Media" },
   {
     kind: "media-array",
     path: "slider_media_ids",
-    label: "Slider media",
-    addLabel: "Add slide",
+    label: "Media slider",
+    addLabel: "Tambah slide",
     itemLabel: "Slide",
     defaultItem: "",
   },
-  { kind: "text", path: "headline", label: "Headline" },
-  { kind: "textarea", path: "subheadline", label: "Subheadline" },
-  { kind: "text", path: "eyebrow_label", label: "Eyebrow label" },
+  { kind: "text", path: "headline", label: "Judul utama" },
+  { kind: "textarea", path: "subheadline", label: "Subjudul" },
+  { kind: "text", path: "eyebrow_label", label: "Label kecil" },
 ];
 
 const japanBasicHeroFields: PageEditorField[] = [
   {
     kind: "select",
     path: "media_type",
-    label: "Media type",
+    label: "Jenis media",
     options: japanBasicMediaTypeOptions,
   },
   { kind: "media", path: "media_id", label: "Media" },
-  { kind: "text", path: "headline", label: "Headline" },
-  { kind: "textarea", path: "subheadline", label: "Subheadline" },
-  { kind: "text", path: "eyebrow_label", label: "Eyebrow label" },
+  { kind: "text", path: "headline", label: "Judul utama" },
+  { kind: "textarea", path: "subheadline", label: "Subjudul" },
+  { kind: "text", path: "eyebrow_label", label: "Label kecil" },
 ];
 
 const japanFinalCtaFields: PageEditorField[] = [
-  { kind: "text", path: "headline", label: "Headline" },
-  { kind: "textarea", path: "description", label: "Description" },
-  { kind: "text", path: "primary_cta_label", label: "Primary CTA label" },
+  { kind: "text", path: "headline", label: "Judul CTA" },
+  { kind: "textarea", path: "description", label: "Deskripsi CTA" },
+  { kind: "text", path: "primary_cta_label", label: "Label CTA utama" },
   {
     kind: "textarea",
     path: "primary_line_message_template",
-    label: "Primary LINE message template",
+    label: "Template pesan LINE utama",
   },
   {
     kind: "text",
     path: "secondary_cta_label",
-    label: "Secondary CTA label",
+    label: "Label CTA kedua",
   },
   {
     kind: "text",
     path: "secondary_href",
-    label: "Secondary CTA href",
+    label: "Link CTA kedua",
     inputType: "url",
   },
 ];
 
 const japanFinalCtaFieldsWithDoc: PageEditorField[] = [
-  { kind: "text", path: "headline", label: "Headline" },
-  { kind: "textarea", path: "description", label: "Description" },
-  { kind: "text", path: "primary_cta_label", label: "Primary CTA label" },
+  { kind: "text", path: "headline", label: "Judul CTA" },
+  { kind: "textarea", path: "description", label: "Deskripsi CTA" },
+  { kind: "text", path: "primary_cta_label", label: "Label CTA utama" },
   {
     kind: "textarea",
     path: "primary_line_message_template",
-    label: "Primary LINE message template",
+    label: "Template pesan LINE utama",
   },
   {
     kind: "text",
     path: "secondary_cta_label",
-    label: "Secondary CTA label",
+    label: "Label CTA kedua",
   },
   {
     kind: "text",
     path: "secondary_document_url",
-    label: "Secondary document URL",
+    label: "URL dokumen kedua",
     inputType: "url",
   },
 ];
 
 const japanSortableFields: PageEditorField[] = [
-  { kind: "switch", path: "is_enabled", label: "Enabled" },
-  { kind: "number", path: "sort_order", label: "Sort order", min: 0 },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+  { kind: "number", path: "sort_order", label: "Urutan", min: 0 },
 ];
 
 const japanIconTitleDescSortFields: PageEditorField[] = [
   { kind: "icon", path: "icon_key", label: "Icon" },
-  { kind: "text", path: "title", label: "Title" },
-  { kind: "textarea", path: "description", label: "Description" },
+  { kind: "text", path: "title", label: "Judul" },
+  { kind: "textarea", path: "description", label: "Deskripsi" },
   ...japanSortableFields,
 ];
 
 const japanProofStatFields: PageEditorField[] = [
-  { kind: "text", path: "value", label: "Value" },
+  { kind: "text", path: "value", label: "Nilai" },
   { kind: "text", path: "label", label: "Label" },
   ...japanSortableFields,
 ];
 
 const japanStatFields: PageEditorField[] = [
-  { kind: "icon", path: "icon_key", label: "Icon" },
+  { kind: "icon", path: "icon_key", label: "Ikon" },
   ...japanProofStatFields,
 ];
 
 const japanTimelineFields: PageEditorField[] = [
-  { kind: "text", path: "year_label", label: "Year label" },
-  { kind: "text", path: "title", label: "Title" },
-  { kind: "textarea", path: "description", label: "Description" },
+  { kind: "text", path: "year_label", label: "Label tahun" },
+  { kind: "text", path: "title", label: "Judul" },
+  { kind: "textarea", path: "description", label: "Deskripsi" },
   ...japanSortableFields,
 ];
 
@@ -478,7 +478,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
   "indonesia.homepage": {
     variantKey: "indonesia",
     pageKey: "homepage",
-    title: "Homepage",
+    title: "Beranda",
     publicPath: "/",
     defaultData: {
       hero: emptyMediaHero,
@@ -574,15 +574,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "stats",
-        title: "Stats",
+        title: "Statistik",
         classification: "required",
         fields: [
           {
             kind: "array",
             path: "stats",
-            label: "Stats",
-            itemLabel: "Stat",
-            addLabel: "Add stat",
+            label: "Statistik",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
             defaultItem: statDefault(0),
             sortOrderField: "sort_order",
             fields: statFields,
@@ -797,15 +797,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "stats",
-        title: "Stats",
+        title: "Statistik",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "stats",
-            label: "Stats",
-            itemLabel: "Stat",
-            addLabel: "Add stat",
+            label: "Statistik",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
             defaultItem: statDefault(0),
             sortOrderField: "sort_order",
             fields: statFields,
@@ -847,7 +847,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: finalCtaFields.map((field) => ({
           ...field,
@@ -1010,15 +1010,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "proof_stats",
-        title: "Proof Stats",
+        title: "Statistik bukti",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "proof_stats",
-            label: "Proof stats",
-            itemLabel: "Stat",
-            addLabel: "Add stat",
+            label: "Statistik bukti",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
             defaultItem: statDefault(0),
             sortOrderField: "sort_order",
             fields: [
@@ -1268,7 +1268,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
   "japan.homepage": {
     variantKey: "japan",
     pageKey: "homepage",
-    title: "Homepage",
+    title: "Beranda",
     publicPath: "/",
     defaultData: {
       hero: japanEmptyHomepageHero,
@@ -1344,15 +1344,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "stats",
-        title: "Stats",
+        title: "Statistik",
         classification: "required",
         fields: [
           {
             kind: "array",
             path: "stats",
-            label: "Stats",
+            label: "Statistik",
             itemLabel: "Stat",
-            addLabel: "Add stat",
+            addLabel: "Tambah statistik",
             defaultItem: japanEmptyStat,
             sortOrderField: "sort_order",
             fields: japanStatFields,
@@ -1361,15 +1361,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "achievements",
-        title: "Achievements",
+        title: "Pencapaian",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "achievements",
-            label: "Achievements",
-            itemLabel: "Achievement",
-            addLabel: "Add achievement",
+            label: "Pencapaian",
+            itemLabel: "Pencapaian",
+            addLabel: "Tambah pencapaian",
             defaultItem: {
               icon_key: "",
               title: "",
@@ -1381,11 +1381,11 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "icon", path: "icon_key", label: "Icon" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "text", path: "document_label", label: "Document label" },
-              { kind: "text", path: "document_url", label: "Document URL", inputType: "url" },
+              { kind: "icon", path: "icon_key", label: "Ikon" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "text", path: "document_label", label: "Label dokumen" },
+              { kind: "text", path: "document_url", label: "URL dokumen", inputType: "url" },
               ...japanSortableFields,
             ],
           },
@@ -1393,19 +1393,19 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "latest_news",
-        title: "Latest News",
+        title: "Berita terbaru",
         classification: "recommended",
         fields: [
           {
             kind: "select",
             path: "latest_news.source",
-            label: "Source",
-            options: [{ value: "latest_published", label: "Latest published" }],
+            label: "Sumber",
+            options: [{ value: "latest_published", label: "Terbaru terpublikasi" }],
           },
           {
             kind: "number",
             path: "latest_news.max_items",
-            label: "Max items",
+            label: "Jumlah maksimal",
             min: 1,
             max: 4,
           },
@@ -1413,41 +1413,41 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "why_indonesia_section",
-        title: "Why Indonesia Section",
+        title: "Bagian mengapa Indonesia",
         classification: "recommended",
         fields: [
-          { kind: "media", path: "why_indonesia_section.image_id", label: "Image" },
-          { kind: "text", path: "why_indonesia_section.eyebrow_label", label: "Eyebrow label" },
-          { kind: "text", path: "why_indonesia_section.headline", label: "Headline" },
-          { kind: "textarea", path: "why_indonesia_section.description", label: "Description" },
+          { kind: "media", path: "why_indonesia_section.image_id", label: "Gambar" },
+          { kind: "text", path: "why_indonesia_section.eyebrow_label", label: "Label kecil" },
+          { kind: "text", path: "why_indonesia_section.headline", label: "Judul utama" },
+          { kind: "textarea", path: "why_indonesia_section.description", label: "Deskripsi" },
           {
             kind: "string-array",
             path: "why_indonesia_section.bullet_items",
-            label: "Bullet items",
-            itemLabel: "Bullet",
-            addLabel: "Add bullet",
+            label: "Poin bullet",
+            itemLabel: "Poin",
+            addLabel: "Tambah poin",
             defaultItem: "",
           },
-          { kind: "text", path: "why_indonesia_section.cta_label", label: "CTA label" },
+          { kind: "text", path: "why_indonesia_section.cta_label", label: "Label CTA" },
           {
             kind: "select",
             path: "why_indonesia_section.target_page",
-            label: "Target page",
-            options: [{ value: "candidate_profile", label: "Candidate Profile" }],
+            label: "Halaman tujuan",
+            options: [{ value: "candidate_profile", label: "Profil kandidat" }],
           },
         ],
       },
       {
         key: "why_us_cards",
-        title: "Why Us Cards",
+        title: "Kartu alasan memilih kami",
         classification: "required",
         fields: [
           {
             kind: "array",
             path: "why_us_cards",
-            label: "Why Us Cards",
-            itemLabel: "Card",
-            addLabel: "Add card",
+            label: "Kartu alasan memilih kami",
+            itemLabel: "Kartu",
+            addLabel: "Tambah kartu",
             defaultItem: {
               key: "",
               icon_key: "",
@@ -1462,18 +1462,18 @@ export const PAGE_EDITOR_DEFINITIONS = {
               {
                 kind: "select",
                 path: "key",
-                label: "Key",
+                label: "Jenis kartu",
                 options: [
-                  { value: "about", label: "About" },
-                  { value: "recruitment_network", label: "Recruitment Network" },
-                  { value: "sectors", label: "Sectors" },
-                  { value: "training_method", label: "Training Method" },
+                  { value: "about", label: "Tentang kami" },
+                  { value: "recruitment_network", label: "Jaringan rekrutmen" },
+                  { value: "sectors", label: "Sektor" },
+                  { value: "training_method", label: "Metode pelatihan" },
                 ],
               },
-              { kind: "icon", path: "icon_key", label: "Icon" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "text", path: "href", label: "Href" },
+              { kind: "icon", path: "icon_key", label: "Ikon" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "text", path: "href", label: "Link" },
               ...japanSortableFields,
             ],
           },
@@ -1481,15 +1481,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "legalities",
-        title: "Legalities",
+        title: "Legalitas",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "legalities",
-            label: "Legalities",
-            itemLabel: "Legality",
-            addLabel: "Add legality",
+            label: "Legalitas",
+            itemLabel: "Legalitas",
+            addLabel: "Tambah legalitas",
             defaultItem: {
               type_label: "",
               title: "",
@@ -1501,11 +1501,11 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "type_label", label: "Type label" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "text", path: "document_label", label: "Document label" },
-              { kind: "text", path: "document_url", label: "Document URL", inputType: "url" },
+              { kind: "text", path: "type_label", label: "Label jenis" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "text", path: "document_label", label: "Label dokumen" },
+              { kind: "text", path: "document_url", label: "URL dokumen", inputType: "url" },
               ...japanSortableFields,
             ],
           },
@@ -1513,7 +1513,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFields.map((field) => ({
           ...field,
@@ -1562,15 +1562,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "proof_stats",
-        title: "Proof Stats",
+        title: "Statistik bukti",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "proof_stats",
-            label: "Proof stats",
-            itemLabel: "Stat",
-            addLabel: "Add stat",
+            label: "Statistik bukti",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
             defaultItem: japanEmptyProofStat,
             sortOrderField: "sort_order",
             fields: japanProofStatFields,
@@ -1579,26 +1579,26 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "story",
-        title: "Story",
+        title: "Cerita",
         classification: "required",
         fields: [
-          { kind: "media", path: "story.image_id", label: "Image" },
-          { kind: "text", path: "story.eyebrow_label", label: "Eyebrow label" },
-          { kind: "text", path: "story.headline", label: "Headline" },
-          { kind: "textarea", path: "story.body", label: "Body" },
+          { kind: "media", path: "story.image_id", label: "Gambar" },
+          { kind: "text", path: "story.eyebrow_label", label: "Label kecil" },
+          { kind: "text", path: "story.headline", label: "Judul utama" },
+          { kind: "textarea", path: "story.body", label: "Isi cerita" },
         ],
       },
       {
         key: "timeline",
-        title: "Timeline",
+        title: "Linimasa",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "timeline",
-            label: "Timeline",
-            itemLabel: "Entry",
-            addLabel: "Add entry",
+            label: "Linimasa",
+            itemLabel: "Entri",
+            addLabel: "Tambah entri",
             defaultItem: japanEmptyTimeline,
             sortOrderField: "sort_order",
             fields: japanTimelineFields,
@@ -1607,26 +1607,26 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "vision_mission",
-        title: "Vision & Mission",
+        title: "Visi dan misi",
         classification: "required",
         fields: [
-          { kind: "text", path: "vision_mission.vision_headline", label: "Vision headline" },
-          { kind: "textarea", path: "vision_mission.vision_description", label: "Vision description" },
-          { kind: "text", path: "vision_mission.mission_headline", label: "Mission headline" },
-          { kind: "textarea", path: "vision_mission.mission_description", label: "Mission description" },
+          { kind: "text", path: "vision_mission.vision_headline", label: "Judul visi" },
+          { kind: "textarea", path: "vision_mission.vision_description", label: "Deskripsi visi" },
+          { kind: "text", path: "vision_mission.mission_headline", label: "Judul misi" },
+          { kind: "textarea", path: "vision_mission.mission_description", label: "Deskripsi misi" },
         ],
       },
       {
         key: "values",
-        title: "Values",
+        title: "Nilai",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "values",
-            label: "Values",
-            itemLabel: "Value",
-            addLabel: "Add value",
+            label: "Nilai",
+            itemLabel: "Nilai",
+            addLabel: "Tambah nilai",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -1635,15 +1635,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "facilities",
-        title: "Facilities",
+        title: "Fasilitas",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "facilities",
-            label: "Facilities",
-            itemLabel: "Facility",
-            addLabel: "Add facility",
+            label: "Fasilitas",
+            itemLabel: "Fasilitas",
+            addLabel: "Tambah fasilitas",
             defaultItem: {
               title: "",
               description: "",
@@ -1653,9 +1653,9 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "media", path: "image_id", label: "Image" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "media", path: "image_id", label: "Gambar" },
               ...japanSortableFields,
             ],
           },
@@ -1663,15 +1663,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "team_members",
-        title: "Team Members",
+        title: "Anggota tim",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "team_members",
-            label: "Team members",
-            itemLabel: "Member",
-            addLabel: "Add member",
+            label: "Anggota tim",
+            itemLabel: "Anggota",
+            addLabel: "Tambah anggota",
             defaultItem: {
               name: "",
               role: "",
@@ -1682,10 +1682,10 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "name", label: "Name" },
-              { kind: "text", path: "role", label: "Role" },
+              { kind: "text", path: "name", label: "Nama" },
+              { kind: "text", path: "role", label: "Peran" },
               { kind: "textarea", path: "bio", label: "Bio" },
-              { kind: "media", path: "image_id", label: "Image" },
+              { kind: "media", path: "image_id", label: "Gambar" },
               ...japanSortableFields,
             ],
           },
@@ -1693,15 +1693,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "legal_overview",
-        title: "Legal Overview",
+        title: "Ringkasan legalitas",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "legal_overview",
-            label: "Legal overview",
-            itemLabel: "Legality",
-            addLabel: "Add legality",
+            label: "Ringkasan legalitas",
+            itemLabel: "Legalitas",
+            addLabel: "Tambah legalitas",
             defaultItem: {
               type_label: "",
               title: "",
@@ -1713,11 +1713,11 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "type_label", label: "Type label" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "text", path: "document_label", label: "Document label" },
-              { kind: "text", path: "document_url", label: "Document URL", inputType: "url" },
+              { kind: "text", path: "type_label", label: "Label jenis" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "text", path: "document_label", label: "Label dokumen" },
+              { kind: "text", path: "document_url", label: "URL dokumen", inputType: "url" },
               ...japanSortableFields,
             ],
           },
@@ -1725,7 +1725,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFields.map((field) => ({
           ...field,
@@ -1768,27 +1768,27 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "curriculum_download",
-        title: "Curriculum Download",
+        title: "Unduhan kurikulum",
         classification: "optional",
         fields: [
-          { kind: "switch", path: "curriculum_download.is_enabled", label: "Enabled" },
-          { kind: "text", path: "curriculum_download.headline", label: "Headline" },
-          { kind: "textarea", path: "curriculum_download.description", label: "Description" },
-          { kind: "text", path: "curriculum_download.file_url", label: "File URL", inputType: "url" },
-          { kind: "text", path: "curriculum_download.button_label", label: "Button label" },
+          { kind: "switch", path: "curriculum_download.is_enabled", label: "Aktif" },
+          { kind: "text", path: "curriculum_download.headline", label: "Judul utama" },
+          { kind: "textarea", path: "curriculum_download.description", label: "Deskripsi" },
+          { kind: "text", path: "curriculum_download.file_url", label: "URL file", inputType: "url" },
+          { kind: "text", path: "curriculum_download.button_label", label: "Label tombol" },
         ],
       },
       {
         key: "training_pillars",
-        title: "Training Pillars",
+        title: "Pilar pelatihan",
         classification: "required",
         fields: [
           {
             kind: "array",
             path: "training_pillars",
-            label: "Training pillars",
-            itemLabel: "Pillar",
-            addLabel: "Add pillar",
+            label: "Pilar pelatihan",
+            itemLabel: "Pilar",
+            addLabel: "Tambah pilar",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -1797,15 +1797,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "training_flow",
-        title: "Training Flow",
+        title: "Alur pelatihan",
         classification: "required",
         fields: [
           {
             kind: "array",
             path: "training_flow",
-            label: "Training flow",
-            itemLabel: "Step",
-            addLabel: "Add step",
+            label: "Alur pelatihan",
+            itemLabel: "Langkah",
+            addLabel: "Tambah langkah",
             defaultItem: japanEmptyStep,
             sortOrderField: "sort_order",
             fields: japanStepFields,
@@ -1814,15 +1814,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "curriculum_areas",
-        title: "Curriculum Areas",
+        title: "Area kurikulum",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "curriculum_areas",
-            label: "Curriculum areas",
+            label: "Area kurikulum",
             itemLabel: "Area",
-            addLabel: "Add area",
+            addLabel: "Tambah area",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -1831,15 +1831,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "evaluation_items",
-        title: "Evaluation Items",
+        title: "Item evaluasi",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "evaluation_items",
-            label: "Evaluation items",
+            label: "Item evaluasi",
             itemLabel: "Item",
-            addLabel: "Add item",
+            addLabel: "Tambah item",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -1848,21 +1848,21 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "training_gallery",
-        title: "Training Gallery",
+        title: "Galeri pelatihan",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "training_gallery",
-            label: "Training gallery",
+            label: "Galeri pelatihan",
             itemLabel: "Item",
-            addLabel: "Add item",
+            addLabel: "Tambah item",
             defaultItem: japanEmptyGalleryItem,
             sortOrderField: "sort_order",
             fields: [
               { kind: "media", path: "media_id", label: "Media" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
               ...japanSortableFields,
             ],
           },
@@ -1870,7 +1870,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFieldsWithDoc.map((field) => ({
           ...field,
@@ -1917,15 +1917,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "proof_stats",
-        title: "Proof Stats",
+        title: "Statistik bukti",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "proof_stats",
-            label: "Proof stats",
-            itemLabel: "Stat",
-            addLabel: "Add stat",
+            label: "Statistik bukti",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
             defaultItem: japanEmptyProofStat,
             sortOrderField: "sort_order",
             fields: japanProofStatFields,
@@ -1934,33 +1934,33 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "why_indonesia",
-        title: "Why Indonesia",
+        title: "Mengapa Indonesia",
         classification: "required",
         fields: [
-          { kind: "media", path: "why_indonesia.image_id", label: "Image" },
-          { kind: "text", path: "why_indonesia.headline", label: "Headline" },
-          { kind: "textarea", path: "why_indonesia.description", label: "Description" },
+          { kind: "media", path: "why_indonesia.image_id", label: "Gambar" },
+          { kind: "text", path: "why_indonesia.headline", label: "Judul utama" },
+          { kind: "textarea", path: "why_indonesia.description", label: "Deskripsi" },
           {
             kind: "string-array",
             path: "why_indonesia.bullet_items",
-            label: "Bullet items",
-            itemLabel: "Bullet",
-            addLabel: "Add bullet",
+            label: "Poin bullet",
+            itemLabel: "Poin",
+            addLabel: "Tambah poin",
             defaultItem: "",
           },
         ],
       },
       {
         key: "candidate_strengths",
-        title: "Candidate Strengths",
+        title: "Kekuatan kandidat",
         classification: "required",
         fields: [
           {
             kind: "array",
             path: "candidate_strengths",
-            label: "Candidate strengths",
-            itemLabel: "Strength",
-            addLabel: "Add strength",
+            label: "Kekuatan kandidat",
+            itemLabel: "Kekuatan",
+            addLabel: "Tambah kekuatan",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -1969,15 +1969,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "supported_pathways",
-        title: "Supported Pathways",
+        title: "Jalur yang didukung",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "supported_pathways",
-            label: "Supported pathways",
-            itemLabel: "Pathway",
-            addLabel: "Add pathway",
+            label: "Jalur yang didukung",
+            itemLabel: "Jalur",
+            addLabel: "Tambah jalur",
             defaultItem: {
               pathway_label: "",
               title: "",
@@ -1987,9 +1987,9 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "pathway_label", label: "Pathway label" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
+              { kind: "text", path: "pathway_label", label: "Label jalur" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
               ...japanSortableFields,
             ],
           },
@@ -1997,15 +1997,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "candidate_examples",
-        title: "Candidate Examples",
+        title: "Contoh kandidat",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "candidate_examples",
-            label: "Candidate examples",
-            itemLabel: "Example",
-            addLabel: "Add example",
+            label: "Contoh kandidat",
+            itemLabel: "Contoh",
+            addLabel: "Tambah contoh",
             defaultItem: {
               profile_label: "",
               title: "",
@@ -2016,10 +2016,10 @@ export const PAGE_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "profile_label", label: "Profile label" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "media", path: "image_id", label: "Image" },
+              { kind: "text", path: "profile_label", label: "Label profil" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "media", path: "image_id", label: "Gambar" },
               ...japanSortableFields,
             ],
           },
@@ -2027,15 +2027,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "readiness_framework",
-        title: "Readiness Framework",
+        title: "Kerangka kesiapan",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "readiness_framework",
-            label: "Readiness framework",
+            label: "Kerangka kesiapan",
             itemLabel: "Item",
-            addLabel: "Add item",
+            addLabel: "Tambah item",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -2044,17 +2044,17 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "partner_perspective",
-        title: "Partner Perspective",
+        title: "Perspektif partner",
         classification: "optional",
         fields: [
-          { kind: "switch", path: "partner_perspective.is_enabled", label: "Enabled" },
-          { kind: "textarea", path: "partner_perspective.quote", label: "Quote" },
-          { kind: "text", path: "partner_perspective.attribution_label", label: "Attribution label" },
+          { kind: "switch", path: "partner_perspective.is_enabled", label: "Aktif" },
+          { kind: "textarea", path: "partner_perspective.quote", label: "Kutipan" },
+          { kind: "text", path: "partner_perspective.attribution_label", label: "Label atribusi" },
         ],
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFields.map((field) => ({
           ...field,
@@ -2096,15 +2096,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "proof_stats",
-        title: "Proof Stats",
+        title: "Statistik bukti",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "proof_stats",
-            label: "Proof stats",
-            itemLabel: "Stat",
-            addLabel: "Add stat",
+            label: "Statistik bukti",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
             defaultItem: japanEmptyProofStat,
             sortOrderField: "sort_order",
             fields: japanProofStatFields,
@@ -2113,30 +2113,30 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "network_overview",
-        title: "Network Overview",
+        title: "Ringkasan jaringan",
         classification: "required",
         fields: [
-          { kind: "media", path: "network_overview.map_image_id", label: "Map image" },
-          { kind: "text", path: "network_overview.headline", label: "Headline" },
-          { kind: "textarea", path: "network_overview.description", label: "Description" },
+          { kind: "media", path: "network_overview.map_image_id", label: "Gambar peta" },
+          { kind: "text", path: "network_overview.headline", label: "Judul utama" },
+          { kind: "textarea", path: "network_overview.description", label: "Deskripsi" },
         ],
       },
       {
         key: "coverage_regions",
-        title: "Coverage Regions",
+        title: "Wilayah cakupan",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "coverage_regions",
-            label: "Coverage regions",
-            itemLabel: "Region",
-            addLabel: "Add region",
+            label: "Wilayah cakupan",
+            itemLabel: "Wilayah",
+            addLabel: "Tambah wilayah",
             defaultItem: japanEmptyRegion,
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "region_name", label: "Region name" },
-              { kind: "textarea", path: "description", label: "Description" },
+              { kind: "text", path: "region_name", label: "Nama wilayah" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
               ...japanSortableFields,
             ],
           },
@@ -2144,15 +2144,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "recruitment_sources",
-        title: "Recruitment Sources",
+        title: "Sumber rekrutmen",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "recruitment_sources",
-            label: "Recruitment sources",
-            itemLabel: "Source",
-            addLabel: "Add source",
+            label: "Sumber rekrutmen",
+            itemLabel: "Sumber",
+            addLabel: "Tambah sumber",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -2161,15 +2161,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "screening_flow",
-        title: "Screening Flow",
+        title: "Alur screening",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "screening_flow",
-            label: "Screening flow",
-            itemLabel: "Step",
-            addLabel: "Add step",
+            label: "Alur screening",
+            itemLabel: "Langkah",
+            addLabel: "Tambah langkah",
             defaultItem: japanEmptyStep,
             sortOrderField: "sort_order",
             fields: japanStepFields,
@@ -2178,22 +2178,22 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "network_nodes",
-        title: "Network Nodes",
+        title: "Titik jaringan",
         classification: "optional",
         fields: [
           {
             kind: "array",
             path: "network_nodes",
-            label: "Network nodes",
-            itemLabel: "Node",
-            addLabel: "Add node",
+            label: "Titik jaringan",
+            itemLabel: "Titik",
+            addLabel: "Tambah titik",
             defaultItem: japanEmptyNetworkNode,
             sortOrderField: "sort_order",
             fields: [
-              { kind: "text", path: "region_label", label: "Region label" },
-              { kind: "text", path: "title", label: "Title" },
-              { kind: "textarea", path: "description", label: "Description" },
-              { kind: "media", path: "image_id", label: "Image" },
+              { kind: "text", path: "region_label", label: "Label wilayah" },
+              { kind: "text", path: "title", label: "Judul" },
+              { kind: "textarea", path: "description", label: "Deskripsi" },
+              { kind: "media", path: "image_id", label: "Gambar" },
               ...japanSortableFields,
             ],
           },
@@ -2201,15 +2201,15 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "quality_control_items",
-        title: "Quality Control",
+        title: "Kontrol kualitas",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "quality_control_items",
-            label: "Quality control items",
+            label: "Item kontrol kualitas",
             itemLabel: "Item",
-            addLabel: "Add item",
+            addLabel: "Tambah item",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -2218,7 +2218,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFields.map((field) => ({
           ...field,
@@ -2231,7 +2231,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
   "japan.sector_page": {
     variantKey: "japan",
     pageKey: "sector_page",
-    title: "Sector Page",
+    title: "Halaman Sektor",
     publicPath: "/sectors",
     defaultData: {
       hero: japanEmptyHero,
@@ -2258,13 +2258,13 @@ export const PAGE_EDITOR_DEFINITIONS = {
           {
             kind: "switch",
             path: "filter_config.enable_sector_category_filter",
-            label: "Sector category filter",
+            label: "Filter kategori sektor",
           },
         ],
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFieldsWithDoc.map((field) => ({
           ...field,
@@ -2277,7 +2277,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
   "japan.news_page": {
     variantKey: "japan",
     pageKey: "news_page",
-    title: "News Page",
+    title: "Halaman Berita",
     publicPath: "/news",
     defaultData: {
       hero: japanEmptyHero,
@@ -2305,18 +2305,18 @@ export const PAGE_EDITOR_DEFINITIONS = {
           {
             kind: "switch",
             path: "filter_config.enable_category_filter",
-            label: "Category filter",
+            label: "Filter kategori",
           },
           {
             kind: "switch",
             path: "filter_config.enable_tag_filter",
-            label: "Tag filter",
+            label: "Filter tag",
           },
         ],
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFields.map((field) => ({
           ...field,
@@ -2329,7 +2329,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
   "japan.contact": {
     variantKey: "japan",
     pageKey: "contact",
-    title: "Contact",
+    title: "Kontak",
     publicPath: "/contact",
     defaultData: {
       hero: japanEmptyHero,
@@ -2368,57 +2368,57 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "contact_channels",
-        title: "Contact Channels",
+        title: "Channel kontak",
         classification: "required",
         fields: [
-          { kind: "text", path: "contact_channels.line_official_account_id", label: "LINE Official Account ID" },
-          { kind: "text", path: "contact_channels.line_cta_label", label: "LINE CTA label" },
-          { kind: "textarea", path: "contact_channels.line_message_template", label: "LINE message template" },
-          { kind: "text", path: "contact_channels.business_email", label: "Business email", inputType: "email" },
-          { kind: "text", path: "contact_channels.email_subject_template", label: "Email subject template" },
+          { kind: "text", path: "contact_channels.line_official_account_id", label: "ID akun resmi LINE" },
+          { kind: "text", path: "contact_channels.line_cta_label", label: "Label CTA LINE" },
+          { kind: "textarea", path: "contact_channels.line_message_template", label: "Template pesan LINE" },
+          { kind: "text", path: "contact_channels.business_email", label: "Email bisnis", inputType: "email" },
+          { kind: "text", path: "contact_channels.email_subject_template", label: "Template subject email" },
         ],
       },
       {
         key: "partnership_pic",
-        title: "Partnership PIC",
+        title: "PIC partnership",
         classification: "optional",
         fields: [
-          { kind: "text", path: "partnership_pic.name", label: "Name" },
-          { kind: "text", path: "partnership_pic.role", label: "Role" },
-          { kind: "media", path: "partnership_pic.photo_image_id", label: "Photo" },
-          { kind: "textarea", path: "partnership_pic.description", label: "Description" },
+          { kind: "text", path: "partnership_pic.name", label: "Nama" },
+          { kind: "text", path: "partnership_pic.role", label: "Peran" },
+          { kind: "media", path: "partnership_pic.photo_image_id", label: "Foto" },
+          { kind: "textarea", path: "partnership_pic.description", label: "Deskripsi" },
         ],
       },
       {
         key: "business_info",
-        title: "Business Info",
+        title: "Informasi bisnis",
         classification: "required",
         fields: [
-          { kind: "text", path: "business_info.business_hours", label: "Business hours" },
+          { kind: "text", path: "business_info.business_hours", label: "Jam operasional" },
           {
             kind: "string-array",
             path: "business_info.language_support",
-            label: "Language support",
-            itemLabel: "Language",
-            addLabel: "Add language",
+            label: "Bahasa layanan",
+            itemLabel: "Bahasa",
+            addLabel: "Tambah bahasa",
             defaultItem: "",
           },
-          { kind: "text", path: "business_info.address", label: "Address" },
-          { kind: "text", path: "business_info.map_url", label: "Map URL", inputType: "url" },
-          { kind: "text", path: "business_info.map_embed_url", label: "Map embed URL", inputType: "url" },
+          { kind: "text", path: "business_info.address", label: "Alamat" },
+          { kind: "text", path: "business_info.map_url", label: "URL peta", inputType: "url" },
+          { kind: "text", path: "business_info.map_embed_url", label: "URL embed peta", inputType: "url" },
         ],
       },
       {
         key: "inquiry_flow",
-        title: "Inquiry Flow",
+        title: "Alur inquiry",
         classification: "recommended",
         fields: [
           {
             kind: "array",
             path: "inquiry_flow",
-            label: "Inquiry flow",
-            itemLabel: "Step",
-            addLabel: "Add step",
+            label: "Alur inquiry",
+            itemLabel: "Langkah",
+            addLabel: "Tambah langkah",
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
@@ -2427,7 +2427,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       {
         key: "final_cta",
-        title: "Final CTA",
+        title: "CTA akhir",
         classification: "required",
         fields: japanFinalCtaFieldsWithDoc.map((field) => ({
           ...field,
@@ -2470,7 +2470,7 @@ function faqArrayField(path: string): PageEditorField {
 function finalCtaSection(): PageEditorSection {
   return {
     key: "final_cta",
-    title: "Final CTA",
+    title: "CTA akhir",
     classification: "required",
     fields: finalCtaFields.map((field) => ({
       ...field,

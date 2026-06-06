@@ -48,7 +48,7 @@ import { cn } from "@/lib/utils";
 
 type MediaType = "IMAGE" | "DOCUMENT" | "VIDEO";
 type ViewMode = "grid" | "list";
-type FilterType = "ALL" | MediaType;
+type FilterType = "ALL" | "IMAGE" | "VIDEO";
 
 type MediaItem = {
   id: string;
@@ -129,6 +129,15 @@ type MediaLibraryProps = {
 
 const PAGE_SIZE = 24;
 
+const ALLOWED_LIBRARY_UPLOAD_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+
 export function MediaLibrary({ tenantId }: MediaLibraryProps) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -188,8 +197,13 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
 
   function handleFiles(files: FileList | File[]) {
     const fileArray = Array.from(files);
+    const uploadableFiles = fileArray.filter(isAllowedLibraryUploadFile);
 
-    for (const file of fileArray) {
+    if (uploadableFiles.length < fileArray.length) {
+      toast.error("Upload hanya mendukung gambar JPG/PNG/WebP dan video MP4/WebM/MOV.");
+    }
+
+    for (const file of uploadableFiles) {
       void uploadFile(file);
     }
   }
@@ -484,7 +498,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
             Drag & drop files here, or click to browse
           </p>
           <p className="text-xs text-muted-foreground">
-            JPEG, PNG, WebP (max 5 MB) &middot; PDF (max 10 MB) &middot; MP4, WebM, MOV (max 50 MB)
+            JPEG, PNG, WebP (max 5 MB) &middot; MP4, WebM, MOV (max 50 MB)
           </p>
           <Button
             type="button"
@@ -499,7 +513,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/quicktime"
+            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
             className="hidden"
             onChange={(event) => {
               if (event.target.files) {
@@ -649,7 +663,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1 rounded-lg border p-0.5">
-          {(["ALL", "IMAGE", "VIDEO", "DOCUMENT"] as FilterType[]).map((type) => (
+          {(["ALL", "IMAGE", "VIDEO"] as FilterType[]).map((type) => (
             <button
               key={type}
               type="button"
@@ -1247,20 +1261,19 @@ function formatCleanupTimestamp(candidate: CleanupCandidate) {
 function getFilterLabel(type: FilterType) {
   if (type === "ALL") return "All";
   if (type === "IMAGE") return "Images";
-  if (type === "VIDEO") return "Videos";
-  return "Documents";
+  return "Videos";
 }
 
 function getMediaTypeForFile(file: File): MediaType {
-  if (file.type === "application/pdf") {
-    return "DOCUMENT";
-  }
-
   if (file.type.startsWith("video/")) {
     return "VIDEO";
   }
 
   return "IMAGE";
+}
+
+function isAllowedLibraryUploadFile(file: File) {
+  return ALLOWED_LIBRARY_UPLOAD_MIME_TYPES.has(file.type);
 }
 
 function isMediaListSuccess(value: unknown): value is {

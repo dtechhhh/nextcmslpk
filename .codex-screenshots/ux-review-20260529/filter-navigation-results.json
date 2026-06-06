@@ -1,0 +1,54 @@
+[
+  {
+    "name": "program",
+    "beforeCount": 3,
+    "opt": {
+      "value": "cmpm3n6cx000bn4k6s8574m45",
+      "text": "Magang"
+    },
+    "afterUrl": "http://hit-indonesia.lpk.local:3000/program",
+    "afterCount": 3,
+    "filterLabel": [
+      "Magang",
+      "Semua",
+      "Semua",
+      "Semua"
+    ],
+    "err": null
+  },
+  {
+    "name": "job",
+    "beforeCount": 3,
+    "opt": {
+      "value": "cmpm3n6zc000un4k6h3fcxru0",
+      "text": "Full-time"
+    },
+    "afterUrl": "http://hit-indonesia.lpk.local:3000/job?job_type=cmpm3n6zc000un4k6h3fcxru0",
+    "afterCount": 3,
+    "filterLabel": [
+      "Full-time",
+      "Semua",
+      "Semua",
+      "Semua"
+    ],
+    "err": null
+  },
+  {
+    "name": "blog",
+    "beforeCount": 3,
+    "opt": null,
+    "afterUrl": null,
+    "afterCount": null,
+    "filterLabel": null,
+    "err": null
+  },
+  {
+    "name": "karir",
+    "beforeCount": 2,
+    "opt": null,
+    "afterUrl": null,
+    "afterCount": null,
+    "filterLabel": null,
+    "err": null
+  }
+]

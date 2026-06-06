@@ -1,5 +1,6 @@
 import type { PublishStatus } from "@/generated/prisma/enums";
 import type { ContentItemModel, ContentItemWhereInput } from "@/generated/prisma/models";
+import { unstable_cache } from "next/cache";
 import {
   getCollectionDefinition,
   isCollectionKey,
@@ -12,6 +13,8 @@ import { prisma } from "@/server/db/client";
 export type PublicPageSearchParams = Record<string, string | string[] | undefined>;
 
 export type PublicJson = Record<string, unknown>;
+
+const PUBLIC_LOOKUP_CACHE_SECONDS = 300;
 
 export type PreviewTokenResolution = {
   valid: boolean;
@@ -123,18 +126,36 @@ export async function resolveMediaUrl(mediaId: string) {
 }
 
 export async function resolveMediaUrls(mediaIds: Array<string | null | undefined>) {
-  const uniqueMediaIds = [...new Set(mediaIds.filter((mediaId): mediaId is string => Boolean(mediaId)))];
+  const uniqueMediaIds = [
+    ...new Set(mediaIds.filter((mediaId): mediaId is string => Boolean(mediaId))),
+  ].sort();
 
   if (!uniqueMediaIds.length) {
     return new Map<string, string>();
   }
 
+  const mediaUrls = await unstable_cache(
+    () => resolveMediaUrlRows(uniqueMediaIds),
+    ["public-media-urls", uniqueMediaIds.join(",")],
+    {
+      revalidate: 3600,
+      tags: uniqueMediaIds.map((mediaId) => `media:${mediaId}`),
+    },
+  )();
+
+  return new Map(mediaUrls.map((media) => [media.id, media.publicUrl]));
+}
+
+async function resolveMediaUrlRows(mediaIds: string[]) {
   const mediaAssets = await prisma.mediaAsset.findMany({
-    where: { id: { in: uniqueMediaIds }, status: "ACTIVE" },
+    where: { id: { in: mediaIds }, status: "ACTIVE" },
     select: { id: true, storagePath: true },
   });
 
-  return new Map(mediaAssets.map((media) => [media.id, getPublicUrl(media.storagePath)]));
+  return mediaAssets.map((media) => ({
+    id: media.id,
+    publicUrl: getPublicUrl(media.storagePath),
+  }));
 }
 
 function getResolvedMediaUrl(mediaUrls: Map<string, string> | undefined, mediaId?: string | null) {
@@ -163,6 +184,25 @@ export async function resolveOptionLabel(
     return null;
   }
 
+  return unstable_cache(
+    () => resolveOptionLabelUncached(optionId, scope),
+    [
+      "public-option-label",
+      optionId,
+      scope?.variantId ?? "",
+      scope?.optionSetKey ?? "",
+    ],
+    {
+      revalidate: PUBLIC_LOOKUP_CACHE_SECONDS,
+      tags: scope ? [`variant:${scope.variantId}`] : [],
+    },
+  )();
+}
+
+async function resolveOptionLabelUncached(
+  optionId: string,
+  scope?: { variantId: string; optionSetKey: string },
+) {
   const option = await prisma.optionValue.findUnique({
     where: { id: optionId },
     select: { label: true, value: true },
@@ -190,6 +230,14 @@ export async function resolveOptionLabel(
 }
 
 export async function resolveOptionSet(variantId: string, key: string) {
+  return unstable_cache(
+    () => resolveOptionSetUncached(variantId, key),
+    ["public-option-set", variantId, key],
+    { revalidate: PUBLIC_LOOKUP_CACHE_SECONDS, tags: [`variant:${variantId}`] },
+  )();
+}
+
+async function resolveOptionSetUncached(variantId: string, key: string) {
   const optionSet = await prisma.optionSet.findUnique({
     where: { variantId_key: { variantId, key } },
     select: {

@@ -127,7 +127,8 @@ const FIELD_LABELS_BY_PATH: Record<string, string> = {
   benefit_items: "Daftar manfaat",
   bonus_items: "Daftar bonus",
   brochure_enabled: "Aktifkan brosur",
-  brochure_file_id: "File brosur",
+  brochure_file_id: "File brosur lama",
+  brochure_url: "URL brosur",
   candidate_requirements: "Syarat kandidat",
   capacity_label: "Kapasitas",
   category_option_id: "Kategori",
@@ -341,9 +342,6 @@ const GUIDANCE_BY_KIND: Partial<Record<CollectionField["kind"], CmsFieldGuidance
   },
   date: {
     helpText: "Pilih tanggal dengan format kalender.",
-  },
-  document: {
-    helpText: "Pilih dokumen yang sudah diunggah ke media.",
   },
   media: {
     helpText: "Pilih media dari library. Crop akan mengikuti kebutuhan field ini.",

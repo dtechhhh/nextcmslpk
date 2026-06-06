@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "authjs.csrf-token",
+      "value": "0ad775aa2c4181f2b4a1a9ad5721dfaba841d8b584d2ad37373907b616342faf%7C770f6f0c3c22b0307caca7f42d7c5ff10d3abb7857d15cf52782eb77b87fe7dc",
+      "domain": "dashboard.lpk.local",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.callback-url",
+      "value": "http%3A%2F%2Fdashboard.lpk.local%3A3000",
+      "domain": "dashboard.lpk.local",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiSnZXZkFXTHNyWGttVWlueWxncXFWektRbDJoWEpMd0tYcnc1bUZGSG5hcVJ5TzNaZXpPUmlhME5vTXIxRC1jODdFRTlCVW5Udk5rSW5yeFdpczNFdHcifQ..vXP76dATaMdn1jcc42bnJg._YKFBQ-_CEFh9YPK52CvjitFA7GPPe563d0PaL9NTWOmsiFSwo70pZJSvgcTsau3L_WBuR_x24oyMpg4w6wpRnr9liBc4c4fXVTKGzmxpBVY_QgLZx6J6aYK7FmcE5Di1PeTX74acJYKGUeYXZC_OG7sVmCWq_zXXRr2y3IGB923A1KBFhUo6yl4emez0LGjpN-55m69OxnJ-sXdh47-Dcklq7braYwDMQTyaeyul2EjRYKe7kzPwEPMbY3KUhuJsC5jAX7ULIeFNMvTlhNPwcsSntozg65blrpu3tj23DIQkKwobYBHzAlGUgtPhHYlD4DuhAw6FWCmEorQ5VtE7UQ4QBJZVvMcL3UrJD22XuVhaecJte36myTUKDVQlXJLo3pKIOsew6aJnnV6x53sv3ftVzW2X48kArE2Kk3BrI2kRW-JsStbLnX_zoFAyAGY.f-NhoEmx7Vhv6dcg5K0rLAGpAP2JUSHMdNhdQTQER0s",
+      "domain": "dashboard.lpk.local",
+      "path": "/",
+      "expires": 1780196411.136761,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://dashboard.lpk.local:3000",
+      "localStorage": [
+        {
+          "name": "nextcmslpk:lastActivity",
+          "value": "1780195210784"
+        }
+      ]
+    }
+  ]
+}

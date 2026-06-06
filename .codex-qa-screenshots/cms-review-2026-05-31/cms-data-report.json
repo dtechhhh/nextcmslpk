@@ -1,0 +1,3733 @@
+{
+  "generatedAt": "2026-05-31T04:10:34.905Z",
+  "tenant": {
+    "id": "cmpm3n5gx0000n4k6m1k4acg7",
+    "name": "Hashimoto Indo Trust",
+    "slug": "hit",
+    "status": "ACTIVE"
+  },
+  "variants": [
+    {
+      "key": "indonesia",
+      "label": "Variant Indonesia",
+      "status": "ACTIVE",
+      "themeKey": "starter",
+      "domains": [
+        {
+          "host": "hit-indonesia.lpk.local:3000",
+          "status": "ACTIVE",
+          "isPrimary": true
+        }
+      ]
+    },
+    {
+      "key": "japan",
+      "label": "Variant Jepang",
+      "status": "ACTIVE",
+      "themeKey": "starter",
+      "domains": [
+        {
+          "host": "hit-japan.lpk.local:3000",
+          "status": "ACTIVE",
+          "isPrimary": true
+        }
+      ]
+    }
+  ],
+  "globalConfigs": [
+    {
+      "variant": "indonesia",
+      "configKey": "brand_header",
+      "updatedAt": "2026-05-31T03:24:23.944Z",
+      "data": {
+        "brand": {
+          "tagline": "Lembaga Pelatihan Kerja Di Jepang",
+          "lpk_name": "PT HASHIMOTO INDO TRUST",
+          "logo_image_id": "cmpt3s3og0000hgibzdrihtcp",
+          "logo_light_image_id": "cmpt3s3og0000hgibzdrihtcp"
+        },
+        "navbar": [
+          {
+            "key": "home",
+            "href": "/",
+            "label": "Beranda",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "key": "program",
+            "href": "/program",
+            "label": "Program",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "key": "job",
+            "href": "/job",
+            "label": "Info Job",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "key": "about",
+            "href": "/tentang-kami",
+            "label": "Tentang Kami",
+            "is_enabled": true,
+            "sort_order": 4
+          },
+          {
+            "key": "blog",
+            "href": "/blog",
+            "label": "Blog",
+            "is_enabled": true,
+            "sort_order": 5
+          }
+        ],
+        "appearance": {
+          "cta_color": "",
+          "accent_color": "",
+          "primary_color": "",
+          "primary_hover_color": ""
+        },
+        "header_cta": {
+          "label": "Konsultasi Gratis",
+          "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik dengan program pelatihan kerja ke Jepang dan ingin konsultasi lebih lanjut."
+        },
+        "variant_switch": {
+          "is_enabled": true,
+          "target_behavior": "homepage",
+          "target_variant_key": "japan"
+        },
+        "header_behavior": {
+          "header_style": "transparent_on_hero",
+          "sticky_header": true
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "configKey": "footer",
+      "updatedAt": "2026-05-26T05:37:06.164Z",
+      "data": {
+        "brand": {
+          "lpk_name": "Hashimoto Indo Trust",
+          "logo_image_id": "cmpm6njrn000qk8eygqs5lc6d",
+          "short_description": "LPK resmi terpercaya yang membantu tenaga kerja Indonesia meraih karir profesional di Jepang sejak 2015."
+        },
+        "legal": {
+          "copyright_text": "© 2026 Hashimoto Indo Trust. Semua hak dilindungi.",
+          "show_powered_by": true
+        },
+        "contact": {
+          "use_global_contact": true
+        },
+        "quick_links": [
+          {
+            "key": "home",
+            "href": "/",
+            "label": "Beranda",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "key": "program",
+            "href": "/program",
+            "label": "Program",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "key": "job",
+            "href": "/job",
+            "label": "Info Job",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "key": "about",
+            "href": "/tentang-kami",
+            "label": "Tentang Kami",
+            "is_enabled": true,
+            "sort_order": 4
+          },
+          {
+            "key": "blog",
+            "href": "/blog",
+            "label": "Blog",
+            "is_enabled": true,
+            "sort_order": 5
+          },
+          {
+            "key": "career",
+            "href": "/karir",
+            "label": "Karir di HIT",
+            "is_enabled": true,
+            "sort_order": 6
+          }
+        ],
+        "program_links": {
+          "source": "featured",
+          "max_items": 4
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "configKey": "whatsapp_contact",
+      "updatedAt": "2026-05-26T05:37:06.057Z",
+      "data": {
+        "contact": {
+          "email": "info@hashimotoindotrust.co.id",
+          "address": "Jl. Raya Soreang No. 45, Soreang, Bandung, Jawa Barat 40911",
+          "map_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "phone_label": "+62 812-3456-7890",
+          "operational_hours": "Senin–Jumat: 08.00–17.00 WIB | Sabtu: 08.00–13.00 WIB"
+        },
+        "whatsapp": {
+          "number": "6281234567890",
+          "floating_position": "bottom_right",
+          "floating_is_enabled": true,
+          "default_message_template": "Halo Hashimoto Indo Trust, saya tertarik dengan program pelatihan kerja ke Jepang.",
+          "floating_icon_only_label": "WhatsApp",
+          "floating_label_after_scroll": "Konsultasi Sekarang"
+        },
+        "social_links": {
+          "line": "",
+          "tiktok": "https://tiktok.com/@hit.lpk",
+          "youtube": "https://youtube.com/@hashimotoindotrust",
+          "facebook": "https://facebook.com/hashimotoindotrust",
+          "instagram": "https://instagram.com/hashimotoindotrust"
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "configKey": "brand_header",
+      "updatedAt": "2026-05-31T01:40:01.111Z",
+      "data": {
+        "brand": {
+          "tagline": "インドネシア人材で、貴社の成長を支援します",
+          "lpk_name": "PT HASHIMOTO INDO TRUST",
+          "logo_image_id": "cmpt3s3og0000hgibzdrihtcp",
+          "logo_light_image_id": "cmpt3s3og0000hgibzdrihtcp"
+        },
+        "navbar": [
+          {
+            "key": "about",
+            "href": "/about",
+            "label": "会社概要",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "key": "training_method",
+            "href": "/training-method",
+            "label": "研修方法",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "key": "candidate_profile",
+            "href": "/candidate-profile",
+            "label": "人材プロフィール",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "key": "recruitment_network",
+            "href": "/recruitment-network",
+            "label": "採用ネットワーク",
+            "is_enabled": true,
+            "sort_order": 4
+          },
+          {
+            "key": "sectors",
+            "href": "/sectors",
+            "label": "業種",
+            "is_enabled": true,
+            "sort_order": 5
+          },
+          {
+            "key": "news",
+            "href": "/news",
+            "label": "ニュース",
+            "is_enabled": true,
+            "sort_order": 6
+          },
+          {
+            "key": "contact",
+            "href": "/contact",
+            "label": "お問い合わせ",
+            "is_enabled": true,
+            "sort_order": 7
+          }
+        ],
+        "topbar": {
+          "is_enabled": true,
+          "email_label": "japan@hashimotoindotrust.co.id",
+          "location_label": "〒150-0001 大阪府大阪市（日本窓口）",
+          "business_hours_label": "月〜金 09:00-17:00 JST"
+        },
+        "appearance": {
+          "cta_color": "",
+          "accent_color": "",
+          "primary_color": "",
+          "primary_hover_color": ""
+        },
+        "header_behavior": {
+          "header_style": "solid",
+          "sticky_header": true
+        },
+        "header_primary_cta": {
+          "type": "line",
+          "label": "LINEで相談する",
+          "line_message_template": "ハシモト・インド・トラストのウェブサイトからお問い合わせです。インドネシア人材の採用についてご相談したいのですが、よろしいでしょうか。"
+        },
+        "header_secondary_cta": {
+          "href": "",
+          "type": "document",
+          "label": "会社案内 ダウンロード",
+          "is_enabled": false,
+          "document_file_id": "cmpt0ymsm0000idor5fjx18ym"
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "configKey": "footer",
+      "updatedAt": "2026-05-31T01:40:56.782Z",
+      "data": {
+        "brand": {
+          "lpk_name": "ハシモト・インド・トラスト",
+          "logo_image_id": "cmpt3s3og0000hgibzdrihtcp",
+          "short_description": "2015年の設立以来、インドネシアの優秀な人材を日本企業へ送り出してきた信頼のパートナーです。"
+        },
+        "legal": {
+          "copyright_text": "© 2026 Hashimoto Indo Trust. 無断転載を禁じます。",
+          "show_powered_by": true
+        },
+        "contact": {
+          "use_global_contact": true
+        },
+        "company_links": [
+          {
+            "key": "about",
+            "href": "/about",
+            "label": "会社概要",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "key": "recruitment_network",
+            "href": "/recruitment-network",
+            "label": "採用ネットワーク",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "key": "training_method",
+            "href": "/training-method",
+            "label": "研修方法",
+            "is_enabled": true,
+            "sort_order": 3
+          }
+        ],
+        "resource_links": [
+          {
+            "key": "candidate_profile",
+            "href": "/candidate-profile",
+            "label": "人材プロフィール",
+            "is_enabled": true,
+            "sort_order": 1,
+            "document_file_id": "cmpt0ymsm0000idor5fjx18ym"
+          },
+          {
+            "key": "sectors",
+            "href": "/sectors",
+            "label": "対応業種",
+            "is_enabled": true,
+            "sort_order": 2,
+            "document_file_id": "cmpt0ymsm0000idor5fjx18ym"
+          },
+          {
+            "key": "news",
+            "href": "/news",
+            "label": "ニュース",
+            "is_enabled": true,
+            "sort_order": 3,
+            "document_file_id": "cmpt0ymsm0000idor5fjx18ym"
+          }
+        ]
+      }
+    },
+    {
+      "variant": "japan",
+      "configKey": "line_business_contact",
+      "updatedAt": "2026-05-26T06:20:04.310Z",
+      "data": {
+        "documents": {
+          "curriculum_file_id": null,
+          "company_profile_file_id": null
+        },
+        "line_contact": {
+          "is_enabled": true,
+          "line_display_label": "LINE公式アカウント",
+          "default_message_template": "ハシモト・インド・トラストのウェブサイトからお問い合わせです。",
+          "line_official_account_id": "@hit-japan"
+        },
+        "social_links": {
+          "line": "https://line.me/R/ti/p/@hit-japan",
+          "youtube": "https://youtube.com/@hashimotoindotrust",
+          "linkedin": "https://linkedin.com/company/hashimoto-indo-trust",
+          "instagram": "https://instagram.com/hashimotoindotrust"
+        },
+        "business_info": {
+          "address": "インドネシア 西ジャワ州 Bandung Soreang ラヤ・ソレアン通り45番地 40911",
+          "map_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "phone_label": "+62 812-3456-7890（インドネシア本社）",
+          "language_support": [
+            "日本語",
+            "英語",
+            "インドネシア語"
+          ],
+          "operational_hours": "月〜金 08:00-17:00 WIB（UTC+7）"
+        },
+        "business_email": {
+          "email": "japan@hashimotoindotrust.co.id",
+          "is_enabled": true,
+          "default_subject_template": "インドネシア人材採用に関するお問い合わせ"
+        },
+        "business_contact_note": {
+          "short_note": "お問い合わせには通常1〜2営業日以内にご返答いたします。お急ぎの場合はLINEをご利用ください。"
+        }
+      }
+    }
+  ],
+  "pages": [
+    {
+      "variant": "indonesia",
+      "pageKey": "blog_page",
+      "title": "Blog",
+      "slug": "blog-page",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T05:37:06.608Z",
+      "hero": {
+        "media": null,
+        "headline": "Blog & Informasi Seputar Kerja di Jepang",
+        "subheadline": "Tips, pengalaman, dan berita terkini yang membantu kamu mempersiapkan diri untuk kerja di Jepang."
+      },
+      "sectionCounts": {
+        "hero": 3,
+        "filter_config": 2,
+        "offer_section": 1
+      },
+      "raw": {
+        "hero": {
+          "headline": "Blog & Informasi Seputar Kerja di Jepang",
+          "image_id": null,
+          "subheadline": "Tips, pengalaman, dan berita terkini yang membantu kamu mempersiapkan diri untuk kerja di Jepang."
+        },
+        "filter_config": {
+          "enable_tag_filter": true,
+          "enable_category_filter": true
+        },
+        "offer_section": {
+          "is_enabled": false
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "pageKey": "homepage",
+      "title": "Homepage",
+      "slug": "homepage",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-30T23:23:45.608Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpqm8y1a00009dae7zdzj6jo",
+          "fileName": "Gemini_Generated_Image_5y9m0d5y9m0d5y9m _1_.png",
+          "altText": null,
+          "width": 2752,
+          "height": 1536,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpqm8y1a00009dae7zdzj6jo.png"
+        },
+        "headline": "Wujudkan",
+        "subheadline": "Hashimoto Indo Trust hadir untuk membimbing kamu dari nol hingga siap kerja di Jepang. Program terstruktur, legal, dan didampingi instruktur berpengalaman.",
+        "primaryCta": "Konsultasi Gratis via WhatsApp",
+        "secondaryCta": "Lihat Program",
+        "secondaryHref": "http://hit-indonesia.lpk.local:3000/program"
+      },
+      "sectionCounts": {
+        "faqs": 4,
+        "hero": 8,
+        "stats": 4,
+        "steps": 5,
+        "latest_jobs": 2,
+        "trust_cards": 4,
+        "latest_blogs": 2,
+        "testimonials": 0,
+        "offer_section": 7,
+        "contact_section": 3,
+        "featured_programs": 3
+      },
+      "raw": {
+        "faqs": [
+          {
+            "answer": "Biaya program bervariasi tergantung jenis program yang dipilih. Program Magang dan Tokutei Ginou memiliki struktur biaya yang berbeda. Hubungi kami untuk informasi biaya terkini dan kemungkinan cicilan.",
+            "question": "Berapa biaya untuk mengikuti program HIT?",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "answer": "Tidak harus. Sebagian besar program kami menerima peserta dari level N5 (pemula). Kami akan melatih bahasa Jepang kamu dari dasar hingga level yang dibutuhkan.",
+            "question": "Apakah saya harus sudah bisa bahasa Jepang untuk mendaftar?",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "answer": "Rata-rata 8-12 bulan, termasuk pelatihan dan proses administrasi. Beberapa program ekspres bisa lebih cepat untuk kandidat yang sudah memenuhi syarat.",
+            "question": "Berapa lama proses dari pendaftaran hingga berangkat ke Jepang?",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "answer": "HIT memiliki tingkat penempatan 95% untuk lulusan yang memenuhi syarat keberangkatan. Kami bekerja keras memastikan setiap peserta mendapatkan penempatan di perusahaan yang sesuai.",
+            "question": "Apakah ada garansi penempatan kerja?",
+            "is_enabled": true,
+            "sort_order": 4
+          }
+        ],
+        "hero": {
+          "headline": "Wujudkan",
+          "media_id": "cmpqm8y1a00009dae7zdzj6jo",
+          "media_type": "image",
+          "subheadline": "Hashimoto Indo Trust hadir untuk membimbing kamu dari nol hingga siap kerja di Jepang. Program terstruktur, legal, dan didampingi instruktur berpengalaman.",
+          "primary_cta_label": "Konsultasi Gratis via WhatsApp",
+          "secondary_cta_href": "http://hit-indonesia.lpk.local:3000/program",
+          "secondary_cta_label": "Lihat Program",
+          "primary_cta_whatsapp_message": "Halo Hashimoto Indo Trust, saya tertarik dengan program pelatihan kerja ke Jepang. Boleh saya mendapatkan informasi lebih lanjut?"
+        },
+        "stats": [
+          {
+            "label": "Alumni Berhasil ke Jepang",
+            "value": "2.500+",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "Mitra Perusahaan di Jepang",
+            "value": "150+",
+            "icon_key": "building",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "Tahun Pengalaman",
+            "value": "10+",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "label": "Tingkat Penempatan",
+            "value": "95%",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 4
+          }
+        ],
+        "steps": [
+          {
+            "title": "Daftar & Konsultasi",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "Hubungi tim HIT via WhatsApp. Kami bantu kamu memilih program yang paling sesuai."
+          },
+          {
+            "title": "Ikuti Seleksi",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "Tes kemampuan dasar, wawancara, dan pemeriksaan kesehatan."
+          },
+          {
+            "title": "Pelatihan Intensif",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "Belajar bahasa Jepang N4-N3, skill teknis, dan budaya kerja Jepang selama 6-12 bulan."
+          },
+          {
+            "title": "Keberangkatan ke Jepang",
+            "icon_key": "plane",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": "HIT urus semua dokumen: visa, izin kerja, tiket, dan akomodasi awal."
+          },
+          {
+            "title": "Bekerja & Berkembang",
+            "icon_key": "building",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": "Mulai berkarir di perusahaan mitra Jepang dengan gaji dan kondisi kerja yang layak."
+          }
+        ],
+        "latest_jobs": {
+          "source": "latest_active",
+          "max_items": 5
+        },
+        "trust_cards": [
+          {
+            "headline": "Kurikulum Terstruktur",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "Materi pelatihan bahasa Jepang dan skill teknis dirancang bersama mitra perusahaan Jepang."
+          },
+          {
+            "headline": "Legal & Resmi",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "Terdaftar di Kemnaker RI, berizin resmi, dan semua program menggunakan jalur legal."
+          },
+          {
+            "headline": "Pendampingan Penuh",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "Dari pelatihan hingga adaptasi di Jepang, tim HIT selalu siap mendampingi kamu."
+          },
+          {
+            "headline": "Jaringan Luas di Jepang",
+            "icon_key": "plane",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": "Lebih dari 150 perusahaan mitra di berbagai kota Jepang siap menerima lulusan HIT."
+          }
+        ],
+        "latest_blogs": {
+          "source": "latest_published",
+          "max_items": 5
+        },
+        "testimonials": [],
+        "offer_section": {
+          "source": "active_featured_offer",
+          "is_enabled": true,
+          "manual_offer_id": "3534534",
+          "fallback_headline": "Promo Spesial Pendaftaran",
+          "fallback_image_id": "cmpmpg2gb0000laa7ix1jckmq",
+          "fallback_badge_label": "PROMO",
+          "fallback_description": "Daftar sekarang dan dapatkan potongan biaya administrasi."
+        },
+        "contact_section": {
+          "headline": "Siap Memulai Perjalananmu ke Jepang?",
+          "description": "Tim konsultan kami siap membantu menjawab semua pertanyaanmu. Hubungi kami sekarang dan jadwalkan konsultasi gratis.",
+          "use_global_contact": true
+        },
+        "featured_programs": {
+          "source": "featured",
+          "max_items": 3,
+          "manual_program_ids": []
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "pageKey": "job_page",
+      "title": "Info Job",
+      "slug": "job-page",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T05:37:06.495Z",
+      "hero": {
+        "media": {
+          "id": "cmpm6nbeg0003v5vrqa9vaxfe",
+          "fileName": "hero-job.png",
+          "altText": "Info Lowongan Terbaru",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nbeg0003v5vrqa9vaxfe.png"
+        },
+        "headline": "Lowongan Kerja Terbaru di Jepang",
+        "subheadline": "Update lowongan setiap minggu dari perusahaan mitra terpercaya di seluruh wilayah Jepang.",
+        "primaryCta": "Tanya Lowongan via WhatsApp"
+      },
+      "sectionCounts": {
+        "faq": 2,
+        "hero": 5,
+        "final_cta": 4,
+        "filter_config": 4
+      },
+      "raw": {
+        "faq": [
+          {
+            "answer": "Klik tombol WhatsApp pada lowongan yang kamu minati. Tim HIT akan memandu langkah selanjutnya termasuk tes seleksi dan persyaratan dokumen.",
+            "question": "Bagaimana cara melamar lowongan di sini?",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "answer": "Tidak ada biaya pendaftaran untuk melihat dan melamar lowongan. Biaya hanya dikenakan jika kamu resmi bergabung dalam program pelatihan.",
+            "question": "Apakah ada biaya untuk melamar?",
+            "is_enabled": true,
+            "sort_order": 2
+          }
+        ],
+        "hero": {
+          "headline": "Lowongan Kerja Terbaru di Jepang",
+          "image_id": "cmpm6nbeg0003v5vrqa9vaxfe",
+          "subheadline": "Update lowongan setiap minggu dari perusahaan mitra terpercaya di seluruh wilayah Jepang.",
+          "primary_cta_label": "Tanya Lowongan via WhatsApp",
+          "primary_cta_whatsapp_message": "Halo Hashimoto Indo Trust, saya ingin mengetahui lowongan kerja di Jepang yang tersedia saat ini."
+        },
+        "final_cta": {
+          "headline": "Tidak Menemukan Lowongan yang Cocok?",
+          "cta_label": "Daftarkan Profil via WhatsApp",
+          "description": "Daftarkan dirimu dan tim HIT akan menghubungimu saat ada lowongan yang sesuai profilmu.",
+          "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin mendaftarkan profil saya untuk dihubungi jika ada lowongan yang sesuai."
+        },
+        "filter_config": {
+          "enable_gender_filter": true,
+          "enable_job_type_filter": true,
+          "enable_language_filter": true,
+          "enable_job_field_filter": true
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "pageKey": "karir_page",
+      "title": "Karir",
+      "slug": "karir-page",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T05:37:06.823Z",
+      "hero": {
+        "media": {
+          "id": "cmpm6nc8s0005k9vawhsjsaqo",
+          "fileName": "hero-karir.png",
+          "altText": "Bergabunglah Bersama Kami",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nc8s0005k9vawhsjsaqo.png"
+        },
+        "headline": "Bergabung dengan Tim HIT",
+        "subheadline": "Kami mencari individu bersemangat yang ingin berkontribusi dalam mendorong perubahan positif bagi tenaga kerja Indonesia.",
+        "primaryCta": "Lamar via WhatsApp"
+      },
+      "sectionCounts": {
+        "faq": 1,
+        "hero": 5,
+        "final_cta": 4,
+        "filter_config": 3
+      },
+      "raw": {
+        "faq": [
+          {
+            "answer": "Tidak wajib. Kami menghargai semangat belajar dan kemampuan komunikasi yang baik. Pengalaman di bidang pendidikan, HR, atau pemasaran juga sangat relevan.",
+            "question": "Apakah perlu pengalaman di industri LPK untuk melamar?",
+            "is_enabled": true,
+            "sort_order": 1
+          }
+        ],
+        "hero": {
+          "headline": "Bergabung dengan Tim HIT",
+          "image_id": "cmpm6nc8s0005k9vawhsjsaqo",
+          "subheadline": "Kami mencari individu bersemangat yang ingin berkontribusi dalam mendorong perubahan positif bagi tenaga kerja Indonesia.",
+          "primary_cta_label": "Lamar via WhatsApp",
+          "primary_cta_whatsapp_message": "Halo Hashimoto Indo Trust, saya tertarik untuk bergabung sebagai tim HIT."
+        },
+        "final_cta": {
+          "headline": "Tidak Ada Posisi yang Cocok Saat Ini?",
+          "cta_label": "Kirim CV via WhatsApp",
+          "description": "Kirim CV kamu dan tim HR kami akan menghubungi saat ada posisi yang sesuai.",
+          "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin mengirimkan CV sebagai kandidat spekulatif untuk posisi di HIT."
+        },
+        "filter_config": {
+          "enable_department_filter": true,
+          "enable_employment_type_filter": true,
+          "enable_work_arrangement_filter": true
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "pageKey": "program_page",
+      "title": "Program",
+      "slug": "program-page",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-29T08:07:11.438Z",
+      "hero": {
+        "media": {
+          "id": "cmpqm8y1a00009dae7zdzj6jo",
+          "fileName": "Gemini_Generated_Image_5y9m0d5y9m0d5y9m _1_.png",
+          "altText": null,
+          "width": 2752,
+          "height": 1536,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpqm8y1a00009dae7zdzj6jo.png"
+        },
+        "headline": "Program Pelatihan Kerja ke Jepang",
+        "subheadline": "Temukan program yang paling sesuai dengan latar belakang dan impianmu. Semua program HIT resmi, terstruktur, dan didampingi profesional.",
+        "primaryCta": "Tanya Program via WhatsApp",
+        "secondaryCta": "Lihat Semua Program"
+      },
+      "sectionCounts": {
+        "faq": 2,
+        "hero": 6,
+        "stats": 3,
+        "final_cta": 4,
+        "filter_config": 4
+      },
+      "raw": {
+        "faq": [
+          {
+            "answer": "Program Magang (Ginou Jisshu) cocok untuk kamu yang baru pertama ke Jepang, durasi 3-5 tahun. Tokutei Ginou (Specified Skilled Worker) memberikan lebih banyak kebebasan dan fleksibilitas, ideal untuk yang sudah punya pengalaman kerja.",
+            "question": "Apa perbedaan Program Magang dan Tokutei Ginou?",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "answer": "Ya, ada tes kemampuan dasar, tes kesehatan, dan wawancara. Tidak perlu khawatir — tim HIT akan membantu kamu mempersiapkan diri.",
+            "question": "Apakah ada tes masuk yang harus saya ikuti?",
+            "is_enabled": true,
+            "sort_order": 2
+          }
+        ],
+        "hero": {
+          "headline": "Program Pelatihan Kerja ke Jepang",
+          "image_id": "cmpqm8y1a00009dae7zdzj6jo",
+          "subheadline": "Temukan program yang paling sesuai dengan latar belakang dan impianmu. Semua program HIT resmi, terstruktur, dan didampingi profesional.",
+          "primary_cta_label": "Tanya Program via WhatsApp",
+          "secondary_cta_label": "Lihat Semua Program",
+          "primary_cta_whatsapp_message": "Halo Hashimoto Indo Trust, saya ingin mengetahui lebih lanjut tentang program pelatihan kerja ke Jepang."
+        },
+        "stats": [
+          {
+            "label": "Pilihan Program Unggulan",
+            "value": "4 Program",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "Pendaftar Setiap Tahun",
+            "value": "500+",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "Level Bahasa Jepang Tercapai",
+            "value": "N4-N2",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 3
+          }
+        ],
+        "final_cta": {
+          "headline": "Belum Yakin Program Mana yang Tepat?",
+          "cta_label": "Konsultasi Gratis Sekarang",
+          "description": "Konsultasikan kebutuhan dan tujuanmu dengan tim ahli HIT. Gratis, tanpa komitmen.",
+          "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin konsultasi untuk memilih program yang tepat untuk saya."
+        },
+        "filter_config": {
+          "enable_gender_filter": true,
+          "enable_language_filter": true,
+          "enable_education_filter": true,
+          "enable_program_type_filter": true
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "pageKey": "task8_draft_page",
+      "title": "TASK 8 DRAFT PAGE",
+      "slug": "task8-draft-page",
+      "status": "DRAFT",
+      "updatedAt": "2026-05-29T11:48:12.628Z",
+      "hero": {
+        "media": null,
+        "headline": "TASK 8 DRAFT PAGE"
+      },
+      "sectionCounts": {
+        "hero": 1
+      },
+      "raw": {
+        "hero": {
+          "headline": "TASK 8 DRAFT PAGE"
+        }
+      }
+    },
+    {
+      "variant": "indonesia",
+      "pageKey": "tentang_kami",
+      "title": "Tentang Kami",
+      "slug": "tentang-kami",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T05:37:06.714Z",
+      "hero": {
+        "media": {
+          "id": "cmpm6nbs40004089sjbdra8z2",
+          "fileName": "hero-tentang-kami.png",
+          "altText": "Tentang Hashimoto Indo Trust",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nbs40004089sjbdra8z2.png"
+        },
+        "headline": "Tentang Hashimoto Indo Trust",
+        "subheadline": "Lebih dari 10 tahun mendampingi putra-putri terbaik Indonesia meraih karir internasional di Jepang."
+      },
+      "sectionCounts": {
+        "hero": 3,
+        "story": 4,
+        "values": 4,
+        "legalities": 2,
+        "proof_stats": 4,
+        "team_members": 3,
+        "vision_mission": 4,
+        "contact_section": 3
+      },
+      "raw": {
+        "hero": {
+          "headline": "Tentang Hashimoto Indo Trust",
+          "image_id": "cmpm6nbs40004089sjbdra8z2",
+          "subheadline": "Lebih dari 10 tahun mendampingi putra-putri terbaik Indonesia meraih karir internasional di Jepang."
+        },
+        "story": {
+          "body": "Hashimoto Indo Trust (HIT) didirikan pada tahun 2015 oleh Bapak Hiroshi Shimizu bersama tim pendiri yang percaya bahwa setiap anak muda Indonesia berhak mendapatkan kesempatan berkarir di panggung internasional. Bermula dari kantor kecil di Soreang, Bandung, HIT kini telah berkembang menjadi salah satu LPK (Lembaga Pelatihan Kerja) terpercaya yang melayani ratusan peserta setiap tahunnya. Kami percaya bahwa bekerja di Jepang bukan sekadar tentang gaji — melainkan tentang pertumbuhan karakter, disiplin, dan pengalaman hidup yang tidak ternilai.",
+          "headline": "Dimulai dari Sebuah Mimpi Sederhana",
+          "image_id": "cmpm6nbs40004089sjbdra8z2",
+          "eyebrow_label": "Kisah Kami"
+        },
+        "values": [
+          {
+            "headline": "Integritas",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "Kami berkomitmen untuk transparan dan jujur dalam setiap proses, mulai dari rekrutmen hingga penempatan."
+          },
+          {
+            "headline": "Kepedulian",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "Setiap peserta adalah individu unik yang berhak mendapat perhatian penuh dari tim kami."
+          },
+          {
+            "headline": "Profesionalisme",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "Standar operasional kami mengacu pada best practice industri LPK internasional."
+          },
+          {
+            "headline": "Kolaborasi",
+            "icon_key": "plane",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": "Kesuksesan peserta adalah hasil kerja tim — kami, peserta, dan keluarga, bekerja bersama."
+          }
+        ],
+        "legalities": [
+          {
+            "title": "Izin Operasional LPK",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "Terdaftar dan berizin resmi di Kementerian Ketenagakerjaan Republik Indonesia.",
+            "document_url": null,
+            "document_label": null
+          },
+          {
+            "title": "Anggota APJATI",
+            "icon_key": "building",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "Anggota aktif Asosiasi Perusahaan Jasa Tenaga Kerja Indonesia.",
+            "document_url": null,
+            "document_label": null
+          }
+        ],
+        "proof_stats": [
+          {
+            "label": "Alumni di Jepang",
+            "value": "2.500+",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "Perusahaan Mitra",
+            "value": "150+",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "Tahun Berpengalaman",
+            "value": "10+",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "label": "Tingkat Penempatan",
+            "value": "95%",
+            "is_enabled": true,
+            "sort_order": 4
+          }
+        ],
+        "team_members": [
+          {
+            "bio": "Pendiri HIT dengan pengalaman 20 tahun di industri penempatan tenaga kerja Indonesia-Jepang.",
+            "name": "Hiroshi Shimizu",
+            "role": "Direktur Utama",
+            "image_id": "cmpm6nk0a000rzdy23ascnkga",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "bio": "Lulusan Universitas Pendidikan Indonesia, spesialis kurikulum bahasa Jepang dan persiapan budaya kerja.",
+            "name": "Sari Anggraini",
+            "role": "Manajer Program & Pelatihan",
+            "image_id": "cmpm6nkea000spvc31wndterv",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "bio": "Berpengalaman 8 tahun mengelola hubungan dengan 150+ perusahaan mitra di Jepang.",
+            "name": "Budi Wijaya",
+            "role": "Manajer Penempatan",
+            "image_id": "cmpm6nkme000t6wrgwuivrcd4",
+            "is_enabled": true,
+            "sort_order": 3
+          }
+        ],
+        "vision_mission": {
+          "vision_headline": "Visi",
+          "mission_headline": "Misi",
+          "vision_description": "Menjadi lembaga pelatihan kerja terdepan di Indonesia yang menghasilkan tenaga kerja profesional, berkarakter, dan berdaya saing global.",
+          "mission_description": "1. Menyelenggarakan pelatihan bahasa dan keahlian teknis berkualitas tinggi.\n2. Membangun jaringan kemitraan yang kuat dengan perusahaan Jepang terpercaya.\n3. Mendampingi peserta dari masa pelatihan hingga keberhasilan di tempat kerja.\n4. Berkontribusi pada peningkatan kesejahteraan keluarga Indonesia."
+        },
+        "contact_section": {
+          "headline": "Ada Pertanyaan Tentang HIT?",
+          "description": "Kami terbuka untuk menerima pertanyaan, kunjungan, dan kolaborasi.",
+          "use_global_contact": true
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "contact",
+      "title": "お問い合わせ",
+      "slug": "contact",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:05.296Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpm6nf0g000alu7so0dscerq",
+          "fileName": "hero-japan-contact.png",
+          "altText": "お問い合わせ",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nf0g000alu7so0dscerq.png"
+        },
+        "headline": "お問い合わせ",
+        "subheadline": "採用に関するご質問・ご相談は、LINEまたはメールでお気軽にどうぞ。通常1〜2営業日以内にご返答いたします。",
+        "eyebrow": "お問い合わせ"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "final_cta": 6,
+        "inquiry_flow": 4,
+        "business_info": 5,
+        "contact_channels": 5
+      },
+      "raw": {
+        "hero": {
+          "headline": "お問い合わせ",
+          "media_id": "cmpm6nf0g000alu7so0dscerq",
+          "media_type": "image",
+          "subheadline": "採用に関するご質問・ご相談は、LINEまたはメールでお気軽にどうぞ。通常1〜2営業日以内にご返答いたします。",
+          "eyebrow_label": "お問い合わせ"
+        },
+        "final_cta": {
+          "headline": "まずはLINEで気軽にご相談を",
+          "description": "難しいことは何もありません。「採用を考えている」その一言からで大丈夫です。",
+          "primary_cta_label": "LINEで友達追加",
+          "secondary_cta_label": "メールで問い合わせる",
+          "secondary_document_file_id": null,
+          "primary_line_message_template": "お問い合わせページから連絡しました。インドネシア人材の採用について相談したいです。"
+        },
+        "inquiry_flow": [
+          {
+            "title": "LINEまたはメールでご連絡",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "LINEに友達追加いただくか、メールにてお問い合わせください。"
+          },
+          {
+            "title": "担当者よりご返答",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "1〜2営業日以内に担当者よりご連絡差し上げます。"
+          },
+          {
+            "title": "採用プランのご提案",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "御社のニーズをお聞きし、最適な採用プランをご提案いたします。"
+          },
+          {
+            "title": "候補者のご紹介・面接",
+            "icon_key": "plane",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": "条件に合う候補者をご紹介し、オンライン面接を実施します。"
+          }
+        ],
+        "business_info": {
+          "address": "インドネシア 西ジャワ州 Bandung Soreang ラヤ・ソレアン通り45番地 40911",
+          "map_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "map_embed_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63384.09!2d107.52!3d-7.02",
+          "business_hours": "月〜金 08:00-17:00 WIB（UTC+7）/ 10:00-19:00 JST",
+          "language_support": [
+            "日本語",
+            "英語",
+            "インドネシア語"
+          ]
+        },
+        "contact_channels": {
+          "business_email": "japan@hashimotoindotrust.co.id",
+          "line_cta_label": "LINEでお問い合わせ",
+          "line_message_template": "ハシモト・インド・トラストのウェブサイトからお問い合わせです。",
+          "email_subject_template": "インドネシア人材採用に関するお問い合わせ",
+          "line_official_account_id": "@hit-japan"
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "homepage",
+      "title": "ホームページ",
+      "slug": "homepage",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-30T23:24:57.903Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpqm8y1a00009dae7zdzj6jo",
+          "fileName": "Gemini_Generated_Image_5y9m0d5y9m0d5y9m _1_.png",
+          "altText": null,
+          "width": 2752,
+          "height": 1536,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpqm8y1a00009dae7zdzj6jo.png"
+        },
+        "headline": "インドネシア人材で、貴社の未来を共に切り拓きます",
+        "subheadline": "ハシモト・インド・トラストは、10年以上にわたりインドネシアの優秀な人材を厳選・育成し、日本の企業様へお届けしてきた専門機関です。",
+        "eyebrow": "信頼と実績のインドネシア人材パートナー"
+      },
+      "sectionCounts": {
+        "hero": 6,
+        "stats": 4,
+        "final_cta": 6,
+        "legalities": 0,
+        "latest_news": 2,
+        "achievements": 3,
+        "why_us_cards": 4,
+        "why_indonesia_section": 7
+      },
+      "raw": {
+        "hero": {
+          "headline": "インドネシア人材で、貴社の未来を共に切り拓きます",
+          "media_id": "cmpqm8y1a00009dae7zdzj6jo",
+          "media_type": "image",
+          "subheadline": "ハシモト・インド・トラストは、10年以上にわたりインドネシアの優秀な人材を厳選・育成し、日本の企業様へお届けしてきた専門機関です。",
+          "eyebrow_label": "信頼と実績のインドネシア人材パートナー",
+          "slider_media_ids": []
+        },
+        "stats": [
+          {
+            "label": "累計派遣実績",
+            "value": "2,500名以上",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "提携日本企業",
+            "value": "150社以上",
+            "icon_key": "building",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "実績と信頼",
+            "value": "10年以上",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "label": "定着率",
+            "value": "95%",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 4
+          }
+        ],
+        "final_cta": {
+          "headline": "インドネシア人材の採用について、まずはご相談ください",
+          "description": "お客様のニーズに合わせた最適な人材採用プランをご提案いたします。LINEまたはメールでお気軽にご連絡ください。",
+          "secondary_href": "http://hit-japan.lpk.local:3000/contact",
+          "primary_cta_label": "LINEで相談する",
+          "secondary_cta_label": "メールで問い合わせる",
+          "primary_line_message_template": "ハシモト・インド・トラストのウェブサイトからお問い合わせです。インドネシア人材の採用についてご相談したいと思います。"
+        },
+        "legalities": [],
+        "latest_news": {
+          "source": "latest_published",
+          "max_items": 4
+        },
+        "achievements": [
+          {
+            "title": "技能実習・特定技能対応",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "技能実習（外国人技能実習機構登録）から特定技能まで、各在留資格に対応した人材を提供いたします。",
+            "document_url": "https://docs.google.com/document/u/0/",
+            "document_label": "https://docs.google.com/document/u/0/"
+          },
+          {
+            "title": "厳格な選考プロセス",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "学力テスト、健康診断、面接を経た厳選された候補者のみをご紹介します。",
+            "document_url": "https://docs.google.com/document/u/0/",
+            "document_label": "https://docs.google.com/document/u/0/"
+          },
+          {
+            "title": "充実した日本語研修",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "JLPT N4〜N3を目標とした6〜12ヶ月の集中日本語研修を実施しています。",
+            "document_url": "https://docs.google.com/document/u/0/",
+            "document_label": "https://docs.google.com/document/u/0/"
+          }
+        ],
+        "why_us_cards": [
+          {
+            "key": "about",
+            "href": "/about",
+            "title": "10年以上の実績と信頼",
+            "icon_key": "building",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "2015年の創業以来、透明性と誠実さを大切に、日本とインドネシアの架け橋として歩んできました。"
+          },
+          {
+            "key": "recruitment_network",
+            "href": "/recruitment-network",
+            "title": "広域採用ネットワーク",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "インドネシア全土の学校・職業訓練校と連携し、優秀な候補者を幅広く集めています。"
+          },
+          {
+            "key": "sectors",
+            "href": "/sectors",
+            "title": "多様な業種への対応",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "製造業から介護、農業、食品加工まで、幅広い業種に対応した人材をご用意できます。"
+          },
+          {
+            "key": "training_method",
+            "href": "/training-method",
+            "title": "体系的な研修プログラム",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": "日本語教育から職業訓練、ビジネスマナーまで、実践的なカリキュラムで人材を育成しています。"
+          }
+        ],
+        "why_indonesia_section": {
+          "headline": "インドネシアは、日本の未来の労働力パートナーです",
+          "image_id": "cmpm6ne2l0008uwtttwvlmhwr",
+          "cta_label": "人材プロフィールを見る",
+          "description": "インドネシアは2億7千万人を超える人口を持つ東南アジア最大の国。若く勤勉な労働力が豊富であり、日本の職場文化との親和性も高いと評価されています。",
+          "target_page": "candidate_profile",
+          "bullet_items": [
+            "平均年齢29歳の若い労働力",
+            "勤勉で礼儀正しい国民性",
+            "日本語学習への高いモチベーション",
+            "既に多くの分野で活躍する実績"
+          ],
+          "eyebrow_label": "なぜインドネシア人材なのか"
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "jaringan_rekrutmen",
+      "title": "採用ネットワーク",
+      "slug": "recruitment-network",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:04.978Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpm6nejy0009hbnts4k52frd",
+          "fileName": "hero-japan-network.png",
+          "altText": "採用ネットワーク",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nejy0009hbnts4k52frd.png"
+        },
+        "headline": "インドネシア全土をカバーする採用ネットワーク",
+        "subheadline": "ジャカルタからスラウェシまで、HITの採用ネットワークは全国に広がっています。",
+        "eyebrow": "採用ネットワーク"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "final_cta": 6,
+        "proof_stats": 3,
+        "screening_flow": 5,
+        "coverage_regions": 3,
+        "network_overview": 3
+      },
+      "raw": {
+        "hero": {
+          "headline": "インドネシア全土をカバーする採用ネットワーク",
+          "media_id": "cmpm6nejy0009hbnts4k52frd",
+          "media_type": "image",
+          "subheadline": "ジャカルタからスラウェシまで、HITの採用ネットワークは全国に広がっています。",
+          "eyebrow_label": "採用ネットワーク"
+        },
+        "final_cta": {
+          "headline": "採用ネットワークについて詳しく聞きたい方へ",
+          "description": "御社の採用条件に合った候補者の探し方について、具体的にご説明いたします。",
+          "secondary_href": "/contact",
+          "primary_cta_label": "LINEで相談する",
+          "secondary_cta_label": "お問い合わせ",
+          "primary_line_message_template": "採用ネットワークについて詳しく教えていただけますか。"
+        },
+        "proof_stats": [
+          {
+            "label": "カバーエリア",
+            "value": "34州",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "提携学校・訓練校",
+            "value": "200校以上",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "候補者エントリー数",
+            "value": "年間500名以上",
+            "is_enabled": true,
+            "sort_order": 3
+          }
+        ],
+        "screening_flow": [
+          {
+            "title": "書類審査",
+            "is_enabled": true,
+            "sort_order": 1,
+            "step_label": "ステップ1",
+            "description": "履歴書、学歴証明、健康診断書の確認。"
+          },
+          {
+            "title": "基礎学力テスト",
+            "is_enabled": true,
+            "sort_order": 2,
+            "step_label": "ステップ2",
+            "description": "読み書き、計算、日本語基礎テストを実施。"
+          },
+          {
+            "title": "面接・適性評価",
+            "is_enabled": true,
+            "sort_order": 3,
+            "step_label": "ステップ3",
+            "description": "日本語面接（またはインドネシア語）と性格適性検査。"
+          },
+          {
+            "title": "健康診断",
+            "is_enabled": true,
+            "sort_order": 4,
+            "step_label": "ステップ4",
+            "description": "指定医療機関での精密健康診断。"
+          },
+          {
+            "title": "企業マッチング",
+            "is_enabled": true,
+            "sort_order": 5,
+            "step_label": "ステップ5",
+            "description": "候補者のスキルと御社のニーズを照合し最適なマッチングを実施。"
+          }
+        ],
+        "coverage_regions": [
+          {
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "インドネシア最大の人口集積地。多様なスキルを持つ候補者が豊富。",
+            "region_name": "ジャワ島（西ジャワ・中ジャワ・東ジャワ）"
+          },
+          {
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "農業・プランテーション経験者が多く、体力と忍耐力に優れた候補者が多い地域。",
+            "region_name": "スマトラ島"
+          },
+          {
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "地方の職業訓練学校と連携した採用チャンネルを持つ。",
+            "region_name": "スラウェシ・カリマンタン"
+          }
+        ],
+        "network_overview": {
+          "headline": "インドネシア全土からの厳選採用",
+          "description": "HITはジャワ島の都市部だけでなく、スマトラ、スラウェシ、カリマンタンなど全国から優秀な候補者を採用しています。地方出身の候補者は特に忍耐力と適応力が高く、日本の職場環境で長期定着する傾向があります。",
+          "map_image_id": null
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "metode_pelatihan",
+      "title": "研修方法",
+      "slug": "training-method",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:04.761Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpm6ndjs0007mm0vzefcambb",
+          "fileName": "hero-japan-training.png",
+          "altText": "研修プログラム",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ndjs0007mm0vzefcambb.png"
+        },
+        "headline": "研修プログラムの詳細",
+        "subheadline": "単なる語学研修にとどまらない、実践的かつ体系的な育成プログラムをご紹介します。",
+        "eyebrow": "HIT研修メソッド"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "final_cta": 6,
+        "training_flow": 4,
+        "curriculum_areas": 2,
+        "training_pillars": 4
+      },
+      "raw": {
+        "hero": {
+          "headline": "研修プログラムの詳細",
+          "media_id": "cmpm6ndjs0007mm0vzefcambb",
+          "media_type": "image",
+          "subheadline": "単なる語学研修にとどまらない、実践的かつ体系的な育成プログラムをご紹介します。",
+          "eyebrow_label": "HIT研修メソッド"
+        },
+        "final_cta": {
+          "headline": "研修プログラムの詳細資料をご希望の方へ",
+          "description": "カリキュラムの詳細や研修施設の写真をまとめた資料をお送りすることができます。",
+          "secondary_href": "/contact",
+          "primary_cta_label": "LINEで資料請求",
+          "secondary_cta_label": "お問い合わせ",
+          "primary_line_message_template": "研修プログラムの詳細資料を送っていただけますか。"
+        },
+        "training_flow": [
+          {
+            "title": "日本語基礎・生活文化",
+            "is_enabled": true,
+            "sort_order": 1,
+            "step_label": "第1段階（1〜3ヶ月）",
+            "description": "ひらがな・カタカナ・基礎会話から始め、日常生活に必要な日本語力を養成します。"
+          },
+          {
+            "title": "職業日本語・業種別研修",
+            "is_enabled": true,
+            "sort_order": 2,
+            "step_label": "第2段階（4〜6ヶ月）",
+            "description": "職場で使う専門用語と実践的な業種別スキルを集中的に習得します。"
+          },
+          {
+            "title": "総合評価・模擬訓練",
+            "is_enabled": true,
+            "sort_order": 3,
+            "step_label": "第3段階（7〜9ヶ月）",
+            "description": "JLPT模擬試験、模擬職場実習、最終評価を実施。渡航前の最終調整を行います。"
+          },
+          {
+            "title": "フォローアップサポート",
+            "is_enabled": true,
+            "sort_order": 4,
+            "step_label": "第4段階（渡航後）",
+            "description": "渡航後3〜6ヶ月間、定期的なヒアリングとサポートを実施します。"
+          }
+        ],
+        "curriculum_areas": [
+          {
+            "title": "JLPT N5〜N3対策",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "読解・文法・聴解・語彙の4技能を体系的に学習。"
+          },
+          {
+            "title": "ビジネスコミュニケーション",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "報告・連絡・相談、電話応対、挨拶など実践的コミュニケーション。"
+          }
+        ],
+        "training_pillars": [
+          {
+            "title": "日本語教育",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "JLPT N5からN3を目標とした段階的な日本語カリキュラム。ネイティブ講師と経験豊富なインドネシア人講師が担当。"
+          },
+          {
+            "title": "職業技術訓練",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "配属先の業種に合わせた実践的な技術訓練。製造業、介護、農業など各分野の専門トレーニング。"
+          },
+          {
+            "title": "日本のビジネスマナー",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "報・連・相、時間厳守、チームワークなど日本の職場で求められるマナーと姿勢を徹底教育。"
+          },
+          {
+            "title": "生活サポート研修",
+            "icon_key": "building",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": "銀行口座開設、医療機関の利用、ゴミ分別など日本での生活に必要な実践的知識を学びます。"
+          }
+        ]
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "news_page",
+      "title": "ニュース & お知らせ",
+      "slug": "news",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:05.190Z",
+      "hero": {
+        "mediaType": "image",
+        "media": null,
+        "headline": "ニュース & お知らせ",
+        "subheadline": "HITからの最新情報、イベント、パートナー企業訪問レポートをお届けします。",
+        "eyebrow": "最新情報"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "final_cta": 6,
+        "filter_config": 2
+      },
+      "raw": {
+        "hero": {
+          "headline": "ニュース & お知らせ",
+          "media_id": null,
+          "media_type": "image",
+          "subheadline": "HITからの最新情報、イベント、パートナー企業訪問レポートをお届けします。",
+          "eyebrow_label": "最新情報"
+        },
+        "final_cta": {
+          "headline": "最新情報をメールで受け取りたい方へ",
+          "description": "新しいニュースや採用情報をいち早くお届けします。LINEで友達追加ください。",
+          "secondary_href": "/contact",
+          "primary_cta_label": "LINEで友達追加",
+          "secondary_cta_label": "お問い合わせ",
+          "primary_line_message_template": "ニュースページを拝見しました。LINEで最新情報を受け取りたいです。"
+        },
+        "filter_config": {
+          "enable_tag_filter": true,
+          "enable_category_filter": true
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "profil_kandidat",
+      "title": "人材プロフィール",
+      "slug": "candidate-profile",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:04.869Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpm6ne2l0008uwtttwvlmhwr",
+          "fileName": "hero-japan-candidate.png",
+          "altText": "人材プロフィール",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ne2l0008uwtttwvlmhwr.png"
+        },
+        "headline": "HITが送り出す人材のプロフィール",
+        "subheadline": "私たちが育成する候補者は、技術と人間性を兼ね備えた即戦力です。",
+        "eyebrow": "人材プロフィール"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "final_cta": 6,
+        "proof_stats": 3,
+        "why_indonesia": 4,
+        "supported_pathways": 2,
+        "candidate_strengths": 3
+      },
+      "raw": {
+        "hero": {
+          "headline": "HITが送り出す人材のプロフィール",
+          "media_id": "cmpm6ne2l0008uwtttwvlmhwr",
+          "media_type": "image",
+          "subheadline": "私たちが育成する候補者は、技術と人間性を兼ね備えた即戦力です。",
+          "eyebrow_label": "人材プロフィール"
+        },
+        "final_cta": {
+          "headline": "候補者のご紹介を希望される方へ",
+          "description": "現在の採用ニーズをお聞かせください。最適な候補者をご紹介いたします。",
+          "secondary_href": "/contact",
+          "primary_cta_label": "LINEで採用相談",
+          "secondary_cta_label": "お問い合わせ",
+          "primary_line_message_template": "人材プロフィールのページを見ました。候補者のご紹介をお願いしたいのですが。"
+        },
+        "proof_stats": [
+          {
+            "label": "日本語レベル",
+            "value": "N4以上",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "研修期間",
+            "value": "6〜12ヶ月",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "平均年齢層",
+            "value": "18〜35歳",
+            "is_enabled": true,
+            "sort_order": 3
+          }
+        ],
+        "why_indonesia": {
+          "headline": "なぜインドネシア人材が選ばれるのか",
+          "image_id": "cmpm6ne2l0008uwtttwvlmhwr",
+          "description": "インドネシアは東南アジア最大の人口を持ち、若く活力ある労働力が豊富です。宗教的・文化的多様性の中で育った適応力の高さと、日本の「ものづくり精神」に通じる勤勉さが評価されています。",
+          "bullet_items": [
+            "平均年齢29歳の若いエネルギーと学習意欲",
+            "日本語能力検定（JLPT）への積極的な取り組み",
+            "チームワークを重視する協調性",
+            "既に多くの業種で活躍中の実績"
+          ]
+        },
+        "supported_pathways": [
+          {
+            "title": "技能実習制度",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "3〜5年の技能実習。製造、建設、農業など幅広い業種に対応。",
+            "pathway_label": "技能実習（外国人技能実習）"
+          },
+          {
+            "title": "特定技能制度（1号・2号）",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "より高い自由度と長期就労を可能にする在留資格。14業種対応。",
+            "pathway_label": "特定技能"
+          }
+        ],
+        "candidate_strengths": [
+          {
+            "title": "高い日本語学習意欲",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "自発的に日本語を学ぶ候補者が多く、研修中の習得スピードが早い傾向があります。"
+          },
+          {
+            "title": "チームワーク重視",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "集団での作業や協調性が求められる環境で高いパフォーマンスを発揮します。"
+          },
+          {
+            "title": "勤勉な労働観",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "時間を守り、指示に忠実で、向上心を持って業務に取り組む姿勢が評価されています。"
+          }
+        ]
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "sector_page",
+      "title": "対応業種一覧",
+      "slug": "sectors",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:05.084Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpm6nah20001tovmjatnfpli",
+          "fileName": "hero-japan-main.png",
+          "altText": "インドネシア人材で、貴社の成長を支援します",
+          "width": 1200,
+          "height": 630,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nah20001tovmjatnfpli.png"
+        },
+        "headline": "対応業種一覧",
+        "subheadline": "HITは製造業から介護まで、多様な業種に対応したインドネシア人材をご用意しています。",
+        "eyebrow": "業種別対応"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "final_cta": 6,
+        "filter_config": 1
+      },
+      "raw": {
+        "hero": {
+          "headline": "対応業種一覧",
+          "media_id": "cmpm6nah20001tovmjatnfpli",
+          "media_type": "image",
+          "subheadline": "HITは製造業から介護まで、多様な業種に対応したインドネシア人材をご用意しています。",
+          "eyebrow_label": "業種別対応"
+        },
+        "final_cta": {
+          "headline": "ご希望の業種が見つかりましたか？",
+          "description": "具体的な採用条件や人数規模についてお気軽にご相談ください。",
+          "primary_cta_label": "LINEでお問い合わせ",
+          "secondary_cta_label": "メールで問い合わせ",
+          "secondary_document_file_id": null,
+          "primary_line_message_template": "業種ページを拝見しました。採用についてご相談させてください。"
+        },
+        "filter_config": {
+          "enable_sector_category_filter": true
+        }
+      }
+    },
+    {
+      "variant": "japan",
+      "pageKey": "tentang_kami",
+      "title": "会社概要",
+      "slug": "about",
+      "status": "PUBLISHED",
+      "updatedAt": "2026-05-26T06:20:04.649Z",
+      "hero": {
+        "mediaType": "image",
+        "media": {
+          "id": "cmpm6ncry0006llqhunmazvse",
+          "fileName": "hero-japan-about.png",
+          "altText": "会社概要",
+          "width": 1200,
+          "height": 500,
+          "mimeType": "image/png",
+          "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ncry0006llqhunmazvse.png"
+        },
+        "headline": "会社概要",
+        "subheadline": "10年以上の経験と実績を持つ、インドネシア人材紹介の専門機関",
+        "eyebrow": "ハシモト・インド・トラストについて"
+      },
+      "sectionCounts": {
+        "hero": 5,
+        "story": 4,
+        "values": 3,
+        "timeline": 5,
+        "final_cta": 6,
+        "proof_stats": 4,
+        "team_members": 2,
+        "vision_mission": 4
+      },
+      "raw": {
+        "hero": {
+          "headline": "会社概要",
+          "media_id": "cmpm6ncry0006llqhunmazvse",
+          "media_type": "image",
+          "subheadline": "10年以上の経験と実績を持つ、インドネシア人材紹介の専門機関",
+          "eyebrow_label": "ハシモト・インド・トラストについて"
+        },
+        "story": {
+          "body": "ハシモト・インド・トラスト（HIT）は、2015年にインドネシア・Bandungで設立されました。創業者の清水浩志は、インドネシアの優秀な若者が適切な支援と機会さえあれば、国際的な舞台で大きく活躍できると確信し、この事業を立ち上げました。10年以上にわたり、私たちは単なる人材紹介会社ではなく、候補者の人生を変えるパートナーとして歩んできました。",
+          "headline": "インドネシアと日本を繋ぐ、信頼の架け橋として",
+          "image_id": "cmpm6ncry0006llqhunmazvse",
+          "eyebrow_label": "設立の経緯"
+        },
+        "values": [
+          {
+            "title": "誠実さ（誠実）",
+            "icon_key": "briefcase",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": "候補者・企業・社会に対して、常に正直で透明性のある対応を貫きます。"
+          },
+          {
+            "title": "人を大切に（人材育成）",
+            "icon_key": "users",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": "候補者一人ひとりの可能性を信じ、その成長を全力でサポートします。"
+          },
+          {
+            "title": "品質へのこだわり（品質）",
+            "icon_key": "graduation_cap",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": "研修品質と人材の質において、業界最高水準を目指し続けます。"
+          }
+        ],
+        "timeline": [
+          {
+            "title": "ハシモト・インド・トラスト設立",
+            "is_enabled": true,
+            "sort_order": 1,
+            "year_label": "2015",
+            "description": "インドネシア・Bandungにて創業。最初の10名を日本へ派遣。"
+          },
+          {
+            "title": "提携企業50社達成",
+            "is_enabled": true,
+            "sort_order": 2,
+            "year_label": "2017",
+            "description": "製造業を中心に日本全国50社との提携を達成。"
+          },
+          {
+            "title": "特定技能制度対応開始",
+            "is_enabled": true,
+            "sort_order": 3,
+            "year_label": "2020",
+            "description": "2019年に施行された特定技能制度への対応を開始。"
+          },
+          {
+            "title": "累計1,000名派遣達成",
+            "is_enabled": true,
+            "sort_order": 4,
+            "year_label": "2023",
+            "description": "設立8年で累計1,000名以上を日本企業へ派遣。"
+          },
+          {
+            "title": "2,500名突破・更なる展開へ",
+            "is_enabled": true,
+            "sort_order": 5,
+            "year_label": "2026",
+            "description": "提携150社、累計2,500名派遣を達成。介護・農業分野をさらに拡充。"
+          }
+        ],
+        "final_cta": {
+          "headline": "当社についてさらに詳しく知りたい方へ",
+          "description": "会社案内や詳細な実績データをお送りすることも可能です。お気軽にご連絡ください。",
+          "secondary_href": "/contact",
+          "primary_cta_label": "LINEでお問い合わせ",
+          "secondary_cta_label": "お問い合わせフォームへ",
+          "primary_line_message_template": "会社概要ページを拝見しました。詳しい資料をお送りいただけますか。"
+        },
+        "proof_stats": [
+          {
+            "label": "累計派遣実績",
+            "value": "2,500名以上",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "label": "提携企業",
+            "value": "150社以上",
+            "is_enabled": true,
+            "sort_order": 2
+          },
+          {
+            "label": "設立年",
+            "value": "2015年",
+            "is_enabled": true,
+            "sort_order": 3
+          },
+          {
+            "label": "定着率",
+            "value": "95%",
+            "is_enabled": true,
+            "sort_order": 4
+          }
+        ],
+        "team_members": [
+          {
+            "bio": "インドネシア人材業界20年の経験を持つ創業者。日本とインドネシアの相互理解促進に情熱を注ぐ。",
+            "name": "清水 浩志",
+            "role": "代表取締役",
+            "image_id": "cmpm6nk0a000rzdy23ascnkga",
+            "is_enabled": true,
+            "sort_order": 1
+          },
+          {
+            "bio": "日本国内のパートナー企業との関係構築・維持を担当。元人事担当者としての視点で企業の課題を解決。",
+            "name": "田中 直子",
+            "role": "日本事業部マネージャー",
+            "image_id": "cmpm6nkuy000udpdfpykqqrvo",
+            "is_enabled": true,
+            "sort_order": 2
+          }
+        ],
+        "vision_mission": {
+          "vision_headline": "ビジョン",
+          "mission_headline": "ミッション",
+          "vision_description": "インドネシアと日本の架け橋となり、両国の経済発展と相互理解に貢献する、アジアで最も信頼される人材育成・紹介機関になること。",
+          "mission_description": "1. 高品質な日本語教育と職業訓練を通じて、世界で通用するインドネシア人材を育成する。\n2. 日本企業の人材不足の課題を解決し、持続的な経営発展を支援する。\n3. すべての関係者（候補者・企業・地域社会）にとって誠実で透明性のある事業運営を行う。"
+        }
+      }
+    }
+  ],
+  "items": [
+    {
+      "variant": "indonesia",
+      "collectionKey": "blog",
+      "title": "5 Tips Persiapan Mental Sebelum Berangkat ke Jepang",
+      "slug": "5-tips-persiapan-mental-sebelum-berangkat-ke-jepang",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": "2026-05-26T05:59:38.977Z",
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nh6n000h5pi4ftrzhumd",
+        "fileName": "blog-tips-thumb.png",
+        "altText": "5 Tips Persiapan",
+        "width": 800,
+        "height": 450,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nh6n000h5pi4ftrzhumd.png"
+      },
+      "hero": null,
+      "excerpt": "Banyak calon pekerja hanya fokus pada persiapan dokumen dan bahasa. Padahal persiapan mental adalah kunci keberhasilan jangka panjang di Jepang.",
+      "data": {
+        "excerpt": "Banyak calon pekerja hanya fokus pada persiapan dokumen dan bahasa. Padahal persiapan mental adalah kunci keberhasilan jangka panjang di Jepang.",
+        "subtitle": "Persiapan mental sama pentingnya dengan persiapan dokumen",
+        "author_bio": "Berpengalaman 8 tahun membimbing ratusan peserta HIT yang sukses di Jepang.",
+        "author_name": "Sari Anggraini",
+        "author_title": "Manajer Program & Pelatihan HIT",
+        "content_blocks": [
+          {
+            "data": {
+              "text": "Mengapa Persiapan Mental Sangat Penting?",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 1
+          },
+          {
+            "data": {
+              "text": "Banyak orang yang sudah bekerja keras mempersiapkan dokumen, belajar bahasa Jepang berbulan-bulan, tapi akhirnya kesulitan beradaptasi ketika sudah di Jepang. Penyebabnya sering bukan soal kemampuan, tapi soal kesiapan mental menghadapi perbedaan budaya dan gaya hidup yang drastis."
+            },
+            "type": "paragraph",
+            "sort_order": 2
+          },
+          {
+            "data": {
+              "text": "1. Terima Bahwa Awal Pasti Berat",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 3
+          },
+          {
+            "data": {
+              "text": "Bulan pertama di Jepang hampir selalu jadi yang paling berat. Bahasa yang belum fasih, makanan yang berbeda, dan jauh dari keluarga bisa membuat homesick. Sadari bahwa ini normal dan semua orang melewati fase ini."
+            },
+            "type": "paragraph",
+            "sort_order": 4
+          },
+          {
+            "data": {
+              "text": "Kesulitan di awal bukan tanda bahwa kamu salah pilih. Itu tanda bahwa kamu sedang tumbuh.",
+              "author": "Budi Wijaya, Alumni HIT"
+            },
+            "type": "quote",
+            "sort_order": 5
+          },
+          {
+            "data": {
+              "text": "2. Bangun Rutinitas Baru Secepat Mungkin",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 6
+          },
+          {
+            "data": {
+              "text": "Rutinitas memberikan rasa aman di lingkungan baru. Usahakan dalam 2 minggu pertama kamu sudah punya jadwal harian: bangun jam berapa, jam berapa makan, jam berapa belajar bahasa Jepang ekstra."
+            },
+            "type": "paragraph",
+            "sort_order": 7
+          },
+          {
+            "data": {
+              "text": "3. Jaga Komunikasi dengan Keluarga",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 8
+          },
+          {
+            "data": {
+              "text": "Panggilan video dengan keluarga 2-3 kali seminggu sangat membantu stabilitas emosional. Tapi jangan terlalu sering — fokuslah juga pada kehidupan barumu di sana."
+            },
+            "type": "paragraph",
+            "sort_order": 9
+          },
+          {
+            "data": {
+              "text": "4. Cari Teman Sesama Magang Indonesia",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 10
+          },
+          {
+            "data": {
+              "text": "Komunitas sesama WNI di Jepang sangat aktif. Bergabunglah dengan grup WhatsApp atau Line komunitas Indonesia di kotamu. Mereka bisa jadi sumber informasi dan dukungan yang berharga."
+            },
+            "type": "paragraph",
+            "sort_order": 11
+          },
+          {
+            "data": {
+              "text": "5. Tetapkan Target Finansial yang Jelas",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 12
+          },
+          {
+            "data": {
+              "text": "Punya tujuan finansial yang konkret (misal: tabung ¥5.000.000 dalam 2 tahun untuk modal usaha) akan membuatmu lebih termotivasi melewati masa-masa sulit."
+            },
+            "type": "paragraph",
+            "sort_order": 13
+          },
+          {
+            "data": {
+              "label": "Konsultasi Lebih Lanjut dengan Tim HIT",
+              "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya membaca artikel tentang persiapan mental dan ingin konsultasi lebih lanjut."
+            },
+            "type": "whatsapp_cta",
+            "sort_order": 14
+          }
+        ],
+        "cover_image_id": "cmpm6nh6n000h5pi4ftrzhumd",
+        "tag_option_ids": [
+          "cmpm3n7gf001fn4k6ippfufbm",
+          "cmpm3n7gf001bn4k6c9ue42ql"
+        ],
+        "related_articles": {
+          "source": "same_category",
+          "max_items": 3
+        },
+        "category_option_id": "cmpm3n7at0016n4k6d4d10g5g",
+        "reading_time_label": "5 menit"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "blog",
+      "title": "Berapa Gaji Kerja di Jepang? Panduan Lengkap 2026",
+      "slug": "berapa-gaji-kerja-di-jepang-panduan-lengkap-2026",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": "2026-05-26T05:59:38.977Z",
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nhhc000itpepo0efwhv9",
+        "fileName": "blog-gaji-thumb.png",
+        "altText": "Gaji di Jepang",
+        "width": 800,
+        "height": 450,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nhhc000itpepo0efwhv9.png"
+      },
+      "hero": null,
+      "excerpt": "Salah satu pertanyaan paling sering dari calon peserta: berapa sebenarnya gaji yang diterima di Jepang setelah semua potongan? Kami rincikan selengkapnya.",
+      "data": {
+        "excerpt": "Salah satu pertanyaan paling sering dari calon peserta: berapa sebenarnya gaji yang diterima di Jepang setelah semua potongan? Kami rincikan selengkapnya.",
+        "subtitle": "Rincian gaji, potongan, dan estimasi tabungan per bulan di Jepang",
+        "author_name": "Budi Wijaya",
+        "author_title": "Manajer Penempatan HIT",
+        "content_blocks": [
+          {
+            "data": {
+              "text": "Gaji Pokok vs Gaji Bersih",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 1
+          },
+          {
+            "data": {
+              "text": "Gaji kotor (sebelum potongan) untuk pekerja magang di Jepang berkisar ¥130.000–¥180.000 per bulan tergantung sektor dan lokasi. Dari angka ini, ada beberapa potongan wajib."
+            },
+            "type": "paragraph",
+            "sort_order": 2
+          },
+          {
+            "data": {
+              "text": "Potongan yang Perlu Kamu Ketahui",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 3
+          },
+          {
+            "data": {
+              "text": "Asuransi kesehatan (Kenko Hoken): sekitar 5% dari gaji pokok. Asuransi ketenagakerjaan (Kosei Nenkin): sekitar 9%. Pajak penghasilan: 5-10% tergantung total penghasilan. Biaya akomodasi (jika dipotong): ¥10.000–¥30.000/bulan."
+            },
+            "type": "paragraph",
+            "sort_order": 4
+          },
+          {
+            "data": {
+              "text": "Estimasi Uang yang Bisa Ditabung",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 5
+          },
+          {
+            "data": {
+              "text": "Dengan gaji ¥150.000 dan hidup hemat (makan memasak sendiri, tidak boros), kamu bisa menabung ¥80.000–¥100.000 per bulan. Dalam 3 tahun, estimasi tabungan bisa mencapai Rp 400-600 juta."
+            },
+            "type": "paragraph",
+            "sort_order": 6
+          },
+          {
+            "data": {
+              "label": "Tanya Lebih Detail tentang Gaji dan Program",
+              "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin mengetahui lebih detail tentang estimasi gaji dan tabungan di Jepang."
+            },
+            "type": "whatsapp_cta",
+            "sort_order": 7
+          }
+        ],
+        "cover_image_id": "cmpm6nhhc000itpepo0efwhv9",
+        "tag_option_ids": [
+          "cmpm3n7gf001en4k6ixt6r6z4",
+          "cmpm3n7gf001bn4k6c9ue42ql"
+        ],
+        "related_articles": {
+          "source": "same_tags",
+          "max_items": 3
+        },
+        "category_option_id": "cmpm3n7at0019n4k6ktyvhsbi",
+        "reading_time_label": "7 menit"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "blog",
+      "title": "Kehidupan Sehari-hari di Jepang — Apa yang Harus Kamu Siapkan?",
+      "slug": "kehidupan-sehari-hari-di-jepang-apa-yang-harus-disiapkan",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": "2026-05-26T05:59:38.977Z",
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nhry000jfgmhsxcsczph",
+        "fileName": "blog-kehidupan-thumb.png",
+        "altText": "Kehidupan di Jepang",
+        "width": 800,
+        "height": 450,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nhry000jfgmhsxcsczph.png"
+      },
+      "hero": null,
+      "excerpt": "Dari cara berbelanja, transportasi, hingga mengurus SIM dan rekening bank — semua yang perlu kamu ketahui sebelum berangkat ke Jepang.",
+      "data": {
+        "excerpt": "Dari cara berbelanja, transportasi, hingga mengurus SIM dan rekening bank — semua yang perlu kamu ketahui sebelum berangkat ke Jepang.",
+        "subtitle": "Panduan praktis kehidupan sehari-hari di Jepang untuk pekerja Indonesia",
+        "author_name": "Sari Anggraini",
+        "author_title": "Manajer Program HIT",
+        "content_blocks": [
+          {
+            "data": {
+              "text": "Transportasi di Jepang",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 1
+          },
+          {
+            "data": {
+              "text": "Transportasi umum Jepang sangat efisien dan tepat waktu. Kereta dan bus adalah moda utama. Kamu akan perlu membeli kartu IC (seperti Suica atau Pasmo) untuk naik transportasi umum dengan mudah."
+            },
+            "type": "paragraph",
+            "sort_order": 2
+          },
+          {
+            "data": {
+              "text": "Belanja Kebutuhan Sehari-hari",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 3
+          },
+          {
+            "data": {
+              "text": "Supermarket seperti AEON, Seiyu, dan OK Store menawarkan harga terjangkau. Untuk makanan Indonesia (tempe, bumbu, dan lainnya), cari di toko Asia terdekat atau beli daring di situs seperti Amazon Japan."
+            },
+            "type": "paragraph",
+            "sort_order": 4
+          },
+          {
+            "data": {
+              "text": "Membuka Rekening Bank",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 5
+          },
+          {
+            "data": {
+              "text": "Setelah mendapat My Number Card dan Residence Card, kamu bisa membuka rekening di Japan Post Bank (Yucho Bank) — paling mudah untuk WNA baru. Rekening ini penting untuk menerima gaji."
+            },
+            "type": "paragraph",
+            "sort_order": 6
+          }
+        ],
+        "cover_image_id": "cmpm6nhry000jfgmhsxcsczph",
+        "tag_option_ids": [
+          "cmpm3n7gf001fn4k6ippfufbm"
+        ],
+        "category_option_id": "cmpm3n7at0017n4k6axag1osc",
+        "reading_time_label": "8 menit"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "job",
+      "title": "Caregiver / Perawat Lansia — Tokyo",
+      "slug": "caregiver-perawat-lansia-tokyo",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": "2026-09-26T05:59:38.977Z",
+      "thumbnail": {
+        "id": "cmpm6ngsf000ga8rg5dhgbclf",
+        "fileName": "job-perawatan-thumb.png",
+        "altText": "Caregiver / Perawat",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ngsf000ga8rg5dhgbclf.png"
+      },
+      "hero": null,
+      "excerpt": "Bergabunglah sebagai caregiver profesional di panti wreda modern Tokyo. Permintaan sangat tinggi, peluang karir jangka panjang.",
+      "data": {
+        "max_age": 35,
+        "min_age": 18,
+        "subtitle": "Tokutei Ginou — Sektor Perawatan (Kaigo)",
+        "quota_label": "5 orang/angkatan",
+        "benefit_items": [
+          "Gaji pokok + tunjangan kehadiran",
+          "Asuransi kesehatan lengkap",
+          "Pelatihan kaigo intensif sebelum berangkat",
+          "Peluang naik ke Tokutei Ginou Tipe 2"
+        ],
+        "contract_label": "Tokutei Ginou 1 (1-5 tahun, dapat diperpanjang)",
+        "deadline_label": "Rekrutmen terbuka (bergulir)",
+        "location_label": "Tokyo, Jepang",
+        "gender_option_id": "cmpm3n6in000in4k67qfiinnl",
+        "primary_cta_label": "Lamar via WhatsApp",
+        "short_description": "Bergabunglah sebagai caregiver profesional di panti wreda modern Tokyo. Permintaan sangat tinggi, peluang karir jangka panjang.",
+        "job_type_option_id": "cmpm3n6zc000un4k6h3fcxru0",
+        "salary_range_label": "¥160.000 – ¥200.000/bulan",
+        "job_field_option_id": "cmpm3n7520014n4k6yryp24lv",
+        "language_level_option_id": "cmpm3n6tp000pn4k655ibbsbr",
+        "education_level_option_id": "cmpm3n6o7000kn4k6m65h7epa",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin melamar posisi Caregiver Perawat Lansia di Tokyo."
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "job",
+      "title": "Operator Produksi — Pabrik Otomotif, Aichi",
+      "slug": "operator-produksi-pabrik-otomotif-aichi",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": "2026-08-26T05:59:38.977Z",
+      "thumbnail": {
+        "id": "cmpm6ng8h000eevkuh89xka9z",
+        "fileName": "job-manufaktur-thumb.png",
+        "altText": "Operator Produksi",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ng8h000eevkuh89xka9z.png"
+      },
+      "hero": null,
+      "excerpt": "Dicari operator produksi untuk pabrik suku cadang otomotif di Aichi, Jepang. Kuota 15 orang, keberangkatan angkatan Oktober 2026.",
+      "data": {
+        "max_age": 30,
+        "min_age": 18,
+        "subtitle": "Posisi Magang — Gijutsu Jisshu",
+        "quota_label": "15 orang",
+        "benefit_items": [
+          "Akomodasi disediakan perusahaan (asrama bersih dekat pabrik)",
+          "Asuransi kesehatan dan ketenagakerjaan",
+          "Makan siang di kantin perusahaan",
+          "Bonus hadir dan lembur",
+          "Tiket pesawat PP ditanggung (kondisi tertentu)"
+        ],
+        "contract_label": "Magang 3 tahun (Gijutsu Jisshu)",
+        "deadline_label": "31 Juli 2026",
+        "location_label": "Prefektur Aichi, Jepang",
+        "job_description": "Kamu akan bertugas sebagai operator produksi di lini perakitan suku cadang otomotif. Tugas meliputi: operasi mesin press, quality control visual, pengemasan, dan pelaporan produksi harian.",
+        "gender_option_id": "cmpm3n6in000gn4k60d8j16zi",
+        "ex_japan_required": false,
+        "primary_cta_label": "Lamar Sekarang via WhatsApp",
+        "recruitment_steps": [
+          "Daftar via WhatsApp HIT → Tim HIT menghubungimu dalam 24 jam",
+          "Seleksi administrasi dokumen",
+          "Tes tertulis dan wawancara",
+          "Pemeriksaan kesehatan",
+          "Pelatihan pra-keberangkatan di HIT (6 bulan)",
+          "Keberangkatan ke Jepang"
+        ],
+        "short_description": "Dicari operator produksi untuk pabrik suku cadang otomotif di Aichi, Jepang. Kuota 15 orang, keberangkatan angkatan Oktober 2026.",
+        "job_type_option_id": "cmpm3n6zc000un4k6h3fcxru0",
+        "required_documents": [
+          "KTP",
+          "Ijazah terakhir",
+          "SKCK",
+          "Surat keterangan sehat",
+          "Paspor (kami bantu proses)",
+          "Foto 4x6 terbaru"
+        ],
+        "salary_range_label": "¥150.000 – ¥180.000/bulan + lembur",
+        "job_field_option_id": "cmpm3n752000yn4k6v61di5vm",
+        "qualification_items": [
+          "Laki-laki, usia 18-30 tahun",
+          "Pendidikan minimal SMA/SMK sederajat",
+          "Sehat jasmani, bebas tato di area yang terlihat",
+          "Mampu bahasa Jepang minimal N4 (atau siap mengikuti pelatihan HIT)",
+          "Bersedia bekerja shift dan lembur"
+        ],
+        "language_level_option_id": "cmpm3n6tp000pn4k655ibbsbr",
+        "education_level_option_id": "cmpm3n6o7000kn4k6m65h7epa",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin melamar lowongan Operator Produksi Pabrik Otomotif di Aichi. Mohon informasi lebih lanjut."
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "job",
+      "title": "Pekerja Pertanian Organik — Hokkaido",
+      "slug": "pekerja-pertanian-organik-hokkaido",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": "2026-07-26T05:59:38.977Z",
+      "thumbnail": {
+        "id": "cmpm6ngil000fgucacsto81so",
+        "fileName": "job-pertanian-thumb.png",
+        "altText": "Pertanian Organik",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ngil000fgucacsto81so.png"
+      },
+      "hero": null,
+      "excerpt": "Kesempatan emas bekerja di kebun pertanian organik premium di Hokkaido. Lingkungan kerja bersih, makan organik, dan pemandangan alam indah.",
+      "data": {
+        "max_age": 30,
+        "min_age": 18,
+        "subtitle": "Program Magang Pertanian Organik",
+        "quota_label": "8 orang",
+        "contract_label": "Magang 3 tahun",
+        "deadline_label": "15 Juni 2026",
+        "location_label": "Hokkaido, Jepang",
+        "gender_option_id": "cmpm3n6in000in4k67qfiinnl",
+        "primary_cta_label": "Lamar via WhatsApp",
+        "short_description": "Kesempatan emas bekerja di kebun pertanian organik premium di Hokkaido. Lingkungan kerja bersih, makan organik, dan pemandangan alam indah.",
+        "job_type_option_id": "cmpm3n6zc000un4k6h3fcxru0",
+        "salary_range_label": "¥140.000 – ¥160.000/bulan",
+        "job_field_option_id": "cmpm3n7520010n4k6dp524qbi",
+        "language_level_option_id": "cmpm3n6tp000pn4k655ibbsbr",
+        "education_level_option_id": "cmpm3n6o7000kn4k6m65h7epa",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya ingin melamar lowongan Pekerja Pertanian Organik di Hokkaido."
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "karir",
+      "title": "Instruktur Bahasa Jepang",
+      "slug": "instruktur-bahasa-jepang",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": "2026-08-26T05:59:38.977Z",
+      "thumbnail": null,
+      "hero": null,
+      "excerpt": "HIT membuka posisi Instruktur Bahasa Jepang untuk mengajar peserta program magang dan Tokutei Ginou.",
+      "data": {
+        "benefits": [
+          "Gaji pokok kompetitif + tunjangan kehadiran",
+          "BPJS Kesehatan dan Ketenagakerjaan",
+          "Fasilitas pengembangan profesional",
+          "Lingkungan kerja internasional yang dinamis"
+        ],
+        "subtitle": "Penuh waktu | Kerja di kantor | Soreang, Bandung",
+        "requirements": [
+          "Memiliki sertifikasi JLPT N2 atau N1",
+          "Berpengalaman mengajar bahasa Jepang minimal 1 tahun",
+          "Komunikatif, sabar, dan memiliki jiwa pendidik",
+          "Diutamakan yang pernah tinggal di Jepang",
+          "Familiar dengan metode pengajaran bahasa modern"
+        ],
+        "salary_label": "Rp 4.000.000 – Rp 6.000.000/bulan",
+        "deadline_label": "Rekrutmen terbuka",
+        "location_label": "Soreang, Bandung, Jawa Barat",
+        "education_label": "S1 Pendidikan Bahasa Jepang / Studi Jepang",
+        "experience_label": "Minimal 1 tahun mengajar",
+        "responsibilities": [
+          "Mengajar bahasa Jepang (membaca, menulis, mendengar, berbicara) 5-6 jam/hari",
+          "Merancang modul pembelajaran yang interaktif dan terstruktur",
+          "Mempersiapkan peserta menghadapi ujian JLPT",
+          "Memberikan masukan dan laporan perkembangan peserta",
+          "Berkoordinasi dengan tim program dalam penyesuaian kurikulum"
+        ],
+        "role_description": "Kamu akan bertanggung jawab merancang dan menyampaikan materi bahasa Jepang mulai level N5 hingga N3 untuk peserta program kerja ke Jepang.",
+        "primary_cta_label": "Lamar Posisi Ini via WhatsApp",
+        "short_description": "HIT membuka posisi Instruktur Bahasa Jepang untuk mengajar peserta program magang dan Tokutei Ginou.",
+        "department_option_id": "cmpm3n7xf001un4k6vowizryc",
+        "employment_type_option_id": "cmpm3n833001wn4k66077xqgw",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik melamar posisi Instruktur Bahasa Jepang. Mohon informasi proses seleksinya.",
+        "work_arrangement_option_id": "cmpm3n88p0020n4k6tn1knck3"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "karir",
+      "title": "Staf Pemasaran & Rekrutmen",
+      "slug": "staf-pemasaran-rekrutmen",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": "2026-07-26T05:59:38.977Z",
+      "thumbnail": null,
+      "hero": null,
+      "excerpt": "Penuh waktu | Kerja campuran | Soreang, Bandung",
+      "data": {
+        "subtitle": "Penuh waktu | Kerja campuran | Soreang, Bandung",
+        "salary_label": "Rp 3.500.000 – Rp 5.000.000 + komisi",
+        "deadline_label": "31 Agustus 2026",
+        "location_label": "Soreang, Bandung (campuran)",
+        "experience_label": "Lulusan baru diterima",
+        "responsibilities": [
+          "Mengelola media sosial HIT (Instagram, TikTok, YouTube)",
+          "Membuat konten pemasaran yang menarik",
+          "Merespons pertanyaan calon peserta via WhatsApp dan DM",
+          "Mengorganisir acara sosialisasi program di sekolah-sekolah"
+        ],
+        "role_description": "Membantu tim HIT dalam kegiatan pemasaran digital dan rekrutmen peserta program.",
+        "primary_cta_label": "Lamar via WhatsApp",
+        "department_option_id": "cmpm3n7xf001sn4k61y6ft1z1",
+        "employment_type_option_id": "cmpm3n833001wn4k66077xqgw",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik melamar posisi Staf Pemasaran & Rekrutmen.",
+        "work_arrangement_option_id": "cmpm3n88p0021n4k6457hztdc"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "offer",
+      "title": "Kelas Bahasa Jepang Gratis — Batch Juli 2026",
+      "slug": "kelas-bahasa-jepang-gratis-juli-2026",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": "2026-05-27T05:59:38.977Z",
+      "expiredAt": "2026-07-10T05:59:38.977Z",
+      "thumbnail": {
+        "id": "cmpm6ni3i000kn7t5poorae0m",
+        "fileName": "offer-kelas-gratis-thumb.png",
+        "altText": "Kelas Gratis",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ni3i000kn7t5poorae0m.png"
+      },
+      "hero": null,
+      "excerpt": "Daftar program magang HIT sekarang dan dapatkan akses kelas bahasa Jepang N5 selama 1 bulan secara GRATIS.",
+      "data": {
+        "subtitle": "Terbatas 30 kursi! Kelas bahasa Jepang N5 GRATIS untuk pendaftar program magang",
+        "price_label": "GRATIS",
+        "quota_label": "30 kursi (tersisa 12)",
+        "format_label": "Daring via Zoom + rekaman tersedia",
+        "benefit_items": [
+          "12 sesi langsung dengan instruktur bersertifikat",
+          "Materi PDF + kamus saku GRATIS",
+          "Akses rekaman 30 hari",
+          "Sertifikat keikutsertaan dari HIT"
+        ],
+        "urgency_label": "Penawaran berakhir 15 Juli 2026 atau kuota habis",
+        "duration_label": "1 Bulan (12 pertemuan)",
+        "schedule_label": "Setiap Senin, Rabu, Jumat — Pukul 09.00-11.00 WIB",
+        "primary_cta_label": "Daftar Sekarang — GRATIS",
+        "short_description": "Daftar program magang HIT sekarang dan dapatkan akses kelas bahasa Jepang N5 selama 1 bulan secara GRATIS.",
+        "detail_description": "Ini adalah kesempatan emas untuk kamu yang ingin mulai belajar bahasa Jepang tapi belum yakin harus mulai dari mana. Kelas ini GRATIS untuk 30 pendaftar pertama yang mendaftarkan diri pada program magang HIT.",
+        "suitable_for_items": [
+          "Lulusan SMA/SMK yang ingin kerja ke Jepang",
+          "Lulusan baru yang belum punya pengalaman bahasa Jepang",
+          "Siapa pun yang ingin mencoba belajar bahasa Jepang sebelum berkomitmen"
+        ],
+        "offer_type_option_id": "cmpm3n7m1001jn4k67p33jtm2",
+        "original_price_label": "Rp 1.200.000",
+        "target_audience_option_id": "cmpm3n7rn001mn4k6g34zjfoe",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik dengan penawaran Kelas Bahasa Jepang Gratis Batch Juli 2026. Apakah masih ada kursi?"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "offer",
+      "title": "Promo Spesial — Diskon 20% Biaya Administrasi",
+      "slug": "promo-spesial-diskon-biaya-administrasi",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": null,
+      "startAt": "2026-05-26T05:59:38.977Z",
+      "expiredAt": "2026-06-25T05:59:38.977Z",
+      "thumbnail": {
+        "id": "cmpm6nif8000lvtqfdlzikpa9",
+        "fileName": "offer-promo-thumb.png",
+        "altText": "Promo Spesial",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nif8000lvtqfdlzikpa9.png"
+      },
+      "hero": null,
+      "excerpt": "Daftar program HIT sekarang dan hemat 20% biaya administrasi. Berlaku terbatas.",
+      "data": {
+        "subtitle": "Diskon 20% untuk biaya administrasi semua program HIT",
+        "price_label": "Hemat 20% dari normal",
+        "urgency_label": "Berakhir akhir bulan ini!",
+        "primary_cta_label": "Manfaatkan Promo Ini",
+        "short_description": "Daftar program HIT sekarang dan hemat 20% biaya administrasi. Berlaku terbatas.",
+        "offer_type_option_id": "cmpm3n7m1001hn4k6hl318e0o",
+        "target_audience_option_id": "cmpm3n7rn001mn4k6g34zjfoe",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik dengan penawaran Promo Diskon 20% Biaya Administrasi."
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "program",
+      "title": "Program Magang Manufaktur & Otomotif",
+      "slug": "magang-manufaktur-otomotif",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nfbl000b5ibuuyz2mw8s",
+        "fileName": "program-magang-thumb.png",
+        "altText": "Program Magang",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nfbl000b5ibuuyz2mw8s.png"
+      },
+      "hero": {
+        "id": "cmpm6navr0002d93pqxrqswzm",
+        "fileName": "hero-program.png",
+        "altText": "Program Pelatihan Unggulan",
+        "width": 1200,
+        "height": 500,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6navr0002d93pqxrqswzm.png"
+      },
+      "excerpt": "Program magang 3 tahun di sektor manufaktur dan otomotif. Cocok untuk lulusan SMK/SMA teknik yang ingin pengalaman kerja internasional.",
+      "data": {
+        "faqs": [
+          {
+            "answer": "Untuk program magang (Ginou Jisshu), peserta tidak diperbolehkan membawa anggota keluarga. Namun untuk Tokutei Ginou tahap 2, hal ini dimungkinkan.",
+            "question": "Apakah saya bisa membawa keluarga ke Jepang?"
+          }
+        ],
+        "max_age": 30,
+        "min_age": 18,
+        "overview": "Program ini dirancang khusus untuk kamu yang ingin bekerja di sektor manufaktur dan otomotif Jepang. Kamu akan mendapat pelatihan bahasa Jepang intensif selama 6 bulan sebelum keberangkatan, dilanjutkan magang langsung di pabrik mitra di kota-kota industri Jepang seperti Toyota City, Nagoya, dan Yokohama.",
+        "subtitle": "Bekerja di pabrik manufaktur & otomotif terkemuka Jepang",
+        "cost_items": [
+          "Biaya pelatihan: hubungi HIT untuk informasi terkini",
+          "Biaya pengurusan dokumen: termasuk dalam paket",
+          "Biaya akomodasi selama pelatihan: terjangkau"
+        ],
+        "requirements": [
+          "Usia 18-30 tahun",
+          "Pendidikan minimal SMA/SMK sederajat",
+          "Sehat jasmani dan rohani (bebas penyakit menular)",
+          "Tidak memiliki tato yang terlihat",
+          "Lulus tes seleksi HIT"
+        ],
+        "testimonials": [
+          {
+            "name": "Rizki F.",
+            "quote": "Setelah 3 tahun di Jepang, saya pulang dengan tabungan dan pengalaman yang tidak ternilai. Terima kasih HIT!",
+            "image_id": null,
+            "role_or_program": "Alumni 2021 — Manufaktur, Aichi"
+          }
+        ],
+        "contract_label": "Kontrak magang resmi",
+        "duration_label": "3 Tahun",
+        "timeline_items": [
+          "Pendaftaran & Seleksi: 2 minggu",
+          "Pelatihan Pra-Keberangkatan: 6 bulan",
+          "Pengurusan Dokumen & Visa: 2-3 bulan",
+          "Keberangkatan ke Jepang",
+          "Masa Magang: 3 tahun"
+        ],
+        "highlight_label": "Pabrik otomotif terkemuka Jepang",
+        "visa_path_label": "Visa Ginou Jisshu (Teknik Khusus Industri)",
+        "brochure_enabled": false,
+        "brochure_file_id": null,
+        "curriculum_items": [
+          "Bahasa Jepang Intensif (Bulan 1-3): Hiragana, Katakana, Kanji dasar, percakapan kerja",
+          "Budaya Kerja Jepang (Bulan 4): Etos kerja, keselamatan, tata krama",
+          "Skill Teknis Manufaktur (Bulan 5-6): Operasi mesin, QC, protokol keselamatan",
+          "Simulasi Kerja & Evaluasi (Bulan 6): Praktik terpadu sebelum keberangkatan"
+        ],
+        "gender_option_id": "cmpm3n6in000in4k67qfiinnl",
+        "why_choose_items": [
+          "Gaji kompetitif mulai ¥135.000/bulan + lembur",
+          "Akomodasi disediakan perusahaan",
+          "Asuransi kesehatan lengkap",
+          "Kesempatan perpanjangan dan beralih ke Tokutei Ginou"
+        ],
+        "primary_cta_label": "Daftar Program Ini",
+        "short_description": "Program magang 3 tahun di sektor manufaktur dan otomotif. Cocok untuk lulusan SMK/SMA teknik yang ingin pengalaman kerja internasional.",
+        "salary_range_label": "¥135.000 – ¥180.000/bulan",
+        "target_language_label": "Bahasa Jepang N4",
+        "program_type_option_id": "cmpm3n6cx000bn4k6s8574m45",
+        "career_opportunity_items": [
+          "Operator Produksi Senior",
+          "Tokutei Ginou di bidang Manufaktur",
+          "Wirausaha bidang industri setelah kembali ke Indonesia"
+        ],
+        "language_level_option_id": "cmpm3n6tp000pn4k655ibbsbr",
+        "education_level_option_id": "cmpm3n6o7000kn4k6m65h7epa",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik dengan program Program Magang Manufaktur & Otomotif. Boleh saya mendapatkan informasi lebih lanjut?"
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "program",
+      "title": "Tokutei Ginou — Perhotelan & Restoran",
+      "slug": "tokutei-ginou-perhotelan-restoran",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nfmi000cvmwnp2kqbiyl",
+        "fileName": "program-tokutei-thumb.png",
+        "altText": "Tokutei Ginou",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nfmi000cvmwnp2kqbiyl.png"
+      },
+      "hero": null,
+      "excerpt": "Bekerja di hotel bintang 4-5 dan restoran premium di Jepang. Kontrak dapat diperpanjang untuk peserta dengan performa terbaik.",
+      "data": {
+        "max_age": 35,
+        "min_age": 18,
+        "subtitle": "Program Pekerja Berketerampilan Spesifik di sektor perhotelan",
+        "requirements": [
+          "Usia 18-35 tahun",
+          "Lulus ujian kemampuan bahasa Jepang N4",
+          "Lulus ujian keahlian bidang perhotelan (Omotenashi)",
+          "Pengalaman di bidang perhotelan diutamakan"
+        ],
+        "contract_label": "Kontrak kerja langsung dengan perusahaan Jepang",
+        "duration_label": "1-5 Tahun (dapat diperpanjang)",
+        "highlight_label": "Hotel & restoran berbintang Tokyo, Osaka, Kyoto",
+        "visa_path_label": "Visa Tokutei Ginou Tipe 1",
+        "gender_option_id": "cmpm3n6in000in4k67qfiinnl",
+        "why_choose_items": [
+          "Gaji lebih tinggi dari program magang standar",
+          "Bisa berganti perusahaan dan tidak terikat satu pemberi kerja",
+          "Peluang naik ke Tokutei Ginou Tipe 2 untuk status tinggal lebih panjang",
+          "Bekerja di kota-kota besar: Tokyo, Osaka, Kyoto"
+        ],
+        "primary_cta_label": "Daftar Program Ini",
+        "short_description": "Bekerja di hotel bintang 4-5 dan restoran premium di Jepang. Kontrak dapat diperpanjang untuk peserta dengan performa terbaik.",
+        "salary_range_label": "¥150.000 – ¥220.000/bulan",
+        "target_language_label": "Bahasa Jepang N4 + Ujian Kemampuan Spesifik",
+        "program_type_option_id": "cmpm3n6cx000cn4k6bxk3xrz9",
+        "language_level_option_id": "cmpm3n6tp000pn4k655ibbsbr",
+        "education_level_option_id": "cmpm3n6o7000kn4k6m65h7epa",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik dengan program Tokutei Ginou Perhotelan & Restoran."
+      }
+    },
+    {
+      "variant": "indonesia",
+      "collectionKey": "program",
+      "title": "Kelas Bahasa Jepang Intensif",
+      "slug": "kelas-bahasa-jepang-intensif",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nfxm000doavaei3seqro",
+        "fileName": "program-kelas-bahasa-thumb.png",
+        "altText": "Kelas Bahasa Jepang",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nfxm000doavaei3seqro.png"
+      },
+      "hero": null,
+      "excerpt": "Kelas bahasa Jepang terstruktur sebagai fondasi sebelum mengikuti program magang atau Tokutei Ginou. Tersedia kelas reguler dan intensif.",
+      "data": {
+        "max_age": 40,
+        "min_age": 17,
+        "subtitle": "Persiapan bahasa Jepang dari N5 hingga N3 dalam 6 bulan",
+        "contract_label": "Program pelatihan bersertifikat",
+        "duration_label": "3-6 Bulan",
+        "highlight_label": "Instruktur penutur asli + latihan JLPT",
+        "visa_path_label": "Persiapan untuk program kerja ke Jepang",
+        "gender_option_id": "cmpm3n6in000in4k67qfiinnl",
+        "primary_cta_label": "Daftar Kelas",
+        "short_description": "Kelas bahasa Jepang terstruktur sebagai fondasi sebelum mengikuti program magang atau Tokutei Ginou. Tersedia kelas reguler dan intensif.",
+        "salary_range_label": "Tidak berlaku (program pelatihan)",
+        "target_language_label": "Target: N3 dalam 6 bulan",
+        "program_type_option_id": "cmpm3n6cy000en4k660s76pkl",
+        "language_level_option_id": "cmpm3n6tp000on4k6yd0rqmtr",
+        "education_level_option_id": "cmpm3n6o7000kn4k6m65h7epa",
+        "whatsapp_message_template": "Halo Hashimoto Indo Trust, saya tertarik mengikuti Kelas Bahasa Jepang Intensif."
+      }
+    },
+    {
+      "variant": "japan",
+      "collectionKey": "news",
+      "title": "2026年1月 パートナー企業訪問レポート — 愛知県 自動車部品工場",
+      "slug": "partner-visit-aichi-automotive-jan-2026",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": "2026-05-12T06:44:47.797Z",
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6niow000mxcyvjxqvufxb",
+        "fileName": "sector-manufacturing-thumb.png",
+        "altText": "製造業",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6niow000mxcyvjxqvufxb.png"
+      },
+      "hero": null,
+      "excerpt": "2026年1月、HITのスタッフが愛知県のパートナー企業を訪問。製造ラインで活躍する卒業生たちの生の声をお届けします。",
+      "data": {
+        "excerpt": "2026年1月、HITのスタッフが愛知県のパートナー企業を訪問。製造ラインで活躍する卒業生たちの生の声をお届けします。",
+        "subtitle": "愛知県の自動車部品工場を訪問し、活躍中のHIT出身者3名と面談を行いました",
+        "author_name": "田中 直子",
+        "author_title": "日本事業部マネージャー",
+        "content_blocks": [
+          {
+            "data": {
+              "text": "訪問の目的",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 1
+          },
+          {
+            "data": {
+              "text": "今回の訪問は、派遣後の定着状況と職場環境の確認を目的として実施しました。インドネシア人技能実習生3名（いずれもHIT卒業生）が製造ラインで活躍しており、職場内でも信頼を勝ち取っていることが確認できました。"
+            },
+            "type": "paragraph",
+            "sort_order": 2
+          },
+          {
+            "data": {
+              "text": "現場マネージャーの声",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 3
+          },
+          {
+            "data": {
+              "text": "HIT出身の実習生は日本語能力が高く、指示の理解が早い。安全意識も高く、現場に溶け込むのが早かった。来年もお願いしたい。",
+              "author": "愛知県 自動車部品工場 製造部長"
+            },
+            "type": "quote",
+            "sort_order": 4
+          },
+          {
+            "data": {
+              "text": "実習生からのメッセージ",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 5
+          },
+          {
+            "data": {
+              "text": "「日本に来て1年が経ちました。最初は大変でしたが、今は仕事にも生活にも慣れ、毎月の貯金が増えていくのが楽しみです。HITで学んだ日本語と礼儀が、ここで本当に役立っています」（アリ・ワハユ、製造部門）"
+            },
+            "type": "paragraph",
+            "sort_order": 6
+          },
+          {
+            "data": {
+              "label": "採用についてLINEでご相談",
+              "line_message_template": "パートナー企業訪問レポートを拝見しました。採用についてご相談させてください。"
+            },
+            "type": "line_cta",
+            "sort_order": 7
+          }
+        ],
+        "cover_image_id": "cmpm6niow000mxcyvjxqvufxb",
+        "tag_option_ids": [
+          "cmpm3n9je002nn4k6lje5elzi",
+          "cmpm3n9je002mn4k6y7hajf3m"
+        ],
+        "related_articles": {
+          "source": "same_category",
+          "max_items": 3
+        },
+        "category_option_id": "cmpm3n9dh002in4k61ymbnqbt",
+        "reading_time_label": "5分"
+      }
+    },
+    {
+      "variant": "japan",
+      "collectionKey": "news",
+      "title": "2026年3月 研修活動レポート — 第15期生 卒業式",
+      "slug": "training-report-batch-15-graduation-mar-2026",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": "2026-05-05T06:44:47.797Z",
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": null,
+      "hero": null,
+      "excerpt": "2026年3月20日、HITの研修センターにて第15期生の卒業式が開催されました。52名の候補者が6〜10ヶ月の研修を修了し、4月から各地の提携企業で就労を開始します。",
+      "data": {
+        "excerpt": "2026年3月20日、HITの研修センターにて第15期生の卒業式が開催されました。52名の候補者が6〜10ヶ月の研修を修了し、4月から各地の提携企業で就労を開始します。",
+        "subtitle": "52名の第15期生が研修を修了し、日本へ旅立ちます",
+        "author_name": "Sari Anggraini",
+        "author_title": "研修部長",
+        "content_blocks": [
+          {
+            "data": {
+              "text": "第15期生のプロフィール",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 1
+          },
+          {
+            "data": {
+              "text": "52名の卒業生の内訳は：製造業23名、介護11名、農業8名、食品加工6名、その他4名。平均年齢23歳、全員がJLPT N4以上を取得して渡航します。"
+            },
+            "type": "paragraph",
+            "sort_order": 2
+          },
+          {
+            "data": {
+              "text": "第15期生は特に日本語力と礼儀正しさが際立っています。受け入れ企業の皆様に必ずご満足いただけると確信しています。",
+              "author": "清水 浩志（代表取締役）"
+            },
+            "type": "quote",
+            "sort_order": 3
+          },
+          {
+            "data": {
+              "text": "卒業式には保護者や提携校の関係者も参加し、候補者たちの晴れ姿を見守りました。4月の渡航に向けて、全員が強い決意と期待を胸に日本での生活をスタートさせます。"
+            },
+            "type": "paragraph",
+            "sort_order": 4
+          }
+        ],
+        "cover_image_id": null,
+        "tag_option_ids": [
+          "cmpm3n9je002mn4k6y7hajf3m",
+          "cmpm3n9je002nn4k6lje5elzi"
+        ],
+        "category_option_id": "cmpm3n9dh002jn4k6zvpmplzd",
+        "reading_time_label": "4分"
+      }
+    },
+    {
+      "variant": "japan",
+      "collectionKey": "news",
+      "title": "特定技能制度 2026年最新情報 — 受け入れ業種と手続きの変更点",
+      "slug": "tokutei-ginou-update-2026",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": "2026-04-26T06:44:47.797Z",
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6niow000mxcyvjxqvufxb",
+        "fileName": "sector-manufacturing-thumb.png",
+        "altText": "製造業",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6niow000mxcyvjxqvufxb.png"
+      },
+      "hero": null,
+      "excerpt": "特定技能制度の最新動向と、インドネシア人材採用への影響をまとめました。HITの専門スタッフが解説します。",
+      "data": {
+        "excerpt": "特定技能制度の最新動向と、インドネシア人材採用への影響をまとめました。HITの専門スタッフが解説します。",
+        "subtitle": "2026年施行の特定技能制度改正ポイントをわかりやすく解説します",
+        "author_name": "田中 直子",
+        "author_title": "日本事業部マネージャー",
+        "content_blocks": [
+          {
+            "data": {
+              "text": "特定技能制度の概要",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 1
+          },
+          {
+            "data": {
+              "text": "特定技能制度は、深刻な人材不足が生じている特定の産業分野において、一定の専門性・技能を有する外国人を受け入れるための在留資格です。現在14業種が対象となっています。"
+            },
+            "type": "paragraph",
+            "sort_order": 2
+          },
+          {
+            "data": {
+              "text": "2026年の主な変更点",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 3
+          },
+          {
+            "data": {
+              "text": "2026年より、自動車整備業および電気・電子情報関連産業が特定技能の対象業種として追加される見込みです。また、特定技能2号の対象業種も拡大され、より多くの分野で長期就労・家族帯同が可能になります。"
+            },
+            "type": "paragraph",
+            "sort_order": 4
+          },
+          {
+            "data": {
+              "text": "HITのサポート体制",
+              "level": "h2"
+            },
+            "type": "heading",
+            "sort_order": 5
+          },
+          {
+            "data": {
+              "text": "HITは特定技能に対応したインドネシア人材の育成・紹介実績を豊富に持っています。制度変更への対応も含め、最新情報に基づいたアドバイスを無料で提供しています。"
+            },
+            "type": "paragraph",
+            "sort_order": 6
+          },
+          {
+            "data": {
+              "label": "特定技能採用についてLINEで相談",
+              "line_message_template": "特定技能のニュースを拝見しました。詳しく教えていただけますか。"
+            },
+            "type": "line_cta",
+            "sort_order": 7
+          }
+        ],
+        "cover_image_id": null,
+        "tag_option_ids": [
+          "cmpm3n9je002on4k6yaocgo1h",
+          "cmpm3n9je002pn4k6z8bt67df"
+        ],
+        "category_option_id": "cmpm3n9dh002hn4k66skctn13",
+        "reading_time_label": "6分"
+      }
+    },
+    {
+      "variant": "japan",
+      "collectionKey": "sector",
+      "title": "製造業（Manufacturing）",
+      "slug": "manufacturing",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6niow000mxcyvjxqvufxb",
+        "fileName": "sector-manufacturing-thumb.png",
+        "altText": "製造業",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6niow000mxcyvjxqvufxb.png"
+      },
+      "hero": null,
+      "excerpt": "HITは製造業向けのインドネシア人材育成に最も豊富な実績を持っています。技能実習から特定技能まで対応可能です。",
+      "data": {
+        "overview": "製造業はHITが最も多くの実績を持つ分野です。自動車部品、電子機器、金属加工、プラスチック成形など、様々なサブセクターに対応した人材をご提供しています。技能実習制度・特定技能制度ともに対応可能で、累計1,500名以上を製造業に派遣してきた実績があります。",
+        "subtitle": "自動車部品・電子機器・金属加工など、製造業全般に対応",
+        "process_items": [
+          {
+            "title": "採用ニーズのヒアリング（お問い合わせ後1週間以内）",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "候補者リストのご提案",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "書類確認・オンライン面接",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "内定・在留資格申請",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          },
+          {
+            "title": "渡航・配属（最短6ヶ月後）",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": ""
+          }
+        ],
+        "example_positions": [
+          {
+            "title": "プレス機オペレーター",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "組み立てラインワーカー",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "品質検査員",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "溶接工（指導のもと）",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          },
+          {
+            "title": "梱包・物流スタッフ",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": ""
+          }
+        ],
+        "primary_cta_label": "製造業の採用についてLINEで相談",
+        "short_description": "HITは製造業向けのインドネシア人材育成に最も豊富な実績を持っています。技能実習から特定技能まで対応可能です。",
+        "suitability_items": [
+          {
+            "title": "プレス・溶接・旋盤などの機械操作",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "組み立てラインでの作業",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "品質管理（QC）",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "梱包・出荷作業",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          },
+          {
+            "title": "フォークリフト操作（資格取得サポートあり）",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": ""
+          }
+        ],
+        "secondary_cta_label": "資料請求",
+        "line_message_template": "製造業の人材についてお問い合わせです。採用条件を相談させてください。",
+        "candidate_requirements": [
+          "年齢：18〜30歳（技能実習）、18〜35歳（特定技能）",
+          "学歴：高校卒業以上",
+          "日本語：JLPT N4以上（HITで研修済み）",
+          "体力：立ち作業・重作業に対応できること",
+          "健康：労働基準を満たす健康状態"
+        ],
+        "training_alignment_items": [
+          {
+            "title": "機械操作基礎訓練 — 配属前に機械の安全な操作方法を習得",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "品質管理概念 — QCの基礎と不良品の見分け方",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "工場安全訓練 — 5S活動、危険予知訓練、PPE装着",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "製造業日本語 — 指示語、帳票記入、報告会話",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          }
+        ],
+        "sector_category_option_id": "cmpm3n9p4002sn4k65q9sihau",
+        "secondary_document_file_id": null
+      }
+    },
+    {
+      "variant": "japan",
+      "collectionKey": "sector",
+      "title": "介護・福祉（Care & Welfare）",
+      "slug": "care-welfare",
+      "status": "PUBLISHED",
+      "isFeatured": true,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6nj2k000n3zta0hkae5gr",
+        "fileName": "sector-nursing-thumb.png",
+        "altText": "介護",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nj2k000n3zta0hkae5gr.png"
+      },
+      "hero": null,
+      "excerpt": "高齢化が進む日本において、HITはインドネシア人介護士の育成に力を入れています。心優しく献身的な介護士をご提供します。",
+      "data": {
+        "overview": "介護・福祉分野は日本で最も深刻な人材不足が続く分野の一つです。HITでは、特定技能「介護」に対応した専門カリキュラムを開発し、日本の高齢者施設で長期的に活躍できる介護士を育成しています。インドネシア人は温かみと献身性に優れており、利用者様から高い評価をいただいています。",
+        "subtitle": "特定技能「介護」に特化した人材育成・紹介",
+        "process_items": [
+          {
+            "title": "ニーズヒアリング・条件確認",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "候補者マッチング（2週間以内）",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "資料送付・オンライン面接",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "在留資格申請サポート",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          },
+          {
+            "title": "渡航・初期オリエンテーション",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": ""
+          }
+        ],
+        "example_positions": [
+          {
+            "title": "介護職員（特別養護老人ホーム）",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "介護職員（グループホーム）",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "生活支援スタッフ（デイサービス）",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "訪問介護スタッフ（条件あり）",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          }
+        ],
+        "primary_cta_label": "介護人材についてLINEで相談",
+        "short_description": "高齢化が進む日本において、HITはインドネシア人介護士の育成に力を入れています。心優しく献身的な介護士をご提供します。",
+        "suitability_items": [
+          {
+            "title": "入浴・排泄・食事介助などの身体介護",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "レクリエーション活動の企画・実施",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "利用者様とのコミュニケーション",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "記録業務（介護日誌・申し送り）",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          },
+          {
+            "title": "生活支援（掃除・洗濯・料理補助）",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": ""
+          }
+        ],
+        "secondary_cta_label": "資料請求",
+        "line_message_template": "介護・福祉分野の人材についてお問い合わせです。",
+        "candidate_requirements": [
+          "年齢：18〜35歳",
+          "日本語：JLPT N4以上（介護専門語彙の習得含む）",
+          "特定技能介護技能評価試験 合格（HITが受験サポート）",
+          "明るく温かな性格、思いやりのある対応ができること",
+          "体力的に介護業務に対応できること"
+        ],
+        "sector_category_option_id": "cmpm3n9p5002vn4k6p4800h9r",
+        "secondary_document_file_id": null
+      }
+    },
+    {
+      "variant": "japan",
+      "collectionKey": "sector",
+      "title": "農業・農畜産業（Agriculture）",
+      "slug": "agriculture",
+      "status": "PUBLISHED",
+      "isFeatured": false,
+      "publishedAt": null,
+      "startAt": null,
+      "expiredAt": null,
+      "thumbnail": {
+        "id": "cmpm6njbq000o2bzdcynvejlh",
+        "fileName": "sector-agriculture-thumb.png",
+        "altText": "農業",
+        "width": 400,
+        "height": 300,
+        "mimeType": "image/png",
+        "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6njbq000o2bzdcynvejlh.png"
+      },
+      "hero": null,
+      "excerpt": "農業大国インドネシア出身の候補者は、土に親しんだ経験と体力を持ちます。北海道から九州まで、全国の農業法人様をサポートします。",
+      "data": {
+        "overview": "農業分野は日本で慢性的な人手不足が続いており、インドネシア人材への期待が高まっています。HITは農業経験者を優先採用し、農作業に特化した事前研修を実施しています。",
+        "subtitle": "農作業全般から施設園芸まで、農業分野の人材をご提供",
+        "primary_cta_label": "農業人材についてLINEで相談",
+        "short_description": "農業大国インドネシア出身の候補者は、土に親しんだ経験と体力を持ちます。北海道から九州まで、全国の農業法人様をサポートします。",
+        "suitability_items": [
+          {
+            "title": "播種・定植・収穫作業",
+            "is_enabled": true,
+            "sort_order": 1,
+            "description": ""
+          },
+          {
+            "title": "農薬・肥料の散布（指導のもと）",
+            "is_enabled": true,
+            "sort_order": 2,
+            "description": ""
+          },
+          {
+            "title": "施設園芸（ハウス管理）",
+            "is_enabled": true,
+            "sort_order": 3,
+            "description": ""
+          },
+          {
+            "title": "選果・梱包作業",
+            "is_enabled": true,
+            "sort_order": 4,
+            "description": ""
+          },
+          {
+            "title": "農業機械の補助操作",
+            "is_enabled": true,
+            "sort_order": 5,
+            "description": ""
+          }
+        ],
+        "secondary_cta_label": "資料請求",
+        "line_message_template": "農業・農畜産業の人材についてお問い合わせです。",
+        "sector_category_option_id": "cmpm3n9p5002un4k6l4b5d7ru",
+        "secondary_document_file_id": null
+      }
+    }
+  ],
+  "media": [
+    {
+      "id": "cmpm6n9nb0000ocuyejp36wqu",
+      "fileName": "hero-indonesia-main.png",
+      "altText": "Wujudkan Impianmu Bekerja di Jepang",
+      "width": 1200,
+      "height": 630,
+      "mimeType": "image/png",
+      "fileSize": 282063,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6n9nb0000ocuyejp36wqu.png"
+    },
+    {
+      "id": "cmpm6nah20001tovmjatnfpli",
+      "fileName": "hero-japan-main.png",
+      "altText": "インドネシア人材で、貴社の成長を支援します",
+      "width": 1200,
+      "height": 630,
+      "mimeType": "image/png",
+      "fileSize": 122226,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nah20001tovmjatnfpli.png"
+    },
+    {
+      "id": "cmpm6navr0002d93pqxrqswzm",
+      "fileName": "hero-program.png",
+      "altText": "Program Pelatihan Unggulan",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 40284,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6navr0002d93pqxrqswzm.png"
+    },
+    {
+      "id": "cmpm6nbeg0003v5vrqa9vaxfe",
+      "fileName": "hero-job.png",
+      "altText": "Info Lowongan Terbaru",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 93267,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nbeg0003v5vrqa9vaxfe.png"
+    },
+    {
+      "id": "cmpm6nbs40004089sjbdra8z2",
+      "fileName": "hero-tentang-kami.png",
+      "altText": "Tentang Hashimoto Indo Trust",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 48889,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nbs40004089sjbdra8z2.png"
+    },
+    {
+      "id": "cmpm6nc8s0005k9vawhsjsaqo",
+      "fileName": "hero-karir.png",
+      "altText": "Bergabunglah Bersama Kami",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 81162,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nc8s0005k9vawhsjsaqo.png"
+    },
+    {
+      "id": "cmpm6ncry0006llqhunmazvse",
+      "fileName": "hero-japan-about.png",
+      "altText": "会社概要",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 55346,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ncry0006llqhunmazvse.png"
+    },
+    {
+      "id": "cmpm6ndjs0007mm0vzefcambb",
+      "fileName": "hero-japan-training.png",
+      "altText": "研修プログラム",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 44235,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ndjs0007mm0vzefcambb.png"
+    },
+    {
+      "id": "cmpm6ne2l0008uwtttwvlmhwr",
+      "fileName": "hero-japan-candidate.png",
+      "altText": "人材プロフィール",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 44563,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ne2l0008uwtttwvlmhwr.png"
+    },
+    {
+      "id": "cmpm6nejy0009hbnts4k52frd",
+      "fileName": "hero-japan-network.png",
+      "altText": "採用ネットワーク",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 77938,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nejy0009hbnts4k52frd.png"
+    },
+    {
+      "id": "cmpm6nf0g000alu7so0dscerq",
+      "fileName": "hero-japan-contact.png",
+      "altText": "お問い合わせ",
+      "width": 1200,
+      "height": 500,
+      "mimeType": "image/png",
+      "fileSize": 64912,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nf0g000alu7so0dscerq.png"
+    },
+    {
+      "id": "cmpm6nfbl000b5ibuuyz2mw8s",
+      "fileName": "program-magang-thumb.png",
+      "altText": "Program Magang",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 24015,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nfbl000b5ibuuyz2mw8s.png"
+    },
+    {
+      "id": "cmpm6nfmi000cvmwnp2kqbiyl",
+      "fileName": "program-tokutei-thumb.png",
+      "altText": "Tokutei Ginou",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 24146,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nfmi000cvmwnp2kqbiyl.png"
+    },
+    {
+      "id": "cmpm6nfxm000doavaei3seqro",
+      "fileName": "program-kelas-bahasa-thumb.png",
+      "altText": "Kelas Bahasa Jepang",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 23918,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nfxm000doavaei3seqro.png"
+    },
+    {
+      "id": "cmpm6ng8h000eevkuh89xka9z",
+      "fileName": "job-manufaktur-thumb.png",
+      "altText": "Operator Produksi",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 30052,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ng8h000eevkuh89xka9z.png"
+    },
+    {
+      "id": "cmpm6ngil000fgucacsto81so",
+      "fileName": "job-pertanian-thumb.png",
+      "altText": "Pertanian Organik",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 29940,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ngil000fgucacsto81so.png"
+    },
+    {
+      "id": "cmpm6ngsf000ga8rg5dhgbclf",
+      "fileName": "job-perawatan-thumb.png",
+      "altText": "Caregiver / Perawat",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 26091,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ngsf000ga8rg5dhgbclf.png"
+    },
+    {
+      "id": "cmpm6nh6n000h5pi4ftrzhumd",
+      "fileName": "blog-tips-thumb.png",
+      "altText": "5 Tips Persiapan",
+      "width": 800,
+      "height": 450,
+      "mimeType": "image/png",
+      "fileSize": 30320,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nh6n000h5pi4ftrzhumd.png"
+    },
+    {
+      "id": "cmpm6nhhc000itpepo0efwhv9",
+      "fileName": "blog-gaji-thumb.png",
+      "altText": "Gaji di Jepang",
+      "width": 800,
+      "height": 450,
+      "mimeType": "image/png",
+      "fileSize": 28717,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nhhc000itpepo0efwhv9.png"
+    },
+    {
+      "id": "cmpm6nhry000jfgmhsxcsczph",
+      "fileName": "blog-kehidupan-thumb.png",
+      "altText": "Kehidupan di Jepang",
+      "width": 800,
+      "height": 450,
+      "mimeType": "image/png",
+      "fileSize": 37368,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nhry000jfgmhsxcsczph.png"
+    },
+    {
+      "id": "cmpm6ni3i000kn7t5poorae0m",
+      "fileName": "offer-kelas-gratis-thumb.png",
+      "altText": "Kelas Gratis",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 44712,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6ni3i000kn7t5poorae0m.png"
+    },
+    {
+      "id": "cmpm6nif8000lvtqfdlzikpa9",
+      "fileName": "offer-promo-thumb.png",
+      "altText": "Promo Spesial",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 24740,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nif8000lvtqfdlzikpa9.png"
+    },
+    {
+      "id": "cmpm6niow000mxcyvjxqvufxb",
+      "fileName": "sector-manufacturing-thumb.png",
+      "altText": "製造業",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 28130,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6niow000mxcyvjxqvufxb.png"
+    },
+    {
+      "id": "cmpm6nj2k000n3zta0hkae5gr",
+      "fileName": "sector-nursing-thumb.png",
+      "altText": "介護",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 25223,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nj2k000n3zta0hkae5gr.png"
+    },
+    {
+      "id": "cmpm6njbq000o2bzdcynvejlh",
+      "fileName": "sector-agriculture-thumb.png",
+      "altText": "農業",
+      "width": 400,
+      "height": 300,
+      "mimeType": "image/png",
+      "fileSize": 25277,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6njbq000o2bzdcynvejlh.png"
+    },
+    {
+      "id": "cmpm6njjn000pukdbuslpaegf",
+      "fileName": "hit-logo-dark.png",
+      "altText": "HIT logo dark",
+      "width": 200,
+      "height": 80,
+      "mimeType": "image/png",
+      "fileSize": 7034,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6njjn000pukdbuslpaegf.png"
+    },
+    {
+      "id": "cmpm6njrn000qk8eygqs5lc6d",
+      "fileName": "hit-logo-light.png",
+      "altText": "HIT logo light",
+      "width": 200,
+      "height": 80,
+      "mimeType": "image/png",
+      "fileSize": 6039,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6njrn000qk8eygqs5lc6d.png"
+    },
+    {
+      "id": "cmpm6nk0a000rzdy23ascnkga",
+      "fileName": "avatar-director.png",
+      "altText": "Hiroshi Shimizu",
+      "width": 200,
+      "height": 200,
+      "mimeType": "image/png",
+      "fileSize": 6818,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nk0a000rzdy23ascnkga.png"
+    },
+    {
+      "id": "cmpm6nkea000spvc31wndterv",
+      "fileName": "avatar-staff-1.png",
+      "altText": "Sari Anggraini",
+      "width": 200,
+      "height": 200,
+      "mimeType": "image/png",
+      "fileSize": 7665,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nkea000spvc31wndterv.png"
+    },
+    {
+      "id": "cmpm6nkme000t6wrgwuivrcd4",
+      "fileName": "avatar-staff-2.png",
+      "altText": "Budi Wijaya",
+      "width": 200,
+      "height": 200,
+      "mimeType": "image/png",
+      "fileSize": 6875,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nkme000t6wrgwuivrcd4.png"
+    },
+    {
+      "id": "cmpm6nkuy000udpdfpykqqrvo",
+      "fileName": "avatar-japan-manager.png",
+      "altText": "Tanaka Naoko",
+      "width": 200,
+      "height": 200,
+      "mimeType": "image/png",
+      "fileSize": 6172,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpm6nkuy000udpdfpykqqrvo.png"
+    },
+    {
+      "id": "cmpmpg2gb0000laa7ix1jckmq",
+      "fileName": "ChatGPT Image 23 Mei 2026_ 08.08.01.png",
+      "altText": null,
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/png",
+      "fileSize": 1879399,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpmpg2gb0000laa7ix1jckmq.png"
+    },
+    {
+      "id": "cmpmpgqmu0001jn2tx4z9fp2f",
+      "fileName": "ff4e96b6-a308-4970-9b57-48d9fa0ce330.jpg",
+      "altText": null,
+      "width": 960,
+      "height": 960,
+      "mimeType": "image/jpeg",
+      "fileSize": 264828,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpmpgqmu0001jn2tx4z9fp2f.jpeg"
+    },
+    {
+      "id": "cmpmph5tt0002bawi0qpowm8k",
+      "fileName": "ff4e96b6-a308-4970-9b57-48d9fa0ce330.jpg",
+      "altText": null,
+      "width": 960,
+      "height": 960,
+      "mimeType": "image/jpeg",
+      "fileSize": 264828,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpmph5tt0002bawi0qpowm8k.jpeg"
+    },
+    {
+      "id": "cmpqm8y1a00009dae7zdzj6jo",
+      "fileName": "Gemini_Generated_Image_5y9m0d5y9m0d5y9m _1_.png",
+      "altText": null,
+      "width": 2752,
+      "height": 1536,
+      "mimeType": "image/png",
+      "fileSize": 2578813,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpqm8y1a00009dae7zdzj6jo.png"
+    },
+    {
+      "id": "cmpqmppty0001droxwpohxnw3",
+      "fileName": "505690c0-3013-4102-a5d9-93d0c4215ad9.jpg",
+      "altText": null,
+      "width": 960,
+      "height": 960,
+      "mimeType": "image/jpeg",
+      "fileSize": 345619,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpqmppty0001droxwpohxnw3.jpeg"
+    },
+    {
+      "id": "cmpt0ymsm0000idor5fjx18ym",
+      "fileName": "20250929131455668_0003.pdf",
+      "altText": null,
+      "width": null,
+      "height": null,
+      "mimeType": "application/pdf",
+      "fileSize": 264712,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpt0ymsm0000idor5fjx18ym.pdf"
+    },
+    {
+      "id": "cmpt3s3og0000hgibzdrihtcp",
+      "fileName": "sfvsvf.png",
+      "altText": null,
+      "width": 1000,
+      "height": 1000,
+      "mimeType": "image/png",
+      "fileSize": 15407,
+      "storagePath": "tenants/cmpm3n5gx0000n4k6m1k4acg7/media/cmpt3s3og0000hgibzdrihtcp.png"
+    }
+  ]
+}

@@ -1,0 +1,3072 @@
+[
+  {
+    "name": "jp-home",
+    "url": "http://hit-japan.lpk.local:3000/",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-home-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-home-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/",
+      "title": "インドネシア人材で、貴社の未来を共に切り拓きます | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "P",
+          "text": "信頼と実績のインドネシア人材パートナー",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 300,
+            "w": 768,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "インドネシア人材で、貴社の未来を共に切り拓きます",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 336,
+            "w": 768,
+            "h": 150
+          }
+        },
+        {
+          "tag": "P",
+          "text": "ハシモト・インド・トラストは、10年以上にわたりインドネシアの優秀な人材を厳選・育成し、日本の企業様へお届けしてきた専門機関です。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 510,
+            "w": 672,
+            "h": 64
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで問い合わせ",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "box": {
+            "x": 112,
+            "y": 606,
+            "w": 181,
+            "h": 44
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "LINEで問い合わせ",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 112,
+          "y": 606,
+          "w": 181,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィールを見る",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 2040,
+          "w": 188,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "10年以上の実績と信頼2015年の創業以来、透明性と誠実さを大切に、日本とインドネシアの架け橋として歩んできました。",
+          "href": "/about",
+          "x": 112,
+          "y": 2358,
+          "w": 389,
+          "h": 179,
+          "visible": false
+        },
+        {
+          "text": "広域採用ネットワークインドネシア全土の学校・職業訓練校と連携し、優秀な候補者を幅広く集めています。",
+          "href": "/recruitment-network",
+          "x": 525,
+          "y": 2358,
+          "w": 389,
+          "h": 179,
+          "visible": false
+        },
+        {
+          "text": "多様な業種への対応製造業から介護、農業、食品加工まで、幅広い業種に対応した人材をご用意できます。",
+          "href": "/sectors",
+          "x": 939,
+          "y": 2358,
+          "w": 389,
+          "h": 179,
+          "visible": false
+        },
+        {
+          "text": "体系的な研修プログラム日本語教育から職業訓練、ビジネスマナーまで、実践的なカリキュラムで人材を育成しています。",
+          "href": "/training-method",
+          "x": 112,
+          "y": 2561,
+          "w": 389,
+          "h": 179,
+          "visible": false
+        },
+        {
+          "text": "2026年1月 パートナー企業訪問レポート — 愛知県 自動車部品工場2026年1月、HITのスタッフが愛知県のパートナー企業を訪問。製造ラインで活躍する卒業生たちの生の声をお届けします。2026/05/12",
+          "href": "/news/partner-visit-aichi-automotive-jan-2026",
+          "x": 112,
+          "y": 3012,
+          "w": 389,
+          "h": 429,
+          "visible": false
+        },
+        {
+          "text": "2026年3月 研修活動レポート — 第15期生 卒業式2026年3月20日、HITの研修センターにて第15期生の卒業式が開催されました。52名の候補者が6〜10ヶ月の研修を修了し、4月から各地の提携企業で就労を開始します。2026/05/",
+          "href": "/news/training-report-batch-15-graduation-mar-2026",
+          "x": 525,
+          "y": 3012,
+          "w": 389,
+          "h": 429,
+          "visible": false
+        },
+        {
+          "text": "特定技能制度 2026年最新情報 — 受け入れ業種と手続きの変更点特定技能制度の最新動向と、インドネシア人材採用への影響をまとめました。HITの専門スタッフが解説します。2026/04/26",
+          "href": "/news/tokutei-ginou-update-2026",
+          "x": 939,
+          "y": 3012,
+          "w": 389,
+          "h": 429,
+          "visible": false
+        },
+        {
+          "text": "ニュース一覧を見る",
+          "href": "/news",
+          "x": 623,
+          "y": 3480,
+          "w": 193,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%A8%E6%80%9D%E3%81%84%E3%81%BE%E3%81%99%E3%80%82",
+          "x": 909,
+          "y": 3796,
+          "w": 165,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "メールで問い合わせる",
+          "href": "/contact",
+          "x": 1086,
+          "y": 3796,
+          "w": 210,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 4108,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 4140,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 4172,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 4108,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 4140,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 4172,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 4108,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 4144,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 4180,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 4368,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 4368,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 4368,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 4368,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": []
+    }
+  },
+  {
+    "name": "jp-about",
+    "url": "http://hit-japan.lpk.local:3000/about",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-about-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-about-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/about",
+      "title": "会社概要 | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "P",
+          "text": "ハシモト・インド・トラストについて",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 392,
+            "w": 768,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "会社概要",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 428,
+            "w": 768,
+            "h": 75
+          }
+        },
+        {
+          "tag": "P",
+          "text": "10年以上の経験と実績を持つ、インドネシア人材紹介の専門機関",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 527,
+            "w": 672,
+            "h": 32
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "LINEでお問い合わせ",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E4%BC%9A%E7%A4%BE%E6%A6%82%E8%A6%81%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E6%8B%9D%E8%A6%8B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82%E8%A9%B3%E3%81%97%E3%81%84%E8%B3%87%E6%96%99%E3%82%92%E3%81%8A%E9%80%81%E3%82%8A%E3%81%84%E3%81%9F%E3%81%A0%E3%81%91%E3%81%BE%E3%81%99%E3%81%8B%E3%80%82",
+          "x": 861,
+          "y": 4579,
+          "w": 197,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "お問い合わせフォームへ",
+          "href": "/contact",
+          "x": 1070,
+          "y": 4579,
+          "w": 226,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 4859,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 4891,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 4923,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 4859,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 4891,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 4923,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 4859,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 4895,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 4931,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 5119,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 5119,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 5119,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 5119,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": []
+    }
+  },
+  {
+    "name": "jp-training-method",
+    "url": "http://hit-japan.lpk.local:3000/training-method",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-training-method-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-training-method-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/training-method",
+      "title": "研修プログラムの詳細 | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "P",
+          "text": "HIT研修メソッド",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 376,
+            "w": 768,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "研修プログラムの詳細",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 412,
+            "w": 768,
+            "h": 75
+          }
+        },
+        {
+          "tag": "P",
+          "text": "単なる語学研修にとどまらない、実践的かつ体系的な育成プログラムをご紹介します。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 511,
+            "w": 672,
+            "h": 64
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "LINEで資料請求",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E7%A0%94%E4%BF%AE%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%A0%E3%81%AE%E8%A9%B3%E7%B4%B0%E8%B3%87%E6%96%99%E3%82%92%E9%80%81%E3%81%A3%E3%81%A6%E3%81%84%E3%81%9F%E3%81%A0%E3%81%91%E3%81%BE%E3%81%99%E3%81%8B%E3%80%82",
+          "x": 973,
+          "y": 2567,
+          "w": 165,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1150,
+          "y": 2567,
+          "w": 146,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 2847,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 2879,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 2911,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 2847,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 2879,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 2911,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 2847,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 2883,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 2919,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 3107,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 3107,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 3107,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 3107,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": []
+    }
+  },
+  {
+    "name": "jp-candidate-profile",
+    "url": "http://hit-japan.lpk.local:3000/candidate-profile",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-candidate-profile-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-candidate-profile-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/candidate-profile",
+      "title": "HITが送り出す人材のプロフィール | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "P",
+          "text": "人材プロフィール",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 354,
+            "w": 768,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "HITが送り出す人材のプロフィール",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 390,
+            "w": 768,
+            "h": 150
+          }
+        },
+        {
+          "tag": "P",
+          "text": "私たちが育成する候補者は、技術と人間性を兼ね備えた即戦力です。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 564,
+            "w": 672,
+            "h": 32
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "LINEで採用相談",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E4%BA%BA%E6%9D%90%E3%83%97%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC%E3%83%AB%E3%81%AE%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E8%A6%8B%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82%E5%80%99%E8%A3%9C%E8%80%85%E3%81%AE%E3%81%94%E7%B4%B9%E4%BB%8B%E3%82%92%E3%81%8A%E9%A1%98%E3%81%84%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%82",
+          "x": 973,
+          "y": 2778,
+          "w": 165,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1150,
+          "y": 2778,
+          "w": 146,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 3058,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 3090,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 3122,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 3058,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 3090,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 3122,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 3058,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 3094,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 3130,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 3318,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 3318,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 3318,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 3318,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": []
+    }
+  },
+  {
+    "name": "jp-sectors",
+    "url": "http://hit-japan.lpk.local:3000/sectors",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-sectors-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-sectors-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/sectors",
+      "title": "対応業種一覧 | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "P",
+          "text": "業種別対応",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 376,
+            "w": 768,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "対応業種一覧",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 412,
+            "w": 768,
+            "h": 75
+          }
+        },
+        {
+          "tag": "P",
+          "text": "HITは製造業から介護まで、多様な業種に対応したインドネシア人材をご用意しています。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 511,
+            "w": 672,
+            "h": 64
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "注目製造業（Manufacturing）HITは製造業向けのインドネシア人材育成に最も豊富な実績を持っています。技能実習から特定技能まで対応可能です。詳細を見る",
+          "href": "/sectors/manufacturing",
+          "x": 112,
+          "y": 1109,
+          "w": 389,
+          "h": 510,
+          "visible": false
+        },
+        {
+          "text": "詳細を見る",
+          "href": "",
+          "x": 133,
+          "y": 1562,
+          "w": 347,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "注目介護・福祉（Care & Welfare）高齢化が進む日本において、HITはインドネシア人介護士の育成に力を入れています。心優しく献身的な介護士をご提供します。詳細を見る",
+          "href": "/sectors/care-welfare",
+          "x": 525,
+          "y": 1109,
+          "w": 389,
+          "h": 510,
+          "visible": false
+        },
+        {
+          "text": "詳細を見る",
+          "href": "",
+          "x": 546,
+          "y": 1562,
+          "w": 347,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "農業・農畜産業（Agriculture）農業大国インドネシア出身の候補者は、土に親しんだ経験と体力を持ちます。北海道から九州まで、全国の農業法人様をサポートします。詳細を見る",
+          "href": "/sectors/agriculture",
+          "x": 939,
+          "y": 1109,
+          "w": 389,
+          "h": 510,
+          "visible": false
+        },
+        {
+          "text": "詳細を見る",
+          "href": "",
+          "x": 960,
+          "y": 1562,
+          "w": 347,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "LINEでお問い合わせ",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E6%A5%AD%E7%A8%AE%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E6%8B%9D%E8%A6%8B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%95%E3%81%9B%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82",
+          "x": 1099,
+          "y": 1859,
+          "w": 197,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 2139,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 2171,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 2203,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 2139,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 2171,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 2203,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 2139,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 2175,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 2211,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 2399,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 2399,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 2399,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 2399,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": [
+        {
+          "label": "",
+          "value": "",
+          "options": [
+            "すべて",
+            "製造業",
+            "建設業",
+            "農業",
+            "介護",
+            "食品加工",
+            "外食業",
+            "宿泊業"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "jp-contact",
+    "url": "http://hit-japan.lpk.local:3000/contact",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-contact-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-contact-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/contact",
+      "title": "お問い合わせ | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "P",
+          "text": "お問い合わせ",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 376,
+            "w": 768,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "お問い合わせ",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 412,
+            "w": 768,
+            "h": 75
+          }
+        },
+        {
+          "tag": "P",
+          "text": "採用に関するご質問・ご相談は、LINEまたはメールでお気軽にどうぞ。通常1〜2営業日以内にご返答いたします。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 511,
+            "w": 672,
+            "h": 64
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "LINEでお問い合わせ",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 137,
+          "y": 1060,
+          "w": 163,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id?subject=%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E6%8E%A1%E7%94%A8%E3%81%AB%E9%96%A2%E3%81%99%E3%82%8B%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B",
+          "x": 757,
+          "y": 1060,
+          "w": 254,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 144,
+          "y": 1385,
+          "w": 299,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 144,
+          "y": 1425,
+          "w": 246,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "LINEで問い合わせ",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 112,
+          "y": 1585,
+          "w": 181,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "LINEで友達追加",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%8B%E3%82%89%E9%80%A3%E7%B5%A1%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1131,
+          "y": 2329,
+          "w": 165,
+          "h": 44,
+          "visible": false
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 2609,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 2641,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 2673,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 2609,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 2641,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 2673,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 2609,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 2645,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 2681,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 2869,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 2869,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 2869,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 2869,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": []
+    }
+  },
+  {
+    "name": "jp-sector-detail",
+    "picked": {
+      "href": "/sectors/manufacturing",
+      "text": "注目製造業（Manufacturing）HITは製造業向けのインドネシア人材育成に最も豊富な実績を持っています。技能実習から特定技能まで対応可能です。詳細を見る"
+    },
+    "url": "http://hit-japan.lpk.local:3000/sectors/manufacturing",
+    "top": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-sector-detail-top.png",
+    "full": "C:\\Users\\novan\\Program\\nextcmslpk\\.codex-screenshots\\ux-review-20260529\\jp-sector-detail-full.png",
+    "summaryTop": {
+      "url": "http://hit-japan.lpk.local:3000/sectors/manufacturing",
+      "title": "製造業（Manufacturing） | ハシモト・インド・トラスト",
+      "viewportTexts": [
+        {
+          "tag": "P",
+          "text": "〒150-0001 大阪府大阪市（日本窓口）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "",
+          "box": {
+            "x": 523,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "P",
+          "text": "月〜金 09:00-17:00 JST",
+          "href": "",
+          "box": {
+            "x": 933,
+            "y": 12,
+            "w": 395,
+            "h": 16
+          }
+        },
+        {
+          "tag": "A",
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 56,
+            "w": 298,
+            "h": 44
+          }
+        },
+        {
+          "tag": "A",
+          "text": "会社概要",
+          "href": "/about",
+          "box": {
+            "x": 466,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "研修方法",
+          "href": "/training-method",
+          "box": {
+            "x": 546,
+            "y": 68,
+            "w": 56,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "box": {
+            "x": 626,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "box": {
+            "x": 762,
+            "y": 68,
+            "w": 112,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "業種",
+          "href": "/sectors",
+          "box": {
+            "x": 898,
+            "y": 68,
+            "w": 28,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ニュース",
+          "href": "/news",
+          "box": {
+            "x": 950,
+            "y": 68,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "box": {
+            "x": 1029,
+            "y": 68,
+            "w": 84,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "box": {
+            "x": 1169,
+            "y": 60,
+            "w": 159,
+            "h": 36
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "製造業（Manufacturing）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 211,
+            "w": 896,
+            "h": 55
+          }
+        },
+        {
+          "tag": "P",
+          "text": "HITは製造業向けのインドネシア人材育成に最も豊富な実績を持っています。技能実習から特定技能まで対応可能です。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 286,
+            "w": 768,
+            "h": 64
+          }
+        },
+        {
+          "tag": "A",
+          "text": "ホーム",
+          "href": "/",
+          "box": {
+            "x": 112,
+            "y": 542,
+            "w": 42,
+            "h": 20
+          }
+        },
+        {
+          "tag": "A",
+          "text": "セクター",
+          "href": "/sectors",
+          "box": {
+            "x": 186,
+            "y": 542,
+            "w": 55,
+            "h": 20
+          }
+        },
+        {
+          "tag": "H1",
+          "text": "製造業（Manufacturing）",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 594,
+            "w": 797,
+            "h": 40
+          }
+        },
+        {
+          "tag": "P",
+          "text": "HITは製造業向けのインドネシア人材育成に最も豊富な実績を持っています。技能実習から特定技能まで対応可能です。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 650,
+            "w": 797,
+            "h": 64
+          }
+        },
+        {
+          "tag": "P",
+          "text": "製造業はHITが最も多くの実績を持つ分野です。自動車部品、電子機器、金属加工、プラスチック成形など、様々なサブセクターに対応した人材をご提供しています。技能実習制度・特定技能制度ともに対応可能で、累計1,500名以上を製造業に派遣してきた実績があります。",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 738,
+            "w": 797,
+            "h": 96
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "適性",
+          "href": "",
+          "box": {
+            "x": 112,
+            "y": 874,
+            "w": 797,
+            "h": 32
+          }
+        },
+        {
+          "tag": "H2",
+          "text": "パートナーシップのお問い合わせ",
+          "href": "",
+          "box": {
+            "x": 970,
+            "y": 615,
+            "w": 337,
+            "h": 28
+          }
+        },
+        {
+          "tag": "P",
+          "text": "このセクターにおける候補者の充足状況、研修の連携、および必要書類についてご相談ください。",
+          "href": "",
+          "box": {
+            "x": 970,
+            "y": 655,
+            "w": 337,
+            "h": 48
+          }
+        },
+        {
+          "tag": "A",
+          "text": "製造業の採用についてLINEで相談",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E8%A3%BD%E9%80%A0%E6%A5%AD%E3%81%AE%E4%BA%BA%E6%9D%90%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E6%8E%A1%E7%94%A8%E6%9D%A1%E4%BB%B6%E3%82%92%E7%9B%B8%E8%AB%87%E3%81%95%E3%81%9B%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82",
+          "box": {
+            "x": 970,
+            "y": 727,
+            "w": 337,
+            "h": 36
+          }
+        }
+      ],
+      "ctas": [
+        {
+          "text": "インドネシア人材で、貴社の成長を支援します",
+          "href": "/",
+          "x": 112,
+          "y": 56,
+          "w": 298,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 466,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 546,
+          "y": 68,
+          "w": 56,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 626,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 762,
+          "y": 68,
+          "w": 112,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "業種",
+          "href": "/sectors",
+          "x": 898,
+          "y": 68,
+          "w": 28,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 950,
+          "y": 68,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "お問い合わせ",
+          "href": "/contact",
+          "x": 1029,
+          "y": 68,
+          "w": 84,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "LINEで相談する",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2%E4%BA%BA%E6%9D%90%E3%81%AE%E6%8E%A1%E7%94%A8%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%94%E7%9B%B8%E8%AB%87%E3%81%97%E3%81%9F%E3%81%84%E3%81%AE%E3%81%A7%E3%81%99%E3%81%8C%E3%80%81%E3%82%88%E3%82%8D%E3%81%97%E3%81%84%E3%81%A7%E3%81%97%E3%82%87%E3%81%86%E3%81%8B%E3%80%82",
+          "x": 1169,
+          "y": 60,
+          "w": 159,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "ホーム",
+          "href": "/",
+          "x": 112,
+          "y": 542,
+          "w": 42,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "セクター",
+          "href": "/sectors",
+          "x": 186,
+          "y": 542,
+          "w": 55,
+          "h": 20,
+          "visible": true
+        },
+        {
+          "text": "製造業の採用についてLINEで相談",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E8%A3%BD%E9%80%A0%E6%A5%AD%E3%81%AE%E4%BA%BA%E6%9D%90%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82%E6%8E%A1%E7%94%A8%E6%9D%A1%E4%BB%B6%E3%82%92%E7%9B%B8%E8%AB%87%E3%81%95%E3%81%9B%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82",
+          "x": 970,
+          "y": 727,
+          "w": 337,
+          "h": 36,
+          "visible": true
+        },
+        {
+          "text": "会社概要",
+          "href": "/about",
+          "x": 426,
+          "y": 2732,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "採用ネットワーク",
+          "href": "/recruitment-network",
+          "x": 426,
+          "y": 2764,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "研修方法",
+          "href": "/training-method",
+          "x": 426,
+          "y": 2796,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "人材プロフィール",
+          "href": "/candidate-profile",
+          "x": 740,
+          "y": 2732,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "対応業種",
+          "href": "/sectors",
+          "x": 740,
+          "y": 2764,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "ニュース",
+          "href": "/news",
+          "x": 740,
+          "y": 2796,
+          "w": 274,
+          "h": 20,
+          "visible": false
+        },
+        {
+          "text": "LINE公式アカウント",
+          "href": "https://line.me/R/oaMessage/@hit-japan/?%E3%83%8F%E3%82%B7%E3%83%A2%E3%83%88%E3%83%BB%E3%82%A4%E3%83%B3%E3%83%89%E3%83%BB%E3%83%88%E3%83%A9%E3%82%B9%E3%83%88%E3%81%AE%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%E3%81%8B%E3%82%89%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E3%81%99%E3%80%82",
+          "x": 1054,
+          "y": 2732,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "japan@hashimotoindotrust.co.id",
+          "href": "mailto:japan@hashimotoindotrust.co.id",
+          "x": 1054,
+          "y": 2768,
+          "w": 274,
+          "h": 24,
+          "visible": false
+        },
+        {
+          "text": "+62 812-3456-7890（インドネシア本社）",
+          "href": "tel:+62 812-3456-7890（インドネシア本社）",
+          "x": 1054,
+          "y": 2804,
+          "w": 274,
+          "h": 48,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://line.me/R/ti/p/@hit-japan",
+          "x": 1054,
+          "y": 2992,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://linkedin.com/company/hashimoto-indo-trust",
+          "x": 1102,
+          "y": 2992,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://youtube.com/@hashimotoindotrust",
+          "x": 1150,
+          "y": 2992,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        },
+        {
+          "text": "",
+          "href": "https://instagram.com/hashimotoindotrust",
+          "x": 1198,
+          "y": 2992,
+          "w": 36,
+          "h": 36,
+          "visible": false
+        }
+      ],
+      "selects": []
+    }
+  }
+]
