@@ -148,3 +148,11 @@ vite.config.ts.timestamp-*
 .vite/
 
 /src/generated/prisma
+
+# Codex/local QA artifacts
+.codex-qa-screenshots/
+.codex-screenshots/
+test-results/
+
+# Local dummy media used for manual CMS testing
+dummy image/
