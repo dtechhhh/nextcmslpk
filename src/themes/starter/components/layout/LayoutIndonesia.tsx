@@ -12,6 +12,8 @@ import { FooterIndonesia } from "@/themes/starter/components/layout/FooterIndone
 import { HeaderIndonesia } from "@/themes/starter/components/layout/HeaderIndonesia";
 import { getVariantAppearanceStyle } from "@/themes/starter/design-system/appearance";
 
+const PUBLIC_LAYOUT_CACHE_SECONDS = 300;
+
 type LayoutIndonesiaProps = {
   globalConfig: Record<string, PublicJson>;
   tenant: TenantModel;
@@ -161,7 +163,10 @@ function resolveCachedFooterProgramLinks(variantId: string, footer: PublicJson) 
   return unstable_cache(
     () => resolveFooterProgramLinks(variantId, maxItems),
     ["public-layout-indonesia-footer-program-links", variantId, source, String(maxItems)],
-    { revalidate: 60, tags: [`collection:${variantId}:program`, `variant:${variantId}`] },
+    {
+      revalidate: PUBLIC_LAYOUT_CACHE_SECONDS,
+      tags: [`collection:${variantId}:program`, `variant:${variantId}`],
+    },
   )();
 }
 

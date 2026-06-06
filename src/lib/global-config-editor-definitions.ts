@@ -236,11 +236,11 @@ const navItemFields: GlobalConfigField[] = [
 ];
 
 const japanNavItemFields: GlobalConfigField[] = [
-  { kind: "select", path: "key", label: "Key", options: japanNavbarKeyOptions },
+  { kind: "select", path: "key", label: "Jenis menu", options: japanNavbarKeyOptions },
   { kind: "text", path: "label", label: "Label" },
-  { kind: "text", path: "href", label: "Href" },
-  { kind: "switch", path: "is_enabled", label: "Enabled" },
-  { kind: "number", path: "sort_order", label: "Sort order", min: 0 },
+  { kind: "text", path: "href", label: "Link" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+  { kind: "number", path: "sort_order", label: "Urutan", min: 0 },
 ];
 
 const indonesiaAppearanceDefaults = {
@@ -626,7 +626,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
   "japan.brand_header": {
     variantKey: "japan",
     configKey: "brand_header",
-    title: "Brand & Header",
+    title: "Brand dan Header",
     defaultData: {
       brand: {
         lpk_name: "",
@@ -664,18 +664,18 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         key: "brand",
         title: "Brand",
         fields: [
-          { kind: "text", path: "brand.lpk_name", label: "LPK name" },
+          { kind: "text", path: "brand.lpk_name", label: "Nama LPK" },
           { kind: "text", path: "brand.tagline", label: "Tagline" },
           {
             kind: "media",
             path: "brand.logo_image_id",
-            label: "Logo image",
+            label: "Logo utama",
             mediaPreset: "logo",
           },
           {
             kind: "media",
             path: "brand.logo_light_image_id",
-            label: "Light logo image",
+            label: "Logo versi terang",
             mediaPreset: "logo",
           },
         ],
@@ -684,26 +684,26 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         key: "topbar",
         title: "Topbar",
         fields: [
-          { kind: "switch", path: "topbar.is_enabled", label: "Enabled" },
-          { kind: "text", path: "topbar.location_label", label: "Location label" },
-          { kind: "text", path: "topbar.email_label", label: "Email label" },
+          { kind: "switch", path: "topbar.is_enabled", label: "Aktif" },
+          { kind: "text", path: "topbar.location_label", label: "Label lokasi" },
+          { kind: "text", path: "topbar.email_label", label: "Label email" },
           {
             kind: "text",
             path: "topbar.business_hours_label",
-            label: "Business hours label",
+            label: "Label jam operasional",
           },
         ],
       },
       {
         key: "navbar",
-        title: "Navbar",
+        title: "Navigasi",
         fields: [
           {
             kind: "array",
             path: "navbar",
-            label: "Navbar items",
+            label: "Menu navigasi",
             itemLabel: "Menu",
-            addLabel: "Add menu",
+            addLabel: "Tambah menu",
             defaultItem: {
               key: "about",
               label: "",
@@ -718,75 +718,75 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
       },
       {
         key: "header_primary_cta",
-        title: "Header Primary CTA",
+        title: "CTA utama header",
         fields: [
           { kind: "text", path: "header_primary_cta.label", label: "Label" },
           {
             kind: "select",
             path: "header_primary_cta.type",
-            label: "Type",
+            label: "Jenis",
             options: [{ value: "line", label: "LINE" }],
           },
           {
             kind: "textarea",
             path: "header_primary_cta.line_message_template",
-            label: "LINE message template",
+            label: "Template pesan LINE",
           },
         ],
       },
       {
         key: "header_secondary_cta",
-        title: "Header Secondary CTA",
+        title: "CTA kedua header",
         fields: [
-          { kind: "switch", path: "header_secondary_cta.is_enabled", label: "Enabled" },
+          { kind: "switch", path: "header_secondary_cta.is_enabled", label: "Aktif" },
           { kind: "text", path: "header_secondary_cta.label", label: "Label" },
           {
             kind: "text",
             path: "header_secondary_cta.href",
-            label: "Download URL",
+            label: "URL unduhan",
             inputType: "url",
           },
         ],
       },
       {
         key: "header_behavior",
-        title: "Header Behavior",
+        title: "Perilaku header",
         fields: [
-          { kind: "switch", path: "header_behavior.sticky_header", label: "Sticky header" },
+          { kind: "switch", path: "header_behavior.sticky_header", label: "Header melekat" },
           {
             kind: "select",
             path: "header_behavior.header_style",
-            label: "Header style",
+            label: "Gaya header",
             options: headerStyleOptions,
           },
         ],
       },
       {
         key: "appearance",
-        title: "Appearance",
+        title: "Tampilan",
         fields: [
           {
             kind: "color",
             path: "appearance.primary_color",
-            label: "Primary color",
+            label: "Warna utama",
             placeholder: "#1e3a5f",
           },
           {
             kind: "color",
             path: "appearance.primary_hover_color",
-            label: "Primary hover color",
+            label: "Warna hover utama",
             placeholder: "#162d4a",
           },
           {
             kind: "color",
             path: "appearance.accent_color",
-            label: "Accent color",
+            label: "Warna aksen",
             placeholder: "#e53935",
           },
           {
             kind: "color",
             path: "appearance.cta_color",
-            label: "CTA color",
+            label: "Warna CTA",
             placeholder: "#06C755",
           },
         ],
@@ -796,7 +796,7 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
   "japan.line_business_contact": {
     variantKey: "japan",
     configKey: "line_business_contact",
-    title: "LINE & Business Contact",
+    title: "LINE dan Kontak Bisnis",
     defaultData: {
       line_contact: {
         line_official_account_id: "",
@@ -835,92 +835,92 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
     sections: [
       {
         key: "line_contact",
-        title: "LINE Contact",
+        title: "Kontak LINE",
         fields: [
-          { kind: "switch", path: "line_contact.is_enabled", label: "Enabled" },
+          { kind: "switch", path: "line_contact.is_enabled", label: "Aktif" },
           {
             kind: "text",
             path: "line_contact.line_official_account_id",
-            label: "LINE official account ID",
+            label: "ID akun resmi LINE",
           },
           {
             kind: "text",
             path: "line_contact.line_display_label",
-            label: "LINE display label",
+            label: "Label tampilan LINE",
           },
           {
             kind: "textarea",
             path: "line_contact.default_message_template",
-            label: "Default message template",
+            label: "Template pesan default",
           },
         ],
       },
       {
         key: "business_email",
-        title: "Business Email",
+        title: "Email bisnis",
         fields: [
-          { kind: "switch", path: "business_email.is_enabled", label: "Enabled" },
+          { kind: "switch", path: "business_email.is_enabled", label: "Aktif" },
           { kind: "text", path: "business_email.email", label: "Email", inputType: "email" },
           {
             kind: "text",
             path: "business_email.default_subject_template",
-            label: "Default subject template",
+            label: "Template subject default",
           },
         ],
       },
       {
         key: "business_contact_note",
-        title: "Business Contact Note",
+        title: "Catatan kontak bisnis",
         fields: [
           {
             kind: "textarea",
             path: "business_contact_note.short_note",
-            label: "Short note",
+            label: "Catatan singkat",
           },
         ],
       },
       {
         key: "business_info",
-        title: "Business Info",
+        title: "Informasi bisnis",
         fields: [
-          { kind: "text", path: "business_info.phone_label", label: "Phone label" },
-          { kind: "textarea", path: "business_info.address", label: "Address" },
-          { kind: "text", path: "business_info.map_url", label: "Map URL", inputType: "url" },
+          { kind: "text", path: "business_info.phone_label", label: "Nomor telepon / label kontak" },
+          { kind: "textarea", path: "business_info.address", label: "Alamat" },
+          { kind: "text", path: "business_info.map_url", label: "URL peta", inputType: "url" },
           {
             kind: "text",
             path: "business_info.operational_hours",
-            label: "Operational hours",
+            label: "Jam operasional",
           },
           {
             kind: "string-array",
             path: "business_info.language_support",
-            label: "Language support",
-            itemLabel: "Language",
-            addLabel: "Add language",
+            label: "Bahasa layanan",
+            itemLabel: "Bahasa",
+            addLabel: "Tambah bahasa",
           },
         ],
       },
       {
         key: "documents",
-        title: "Documents",
+        title: "Dokumen",
         fields: [
           {
             kind: "text",
             path: "documents.company_profile_url",
-            label: "Company profile URL",
+            label: "URL profil perusahaan",
             inputType: "url",
           },
           {
             kind: "text",
             path: "documents.curriculum_url",
-            label: "Curriculum URL",
+            label: "URL kurikulum",
             inputType: "url",
           },
         ],
       },
       {
         key: "social_links",
-        title: "Social Links",
+        title: "Link sosial media",
         fields: [
           { kind: "text", path: "social_links.line", label: "LINE", inputType: "url" },
           { kind: "text", path: "social_links.linkedin", label: "LinkedIn", inputType: "url" },
@@ -958,27 +958,27 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
           {
             kind: "media",
             path: "brand.logo_image_id",
-            label: "Logo image",
+            label: "Logo",
             mediaPreset: "logo",
           },
-          { kind: "text", path: "brand.lpk_name", label: "LPK name" },
+          { kind: "text", path: "brand.lpk_name", label: "Nama LPK" },
           {
             kind: "textarea",
             path: "brand.short_description",
-            label: "Short description",
+            label: "Deskripsi singkat",
           },
         ],
       },
       {
         key: "company_links",
-        title: "Company Links",
+        title: "Link perusahaan",
         fields: [
           {
             kind: "array",
             path: "company_links",
-            label: "Company links",
+            label: "Link perusahaan",
             itemLabel: "Link",
-            addLabel: "Add link",
+            addLabel: "Tambah link",
             defaultItem: {
               key: "about",
               label: "",
@@ -988,25 +988,25 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "select", path: "key", label: "Key", options: japanCompanyLinkKeyOptions },
+              { kind: "select", path: "key", label: "Jenis link", options: japanCompanyLinkKeyOptions },
               { kind: "text", path: "label", label: "Label" },
-              { kind: "text", path: "href", label: "Href" },
-              { kind: "switch", path: "is_enabled", label: "Enabled" },
-              { kind: "number", path: "sort_order", label: "Sort order", min: 0 },
+              { kind: "text", path: "href", label: "Link" },
+              { kind: "switch", path: "is_enabled", label: "Aktif" },
+              { kind: "number", path: "sort_order", label: "Urutan", min: 0 },
             ],
           },
         ],
       },
       {
         key: "resource_links",
-        title: "Resource Links",
+        title: "Link resource",
         fields: [
           {
             kind: "array",
             path: "resource_links",
-            label: "Resource links",
+            label: "Link resource",
             itemLabel: "Resource",
-            addLabel: "Add resource",
+            addLabel: "Tambah resource",
             defaultItem: {
               key: "candidate_profile",
               label: "",
@@ -1016,23 +1016,23 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
             },
             sortOrderField: "sort_order",
             fields: [
-              { kind: "select", path: "key", label: "Key", options: japanResourceLinkKeyOptions },
+              { kind: "select", path: "key", label: "Jenis resource", options: japanResourceLinkKeyOptions },
               { kind: "text", path: "label", label: "Label" },
               { kind: "text", path: "href", label: "URL", inputType: "url" },
-              { kind: "switch", path: "is_enabled", label: "Enabled" },
-              { kind: "number", path: "sort_order", label: "Sort order", min: 0 },
+              { kind: "switch", path: "is_enabled", label: "Aktif" },
+              { kind: "number", path: "sort_order", label: "Urutan", min: 0 },
             ],
           },
         ],
       },
       {
         key: "contact",
-        title: "Contact",
+        title: "Kontak",
         fields: [
           {
             kind: "switch",
             path: "contact.use_global_contact",
-            label: "Use global contact",
+            label: "Gunakan kontak global",
           },
         ],
       },
@@ -1040,11 +1040,11 @@ export const GLOBAL_CONFIG_EDITOR_DEFINITIONS = {
         key: "legal",
         title: "Legal",
         fields: [
-          { kind: "text", path: "legal.copyright_text", label: "Copyright text" },
+          { kind: "text", path: "legal.copyright_text", label: "Teks copyright" },
           {
             kind: "switch",
             path: "legal.show_powered_by",
-            label: "Show powered by",
+            label: "Tampilkan powered by",
           },
         ],
       },

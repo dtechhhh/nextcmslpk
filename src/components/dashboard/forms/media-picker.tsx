@@ -75,6 +75,9 @@ const DEFAULT_CROP_RECT: MediaCropRect = {
 };
 
 const MEDIA_PICKER_PAGE_SIZE = 24;
+const INLINE_UPLOAD_ACCEPT =
+  "image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime";
+const ALLOWED_INLINE_UPLOAD_MIME_TYPES = new Set(INLINE_UPLOAD_ACCEPT.split(","));
 
 export function MediaPicker({
   tenantId,
@@ -252,6 +255,20 @@ export function MediaPicker({
     setUploadError(null);
 
     try {
+      if (mediaType === "DOCUMENT") {
+        setUploadError("Upload dokumen tidak tersedia. Gunakan URL dokumen.");
+        setUploading(false);
+        event.target.value = "";
+        return;
+      }
+
+      if (!isAllowedInlineUploadFile(file)) {
+        setUploadError("Upload hanya mendukung gambar JPG/PNG/WebP dan video MP4/WebM/MOV.");
+        setUploading(false);
+        event.target.value = "";
+        return;
+      }
+
       const validationError = await validateFileForPreset(file, mediaPreset);
 
       if (validationError) {
@@ -290,7 +307,7 @@ export function MediaPicker({
           fileName: file.name,
           mimeType: file.type,
           fileSize: file.size,
-          mediaType,
+          mediaType: getMediaTypeForUploadedFile(file),
           status: "ACTIVE",
           width: null,
           height: null,
@@ -379,7 +396,7 @@ export function MediaPicker({
                 type="button"
                 variant="outline"
                 size="sm"
-                disabled={uploading}
+                disabled={uploading || mediaType === "DOCUMENT"}
                 onClick={() => fileInputRef.current?.click()}
               >
                 {uploading ? (
@@ -863,7 +880,7 @@ function getAcceptedMimeTypes(mediaType: MediaType) {
     return "video/mp4,video/webm,video/quicktime";
   }
 
-  return "application/pdf";
+  return INLINE_UPLOAD_ACCEPT;
 }
 
 function getMediaPickerTitle(mediaType: MediaType) {
@@ -900,6 +917,14 @@ function getSelectedFallbackLabel(mediaType: MediaType) {
 
 function isMediaType(value: unknown): value is MediaType {
   return value === "IMAGE" || value === "DOCUMENT" || value === "VIDEO";
+}
+
+function isAllowedInlineUploadFile(file: File) {
+  return ALLOWED_INLINE_UPLOAD_MIME_TYPES.has(file.type);
+}
+
+function getMediaTypeForUploadedFile(file: File): MediaType {
+  return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
 }
 
 function getActionErrorMessage(value: unknown, fallback: string) {

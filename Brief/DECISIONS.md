@@ -247,16 +247,17 @@ Dampak:    Tidak ada route /offer di public site.
            Agent TIDAK boleh membuat offer listing page.
 ```
 
-## DEC-018: Auto-Save Last Write Wins
+## DEC-018: Manual Save Last Write Wins
 
 ```text
-Tanggal:   2026-05-14
+Tanggal:   2026-06-05
 Status:    Accepted
-Konteks:   Dashboard auto-save debounced 1s, tapi tidak ada spec untuk concurrent editing.
-           MVP = 1 tenant admin per tenant, concurrent edit sangat jarang.
-Keputusan: Last write wins policy. Tidak ada optimistic locking di MVP.
+Konteks:   Dashboard memakai manual save agar editor tidak menunggu request simpan otomatis
+           saat koneksi lambat. Tidak ada spec untuk concurrent editing.
+Keputusan: User menyimpan perubahan lewat tombol Save. Last write wins policy.
+           Tidak ada optimistic locking di MVP.
 Alasan:    MVP hanya 1 user per tenant, concurrent conflict hampir tidak mungkin.
-           Optimistic locking (updatedAt check) = complexity premature.
+           Manual save lebih stabil untuk upload/ganti media di jaringan lambat.
 Dampak:    Jika dua tab membuka editor yang sama, save terakhir menang.
            Agent TIDAK perlu implement conflict detection atau version check.
            Post-MVP: tambahkan updatedAt check + "Content has been modified" warning.

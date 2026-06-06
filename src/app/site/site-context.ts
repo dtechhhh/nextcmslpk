@@ -5,6 +5,8 @@ import { headers } from "next/headers";
 import { resolveDomain, type DomainResolution } from "@/server/resolvers/domain";
 import { resolveGlobalConfig } from "@/server/resolvers/public";
 
+const PUBLIC_CONTEXT_CACHE_SECONDS = 300;
+
 export const getSiteContext = cache(async () => {
   const host = (await headers()).get("host") || "";
   const result = await resolveDomain(host);
@@ -16,7 +18,7 @@ export const getSiteContext = cache(async () => {
   const globalConfig = await unstable_cache(
     () => resolveGlobalConfig(result.variant.id),
     ["public-global-config", result.variant.id],
-    { revalidate: 60, tags: [`variant:${result.variant.id}`] },
+    { revalidate: PUBLIC_CONTEXT_CACHE_SECONDS, tags: [`variant:${result.variant.id}`] },
   )();
 
   return {

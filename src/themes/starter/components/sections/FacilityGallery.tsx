@@ -55,9 +55,16 @@ function FacilityGallery({ title, items }: FacilityGalleryProps) {
                 sizes="(min-width: 1024px) 33vw, 50vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              {item.title ? (
+              {item.title || item.description ? (
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <p className="text-sm font-semibold text-white">{item.title}</p>
+                  {item.title ? (
+                    <p className="text-sm font-semibold text-white">{item.title}</p>
+                  ) : null}
+                  {item.description ? (
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/80">
+                      {item.description}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
             </button>

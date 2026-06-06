@@ -12,9 +12,9 @@ const copy = {
     fontClass: "",
   },
   japan: {
-    heading: "ページが見つかりません",
-    subtext: "お探しのページは存在しないか、移動した可能性があります。",
-    cta: "ホームに戻る",
+    heading: "Halaman Tidak Ditemukan",
+    subtext: "Halaman yang Anda cari tidak tersedia atau telah dipindahkan.",
+    cta: "Kembali ke Beranda",
     themeClass: "theme-japan",
     fontClass: "font-japanese",
   },

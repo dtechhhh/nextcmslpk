@@ -86,8 +86,8 @@ Per variant:
 ```text
 1. Load page by tenantId + variantId + pageKey
 2. Display form sesuai dataJson schema dari variant spec
-3. Auto-save draft on blur/change (debounced 1s)
-4. Manual save button juga tersedia
+3. Perubahan form ditandai sebagai unsaved changes
+4. User menyimpan perubahan dengan tombol manual save
 5. Save draft → update dataJson ONLY (publishedDataJson tidak berubah)
 6. Publish button → copy dataJson ke publishedDataJson, set status PUBLISHED
 
@@ -365,6 +365,6 @@ Every mutation:
 - Forms use client components with server actions
 - Media picker uses pagination (not load-all)
 - Content blocks use lazy loading per block type
-- Auto-save debounced to 1 second
+- Manual save untuk menghindari request panjang saat koneksi lambat
 - Optimistic UI for publish/unpublish toggle
 ```

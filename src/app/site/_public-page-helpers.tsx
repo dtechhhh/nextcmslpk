@@ -89,6 +89,21 @@ type DetailPageOptions = {
   searchParams?: PageSearchParams;
 };
 
+type PublicCollectionListOptions = NonNullable<
+  Parameters<typeof resolveCollectionList>[2]
+>;
+type PublicCollectionSource = PublicCollectionListOptions["source"];
+
+const PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS = 300;
+
+function normalizePublicCollectionSource(value: string): PublicCollectionSource {
+  return value === "featured" ||
+    value === "latest_active" ||
+    value === "latest_published"
+    ? value
+    : undefined;
+}
+
 export async function loadPublicPage(options: PageLoadOptions) {
   const context = await getOkContext();
   const params = await options.searchParams;
@@ -106,7 +121,10 @@ export async function loadPublicPage(options: PageLoadOptions) {
   const page = await unstable_cache(
     () => resolvePageData(context.variantId, options.pageKey),
     ["public-page", context.variantId, options.pageKey],
-    { revalidate: options.revalidate, tags: resolveTags(options.cacheTags, context.variantId) },
+    {
+      revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
+      tags: resolveTags(options.cacheTags, context.variantId),
+    },
   )();
 
   return { context, page, isPreview: false };
@@ -128,10 +146,16 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
   const data = page.dataJson;
   if (context.variantKey === "japan") {
     const latestNewsConfig = record(data.latest_news);
-    const latestNews = await resolveCollectionList(context.variantId, "news", {
-      source: "latest_published",
-      pageSize: numberValue(latestNewsConfig.max_items) || 4,
-    });
+    const latestNews = await resolveCachedCollectionList(
+      context.variantId,
+      "news",
+      {
+        source: normalizePublicCollectionSource(stringValue(latestNewsConfig.source)) ?? "latest_published",
+        pageSize: numberValue(latestNewsConfig.max_items) || 4,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:news`],
+    );
 
     return (
       <JapanHomepage
@@ -160,21 +184,46 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
   const [heroImage, programs, jobs, blogs, offerPayload] = await Promise.all([
     resolveMediaUrl(heroMediaId),
     resolveFeaturedPrograms(context.variantId, featuredProgramsConfig),
-    resolveCollectionList(context.variantId, "job", {
-      source: "latest_active",
-      pageSize: numberValue(record(data.latest_jobs).max_items) || 5,
-      activeOnly: true,
-    }),
-    resolveCollectionList(context.variantId, "blog", {
-      source: "latest_published",
-      pageSize: numberValue(record(data.latest_blogs).max_items) || 5,
-    }),
+    resolveCachedCollectionList(
+      context.variantId,
+      "job",
+      {
+        source: "latest_active",
+        pageSize: numberValue(record(data.latest_jobs).max_items) || 5,
+        activeOnly: true,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:job`],
+    ),
+    resolveCachedCollectionList(
+      context.variantId,
+      "blog",
+      {
+        source: "latest_published",
+        pageSize: numberValue(record(data.latest_blogs).max_items) || 5,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:blog`],
+    ),
     resolveOfferSectionPayload(context.variantId, offerSection),
   ]);
   const offerItem = offerPayload.item;
   const offerBadgeLabel = offerItem
     ? await resolveOfferBannerBadge(offerItem, context.variantId)
     : stringValue(offerSection.fallback_badge_label);
+  const [programCards, jobListItems, blogCards] = await Promise.all([
+    Promise.all(
+      programs.items.map((item) => programCollectionCard(item, context.variantId)),
+    ),
+    Promise.all(
+      jobs.items.map((item) => toCollectionListItem(item, "job", context.variantId)),
+    ),
+    Promise.all(
+      blogs.items.map((item) =>
+        collectionCard(item, "/blog", ["category"], context.variantId),
+      ),
+    ),
+  ]);
 
   return (
     <>
@@ -253,17 +302,13 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       />
       <CardGrid
         title="Program Unggulan"
-        items={await Promise.all(
-          programs.items.map((item) => programCollectionCard(item, context.variantId)),
-        )}
+        items={programCards}
         ctaLabel="Lihat Semua Program"
         ctaHref="/program"
       />
       <CollectionList
         title="Lowongan Terbaru"
-        items={await Promise.all(
-          jobs.items.map((item) => toCollectionListItem(item, "job", context.variantId)),
-        )}
+        items={jobListItems}
         total={jobs.total}
         page={jobs.page}
         pageSize={jobs.pageSize}
@@ -294,11 +339,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       <FAQ title="Pertanyaan Umum" items={arrayOfRecords(data.faqs).map(toFaqItem)} />
       <CardGrid
         title="Artikel Terbaru"
-        items={await Promise.all(
-          blogs.items.map((item) =>
-            collectionCard(item, "/blog", ["category"], context.variantId),
-          ),
-        )}
+        items={blogCards}
         ctaLabel="Lihat Semua Artikel"
         ctaHref="/blog"
       />
@@ -363,7 +404,7 @@ export async function renderListPage(options: ListPageOptions) {
         }),
       ["public-collection", context.variantId, options.collectionKey, JSON.stringify(filters), String(currentPage)],
       {
-        revalidate: options.revalidate,
+        revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
         tags: resolveTags(options.cacheTags, context.variantId),
       },
     )(),
@@ -495,9 +536,15 @@ export async function renderDetailPage(options: DetailPageOptions) {
     const fallbackHeroImage = getDetailHeroSrc(item)
       ? undefined
       : await resolveDetailPageHeroSrc(context.variantId, "program_page");
-    const brochureUrl = booleanValue(item.dataJson.brochure_enabled, false)
-      ? await resolveMediaUrl(stringValue(item.dataJson.brochure_file_id))
-      : null;
+    let brochureUrl: string | null = null;
+
+    if (booleanValue(item.dataJson.brochure_enabled, false)) {
+      brochureUrl = stringValue(item.dataJson.brochure_url);
+
+      if (!brochureUrl) {
+        brochureUrl = await resolveMediaUrl(stringValue(item.dataJson.brochure_file_id));
+      }
+    }
 
     return (
       <>
@@ -520,8 +567,6 @@ export async function renderDetailPage(options: DetailPageOptions) {
           sidebar={
             <ProgramDetailSidebar
               item={item}
-              globalConfig={context.globalConfig}
-              lpkName={lpkName}
               brochureUrl={brochureUrl}
             />
           }
@@ -554,13 +599,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
               variantId={context.variantId}
             />
           }
-          sidebar={
-            <JobDetailSidebar
-              item={item}
-              globalConfig={context.globalConfig}
-              lpkName={lpkName}
-            />
-          }
+          sidebar={<JobDetailSidebar item={item} />}
         />
       </>
     );
@@ -656,13 +695,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
               variantId={context.variantId}
             />
           }
-          sidebar={
-            <KarirDetailSidebar
-              item={item}
-              globalConfig={context.globalConfig}
-              lpkName={lpkName}
-            />
-          }
+          sidebar={<KarirDetailSidebar item={item} />}
         />
       </>
     );
@@ -1094,7 +1127,7 @@ export async function renderJapanListPage(options: JapanListPageOptions) {
         String(currentPage),
       ],
       {
-        revalidate: options.revalidate,
+        revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
         tags: resolveTags(options.cacheTags, context.variantId),
       },
     )(),
@@ -2191,17 +2224,12 @@ async function ProgramDetailMain({
 
 function ProgramDetailSidebar({
   item,
-  globalConfig,
-  lpkName,
   brochureUrl,
 }: {
   item: PublicCollectionItem;
-  globalConfig: Record<string, PublicJson>;
-  lpkName: string;
   brochureUrl?: string | null;
 }) {
   const data = item.dataJson;
-  const whatsappHref = getProgramWhatsappHref(data, globalConfig, lpkName, item.title);
   const minAge = numberValue(data.min_age);
   const maxAge = numberValue(data.max_age);
   const ageLabel = minAge && maxAge
@@ -2240,15 +2268,8 @@ function ProgramDetailSidebar({
             <MetaRow label="Highlight" value={stringValue(data.highlight_label)} />
           ) : null}
         </dl>
-        <Button
-          render={<a href={whatsappHref} />}
-          variant="whatsapp"
-          className="mt-6 w-full"
-        >
-          {stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
-        </Button>
         {brochureUrl ? (
-          <div className="mt-3">
+          <div className="mt-6">
             <DocumentDownload
               label="Unduh Brosur"
               fileUrl={brochureUrl}
@@ -2494,15 +2515,10 @@ async function JobDetailMain({
 
 function JobDetailSidebar({
   item,
-  globalConfig,
-  lpkName,
 }: {
   item: PublicCollectionItem;
-  globalConfig: Record<string, PublicJson>;
-  lpkName: string;
 }) {
   const data = item.dataJson;
-  const whatsappHref = getJobWhatsappHref(data, globalConfig, lpkName, item.title);
   const minAge = numberValue(data.min_age);
   const maxAge = numberValue(data.max_age);
   const ageLabel = minAge && maxAge ? `${minAge} - ${maxAge} tahun` : minAge ? `Min ${minAge} tahun` : maxAge ? `Max ${maxAge} tahun` : "";
@@ -2559,16 +2575,6 @@ function JobDetailSidebar({
             </ul>
           </div>
         ) : null}
-
-        <Button
-          render={<a href={item.isExpired ? "#" : whatsappHref} />}
-          disabled={item.isExpired}
-          variant="whatsapp"
-          className="mt-6 w-full"
-          title={item.isExpired ? "Lowongan ini sudah tidak tersedia" : undefined}
-        >
-          {item.isExpired ? "Pendaftaran Ditutup" : stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
-        </Button>
       </CardContent>
     </Card>
   );
@@ -2861,15 +2867,10 @@ async function KarirDetailMain({
 
 function KarirDetailSidebar({
   item,
-  globalConfig,
-  lpkName,
 }: {
   item: PublicCollectionItem;
-  globalConfig: Record<string, PublicJson>;
-  lpkName: string;
 }) {
   const data = item.dataJson;
-  const whatsappHref = getKarirWhatsappHref(data, globalConfig, lpkName, item.title);
 
   return (
     <Card>
@@ -2898,16 +2899,6 @@ function KarirDetailSidebar({
             <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
           ) : null}
         </dl>
-
-        <Button
-          render={<a href={item.isExpired ? "#" : whatsappHref} />}
-          disabled={item.isExpired}
-          variant="whatsapp"
-          className="mt-6 w-full"
-          title={item.isExpired ? "Posisi ini sudah tidak tersedia" : undefined}
-        >
-          {item.isExpired ? "Pendaftaran Ditutup" : stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
-        </Button>
       </CardContent>
     </Card>
   );
@@ -3467,10 +3458,16 @@ async function resolveFeaturedPrograms(variantId: string, config: PublicJson) {
   const source = stringValue(config.source) || "featured";
 
   if (source !== "manual") {
-    return resolveCollectionList(variantId, "program", {
-      source: "featured",
-      pageSize,
-    });
+    return resolveCachedCollectionList(
+      variantId,
+      "program",
+      {
+        source: "featured",
+        pageSize,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (id) => [`page:${id}:homepage`, `collection:${id}:program`],
+    );
   }
 
   const manualIds = flatStringList(config.manual_program_ids).slice(0, pageSize);
@@ -3485,11 +3482,17 @@ async function resolveFeaturedPrograms(variantId: string, config: PublicJson) {
     };
   }
 
-  const result = await resolveCollectionList(variantId, "program", {
-    source: "manual",
-    manualIds,
-    pageSize,
-  });
+  const result = await resolveCachedCollectionList(
+    variantId,
+    "program",
+    {
+      source: "manual",
+      manualIds,
+      pageSize,
+    },
+    PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+    (id) => [`page:${id}:homepage`, `collection:${id}:program`],
+  );
   const byId = new Map(result.items.map((item) => [item.id, item]));
 
   return {
@@ -3513,17 +3516,87 @@ async function resolveOfferSectionPayload(variantId: string, config: PublicJson)
       return { item: null, fallbackImageSrc, isDisabled: false };
     }
 
-    const result = await resolveCollectionList(variantId, "offer", {
-      source: "manual",
-      manualIds: [manualOfferId],
-      pageSize: 1,
-      activeOnly: true,
-    });
+    const result = await resolveCachedCollectionList(
+      variantId,
+      "offer",
+      {
+        source: "manual",
+        manualIds: [manualOfferId],
+        pageSize: 1,
+        activeOnly: true,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (id) => [`page:${id}:homepage`, `collection:${id}:offer`],
+    );
 
     return { item: result.items[0] ?? null, fallbackImageSrc, isDisabled: false };
   }
 
-  return { item: await resolveActiveOffer(variantId), fallbackImageSrc, isDisabled: false };
+  return {
+    item: await resolveCachedActiveOffer(variantId),
+    fallbackImageSrc,
+    isDisabled: false,
+  };
+}
+
+function resolveCachedActiveOffer(variantId: string) {
+  return unstable_cache(
+    () => resolveActiveOffer(variantId),
+    ["public-active-offer", variantId],
+    {
+      revalidate: PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      tags: resolveTags((id) => [`collection:${id}:offer`], variantId),
+    },
+  )();
+}
+
+function resolveCachedCollectionList(
+  variantId: string,
+  collectionKey: string,
+  opts: PublicCollectionListOptions,
+  revalidate: number,
+  cacheTags: string[] | ((variantId: string) => string[]),
+) {
+  return unstable_cache(
+    () => resolveCollectionList(variantId, collectionKey, opts),
+    [
+      "public-cached-collection",
+      variantId,
+      collectionKey,
+      stableCollectionOptionsKey(opts),
+    ],
+    {
+      revalidate,
+      tags: resolveTags(cacheTags, variantId),
+    },
+  )();
+}
+
+function stableCollectionOptionsKey(opts: PublicCollectionListOptions) {
+  return JSON.stringify({
+    activeOnly: opts.activeOnly ?? null,
+    filters: stableFilterRecord(opts.filters),
+    manualIds: opts.manualIds ?? [],
+    max: opts.max ?? null,
+    page: opts.page ?? null,
+    pageSize: opts.pageSize ?? null,
+    source: opts.source ?? null,
+  });
+}
+
+function stableFilterRecord(filters: PublicCollectionListOptions["filters"]) {
+  if (!filters) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(filters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => [
+        key,
+        Array.isArray(value) ? [...value].sort() : value,
+      ]),
+  );
 }
 
 function toStatItem(item: PublicJson) {
@@ -3589,7 +3662,7 @@ function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
       ? [
           {
             key: "sector_category",
-            label: "業種カテゴリ",
+            label: "Kategori Sektor",
             optionSetKey: "japan_sector_category",
           },
         ]
@@ -3600,14 +3673,14 @@ function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
     booleanValue(filterConfig.enable_category_filter, true)
       ? {
           key: "category",
-          label: "カテゴリ",
+          label: "Kategori",
           optionSetKey: "japan_news_category",
         }
       : null,
     booleanValue(filterConfig.enable_tag_filter, true)
       ? {
           key: "tag",
-          label: "タグ",
+          label: "Tag",
           optionSetKey: "japan_news_tag",
         }
       : null,

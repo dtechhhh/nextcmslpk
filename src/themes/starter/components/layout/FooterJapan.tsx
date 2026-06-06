@@ -7,7 +7,11 @@ import {
   MessageCircle,
   Phone,
 } from "lucide-react";
+import { normalizeActionLabel } from "@/lib/display-label";
 import { SocialIcon } from "@/themes/starter/components/icons/SocialIcon";
+
+const JAPAN_FOOTER_DOWNLOAD_LABEL = "\u8cc7\u6599\u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9";
+const JAPAN_FOOTER_LINK_LABEL = "\u8a73\u7d30\u3092\u898b\u308b";
 
 type FooterJapanProps = {
   lpkName: string;
@@ -113,10 +117,16 @@ export function FooterJapan({
         </FooterColumn>
 
         <FooterColumn title="Resources">
-          {resources.map((item) =>
-            item.documentUrl ? (
+          {resources.map((item, index) => {
+            const label = normalizeActionLabel(
+              item.label,
+              item.documentUrl ? JAPAN_FOOTER_DOWNLOAD_LABEL : JAPAN_FOOTER_LINK_LABEL,
+              item.documentUrl || item.href,
+            );
+
+            return item.documentUrl ? (
               <a
-                key={`${item.label}-${item.documentUrl}`}
+                key={`${item.documentUrl}-${index}`}
                 href={item.documentUrl}
                 target="_blank"
                 rel="noreferrer"
@@ -124,14 +134,14 @@ export function FooterJapan({
                 className="inline-flex items-center gap-2 hover:text-white"
               >
                 <Download aria-hidden="true" className="size-4" />
-                {item.label}
+                {label}
               </a>
             ) : item.href ? (
-              <a key={item.href} href={item.href} className="hover:text-white">
-                {item.label}
+              <a key={`${item.href}-${index}`} href={item.href} className="hover:text-white">
+                {label}
               </a>
-            ) : null,
-          )}
+            ) : null;
+          })}
         </FooterColumn>
 
         <div>

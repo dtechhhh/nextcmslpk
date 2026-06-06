@@ -14,7 +14,7 @@ interface CTABannerPrimaryCTA extends CTABannerCTA {
 interface CTABannerProps {
   headline: string
   description?: string
-  primaryCTA: CTABannerPrimaryCTA
+  primaryCTA?: CTABannerPrimaryCTA
   secondaryCTA?: CTABannerCTA
   darkVariant?: boolean
 }
@@ -58,30 +58,34 @@ function CTABanner({
             ) : null}
           </div>
 
-          <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-            <Button
-              render={<a href={primaryCTA.href} />}
-              size="lg"
-              variant={primaryCTA.variant}
-              className="w-full sm:w-auto"
-            >
-              {primaryCTA.label}
-            </Button>
-            {secondaryCTA ? (
-              <Button
-                render={<a href={secondaryCTA.href} />}
-                size="lg"
-                variant="outline"
-                className={cn(
-                  "w-full sm:w-auto",
-                  darkVariant &&
-                    "border-white/70 bg-transparent text-white hover:bg-white hover:text-neutral-900"
-                )}
-              >
-                {secondaryCTA.label}
-              </Button>
-            ) : null}
-          </div>
+          {primaryCTA || secondaryCTA ? (
+            <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+              {primaryCTA ? (
+                <Button
+                  render={<a href={primaryCTA.href} />}
+                  size="lg"
+                  variant={primaryCTA.variant}
+                  className="w-full sm:w-auto"
+                >
+                  {primaryCTA.label}
+                </Button>
+              ) : null}
+              {secondaryCTA ? (
+                <Button
+                  render={<a href={secondaryCTA.href} />}
+                  size="lg"
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-auto",
+                    darkVariant &&
+                      "border-white/70 bg-transparent text-white hover:bg-white hover:text-neutral-900"
+                  )}
+                >
+                  {secondaryCTA.label}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </Container>
     </section>

@@ -20,7 +20,6 @@ import {
 import {
   ALLOWED_UPLOAD_MIME_TYPES,
   GENERAL_IMAGE_MAX_BYTES,
-  GENERAL_PDF_MAX_BYTES,
   GENERAL_VIDEO_MAX_BYTES,
   normalizeMimeType,
   type AllowedUploadMimeType,
@@ -149,7 +148,6 @@ const EXTENSION_BY_MIME_TYPE: Record<AllowedUploadMimeType, string> = {
   "image/jpeg": "jpeg",
   "image/png": "png",
   "image/webp": "webp",
-  "application/pdf": "pdf",
   "video/mp4": "mp4",
   "video/webm": "webm",
   "video/quicktime": "mov",
@@ -631,10 +629,6 @@ function getExtensionForMimeType(contentType: AllowedUploadMimeType) {
 }
 
 function getMediaTypeForMimeType(mimeType: AllowedUploadMimeType) {
-  if (mimeType === "application/pdf") {
-    return "DOCUMENT";
-  }
-
   if (mimeType.startsWith("video/")) {
     return "VIDEO";
   }
@@ -643,10 +637,6 @@ function getMediaTypeForMimeType(mimeType: AllowedUploadMimeType) {
 }
 
 function getMaxUploadBytesForMimeType(mimeType: AllowedUploadMimeType) {
-  if (mimeType === "application/pdf") {
-    return GENERAL_PDF_MAX_BYTES;
-  }
-
   if (mimeType.startsWith("video/")) {
     return GENERAL_VIDEO_MAX_BYTES;
   }
@@ -655,10 +645,6 @@ function getMaxUploadBytesForMimeType(mimeType: AllowedUploadMimeType) {
 }
 
 function getMaxUploadMessageForMimeType(mimeType: AllowedUploadMimeType) {
-  if (mimeType === "application/pdf") {
-    return "Ukuran PDF maksimal 10 MB.";
-  }
-
   if (mimeType.startsWith("video/")) {
     return "Ukuran video maksimal 50 MB.";
   }

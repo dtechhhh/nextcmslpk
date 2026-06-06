@@ -48,10 +48,11 @@ type CollectionFieldGuidance = {
 
 export type CollectionField = (
   | {
-      kind: "text" | "textarea" | "number" | "date" | "switch" | "document";
+      kind: "text" | "textarea" | "number" | "date" | "switch";
       path: string;
       label: string;
       placeholder?: string;
+      inputType?: "text" | "email" | "url" | "tel";
       min?: number;
       max?: number;
     }
@@ -184,15 +185,15 @@ const ctaLine = {
 };
 
 const titleDescFields: CollectionField[] = [
-  { kind: "text", path: "title", label: "Title" },
-  { kind: "textarea", path: "description", label: "Description" },
-  { kind: "switch", path: "is_enabled", label: "Enabled" },
+  { kind: "text", path: "title", label: "Judul" },
+  { kind: "textarea", path: "description", label: "Deskripsi" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
 ];
 
 const faqFields: CollectionField[] = [
-  { kind: "text", path: "question", label: "Question" },
-  { kind: "textarea", path: "answer", label: "Answer" },
-  { kind: "switch", path: "is_enabled", label: "Enabled" },
+  { kind: "text", path: "question", label: "Pertanyaan" },
+  { kind: "textarea", path: "answer", label: "Jawaban" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
 ];
 
 const identityFields: CollectionField[] = [
@@ -212,10 +213,10 @@ const mediaFields: CollectionField[] = [
   {
     kind: "media",
     path: "thumbnail_image_id",
-    label: "Thumbnail image",
+    label: "Gambar thumbnail",
     cropPreset: "thumbnail",
   },
-  { kind: "media", path: "hero_image_id", label: "Hero image", cropPreset: "hero" },
+  { kind: "media", path: "hero_image_id", label: "Gambar hero", cropPreset: "hero" },
 ];
 
 const whatsappCtaFields: CollectionField[] = [
@@ -228,17 +229,17 @@ const whatsappCtaFields: CollectionField[] = [
 ];
 
 const lineCtaFields: CollectionField[] = [
-  { kind: "text", path: "primary_cta_label", label: "Primary CTA label" },
+  { kind: "text", path: "primary_cta_label", label: "Label CTA utama" },
   {
     kind: "textarea",
     path: "line_message_template",
-    label: "LINE message template",
+    label: "Template pesan LINE",
   },
-  { kind: "text", path: "secondary_cta_label", label: "Secondary CTA label" },
+  { kind: "text", path: "secondary_cta_label", label: "Label CTA kedua" },
   {
     kind: "text",
     path: "secondary_document_url",
-    label: "Secondary document URL",
+    label: "URL dokumen kedua",
     placeholder: "https://...",
   },
 ];
@@ -293,6 +294,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       legality_partner_items: [],
       testimonials: [],
       faqs: [],
+      brochure_url: "",
       brochure_file_id: "",
       brochure_enabled: false,
     },
@@ -351,7 +353,12 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
         title: "CTA",
         fields: [
           ...whatsappCtaFields,
-          { kind: "document", path: "brochure_file_id", label: "Brochure file" },
+          {
+            kind: "text",
+            path: "brochure_url",
+            label: "Brochure URL",
+            inputType: "url",
+          },
           { kind: "switch", path: "brochure_enabled", label: "Brochure enabled" },
         ],
       },
@@ -735,9 +742,9 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
   news: {
     key: "news",
     variantKey: "japan",
-    label: "News",
-    pluralLabel: "News",
-    eyebrow: "Japan / Collections",
+    label: "Berita",
+    pluralLabel: "Berita",
+    eyebrow: "Jepang / Koleksi",
     listPath: "/dashboard/japan/collections/news",
     createPath: "/dashboard/japan/collections/news/new",
     publicBasePath: "/news",
@@ -775,51 +782,51 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     },
     sections: [
       {
-        title: "Identity",
+        title: "Identitas",
         fields: [
-          { kind: "text", path: "title", label: "Title" },
+          { kind: "text", path: "title", label: "Judul" },
           { kind: "text", path: "slug", label: "Slug" },
-          { kind: "text", path: "subtitle", label: "Subtitle" },
-          { kind: "textarea", path: "excerpt", label: "Excerpt", max: EXCERPT_MAX_LENGTH },
+          { kind: "text", path: "subtitle", label: "Subjudul" },
+          { kind: "textarea", path: "excerpt", label: "Ringkasan", max: EXCERPT_MAX_LENGTH },
           {
             kind: "media",
             path: "cover_image_id",
-            label: "Cover image",
+            label: "Gambar cover",
             cropPreset: "thumbnail",
           },
-          { kind: "text", path: "reading_time_label", label: "Reading time label" },
+          { kind: "text", path: "reading_time_label", label: "Label waktu baca" },
         ],
       },
       {
-        title: "Classification",
+        title: "Klasifikasi",
         fields: [
-          { kind: "select", path: "category_option_id", label: "Category", optionSetKey: "japan_news_category" },
-          { kind: "multiselect", path: "tag_option_ids", label: "Tags", optionSetKey: "japan_news_tag" },
+          { kind: "select", path: "category_option_id", label: "Kategori", optionSetKey: "japan_news_category" },
+          { kind: "multiselect", path: "tag_option_ids", label: "Tag", optionSetKey: "japan_news_tag" },
         ],
       },
       {
-        title: "Author",
+        title: "Penulis",
         fields: [
-          { kind: "text", path: "author_name", label: "Author name" },
-          { kind: "text", path: "author_title", label: "Author title" },
-          { kind: "media", path: "author_image_id", label: "Author image", cropPreset: "square" },
+          { kind: "text", path: "author_name", label: "Nama penulis" },
+          { kind: "text", path: "author_title", label: "Jabatan penulis" },
+          { kind: "media", path: "author_image_id", label: "Foto penulis", cropPreset: "square" },
         ],
       },
       {
-        title: "Content blocks",
+        title: "Blok konten",
         fields: [
           {
             kind: "content-blocks",
             path: "content_blocks",
-            label: "Content blocks",
+            label: "Blok konten",
             blockTypes: ["heading", "paragraph", "quote", "image", "youtube_embed", "line_cta", "sector_callout"],
           },
         ],
       },
       {
-        title: "Related articles",
+        title: "Artikel terkait",
         fields: [
-          { kind: "number", path: "related_max_items", label: "Max items", min: 1, max: 10 },
+          { kind: "number", path: "related_max_items", label: "Jumlah maksimal", min: 1, max: 10 },
         ],
       },
     ],
@@ -827,9 +834,9 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
   sector: {
     key: "sector",
     variantKey: "japan",
-    label: "Sector",
-    pluralLabel: "Sectors",
-    eyebrow: "Japan / Collections",
+    label: "Sektor",
+    pluralLabel: "Sektor",
+    eyebrow: "Jepang / Koleksi",
     listPath: "/dashboard/japan/collections/sector",
     createPath: "/dashboard/japan/collections/sector/new",
     publicBasePath: "/sectors",
@@ -840,7 +847,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     heroPath: "hero_image_id",
     descriptionPath: "short_description",
     optionFilters: [
-      { path: "sector_category_option_id", label: "Sector category", optionSetKey: "japan_sector_category" },
+      { path: "sector_category_option_id", label: "Kategori sektor", optionSetKey: "japan_sector_category" },
     ],
     listInfoPaths: ["sector_category_option_id", "short_description"],
     defaultData: {
@@ -861,35 +868,35 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     },
     sections: [
       {
-        title: "Identity",
+        title: "Identitas",
         fields: [
-          { kind: "text", path: "title", label: "Title" },
+          { kind: "text", path: "title", label: "Judul" },
           { kind: "text", path: "slug", label: "Slug" },
-          { kind: "text", path: "subtitle", label: "Subtitle" },
+          { kind: "text", path: "subtitle", label: "Subjudul" },
           {
             kind: "textarea",
             path: "short_description",
-            label: "Short description",
+            label: "Deskripsi singkat",
             max: SHORT_DESCRIPTION_MAX_LENGTH,
           },
-          { kind: "textarea", path: "overview", label: "Overview" },
+          { kind: "textarea", path: "overview", label: "Gambaran umum" },
         ],
       },
       { title: "Media", fields: mediaFields },
       {
-        title: "Classification",
+        title: "Klasifikasi",
         fields: [
-          { kind: "select", path: "sector_category_option_id", label: "Sector category", optionSetKey: "japan_sector_category" },
+          { kind: "select", path: "sector_category_option_id", label: "Kategori sektor", optionSetKey: "japan_sector_category" },
         ],
       },
       {
-        title: "Sector content",
+        title: "Konten sektor",
         fields: [
-          { kind: "array", path: "suitability_items", label: "Suitability items", itemLabel: "Item", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "array", path: "example_positions", label: "Example positions", itemLabel: "Position", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "array", path: "training_alignment_items", label: "Training alignment items", itemLabel: "Alignment", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "string-array", path: "candidate_requirements", label: "Candidate requirements", itemLabel: "Requirement" },
-          { kind: "array", path: "process_items", label: "Process items", itemLabel: "Process", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "suitability_items", label: "Kesesuaian", itemLabel: "Item", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "example_positions", label: "Contoh posisi", itemLabel: "Posisi", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "training_alignment_items", label: "Kesesuaian pelatihan", itemLabel: "Kesesuaian", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "string-array", path: "candidate_requirements", label: "Syarat kandidat", itemLabel: "Syarat" },
+          { kind: "array", path: "process_items", label: "Proses", itemLabel: "Proses", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
         ],
       },

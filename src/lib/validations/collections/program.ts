@@ -20,6 +20,11 @@ const sortFields = {
   sort_order: z.coerce.number().int().min(0).default(0),
 };
 
+const optionalHttpUrl = optionalString(500).refine(
+  (value) => value === "" || isHttpUrl(value),
+  "URL harus diawali http:// atau https://.",
+);
+
 const itemWithTitleDesc = z
   .object({
     title: optionalString(300),
@@ -85,6 +90,7 @@ export const programSchema = z
     legality_partner_items: legacyTitleDescArray(itemWithTitleDesc),
     testimonials: z.array(testimonialItem).default([]),
     faqs: z.array(faqItemSchema).default([]),
+    brochure_url: optionalHttpUrl,
     brochure_file_id: contentIdSchema,
     brochure_enabled: z.boolean().default(false),
   })
@@ -123,6 +129,17 @@ export const programDefaults: ProgramData = {
   legality_partner_items: [],
   testimonials: [],
   faqs: [],
+  brochure_url: "",
   brochure_file_id: "",
   brochure_enabled: false,
 };
+
+function isHttpUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
