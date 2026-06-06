@@ -4,6 +4,7 @@ import {
   contentIdSchema,
   ctaDefaults,
   faqItemSchema,
+  iconKeySchema,
   identityFields,
   identityDefaults,
   legacyTitleDescArray,
@@ -27,6 +28,15 @@ const itemWithTitleDesc = z
   })
   .passthrough();
 
+const stepItemWithIcon = z
+  .object({
+    icon_key: iconKeySchema,
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
 export const sectorSchema = z
   .object({
     ...identityFields,
@@ -42,7 +52,7 @@ export const sectorSchema = z
     example_positions: legacyTitleDescArray(itemWithTitleDesc),
     training_alignment_items: legacyTitleDescArray(itemWithTitleDesc),
     candidate_requirements: z.array(z.string()).default([]),
-    process_items: legacyTitleDescArray(itemWithTitleDesc),
+    process_items: legacyTitleDescArray(stepItemWithIcon),
     faqs: z.array(faqItemSchema).default([]),
     primary_cta_label: optionalString(120),
     line_message_template: optionalString(600),

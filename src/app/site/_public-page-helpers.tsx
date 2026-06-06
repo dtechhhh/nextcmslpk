@@ -2136,7 +2136,7 @@ async function ProgramDetailMain({
           <StepFlow
             title="Alur Program"
             items={timelineItems.map((step) => ({
-              iconKey: "check",
+              iconKey: step.iconKey || "check",
               title: step.title,
               description: step.description,
               sortOrder: step.sortOrder,
@@ -2454,7 +2454,7 @@ async function JobDetailMain({
           <StepFlow
             title="Alur Rekrutmen"
             items={steps.map((step) => ({
-              iconKey: "check",
+              iconKey: step.iconKey || "check",
               title: step.title,
               description: step.description,
               sortOrder: step.sortOrder,
@@ -2828,7 +2828,7 @@ async function KarirDetailMain({
           <StepFlow
             title="Alur Rekrutmen"
             items={steps.map((step) => ({
-              iconKey: "check",
+              iconKey: step.iconKey || "check",
               title: step.title,
               description: step.description,
               sortOrder: step.sortOrder,
@@ -3847,6 +3847,7 @@ function normalizeMixedList(value: unknown): NormalizedItem[] {
 }
 
 type TimelineItem = {
+  iconKey: string;
   title: string;
   description: string;
   sortOrder: number;
@@ -3866,19 +3867,21 @@ function parseTimelineItems(value: unknown): TimelineItem[] {
           const sepIndex = separatorMatch.index;
           const sepLen = separatorMatch[0].length;
           return {
+            iconKey: "check",
             title: item.slice(0, sepIndex).trim(),
             description: item.slice(sepIndex + sepLen).trim(),
             sortOrder: index,
             isEnabled: true,
           };
         }
-        return { title: item.trim(), description: "", sortOrder: index, isEnabled: true };
+        return { iconKey: "check", title: item.trim(), description: "", sortOrder: index, isEnabled: true };
       }
       if (typeof item === "object" && item !== null && !Array.isArray(item)) {
         const title = stringValue(item.title);
         const description = stringValue(item.description);
         if (title || description) {
           return {
+            iconKey: stringValue(item.icon_key) || "check",
             title,
             description,
             sortOrder: numberValue(item.sort_order) ?? index,

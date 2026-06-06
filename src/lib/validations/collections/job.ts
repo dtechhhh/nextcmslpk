@@ -5,6 +5,7 @@ import {
   ctaFields,
   ctaDefaults,
   faqItemSchema,
+  iconKeySchema,
   identityFields,
   identityDefaults,
   legacyTitleDescArray,
@@ -21,6 +22,15 @@ const sortFields = {
 
 const itemWithTitleDesc = z
   .object({
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
+const stepItemWithIcon = z
+  .object({
+    icon_key: iconKeySchema,
     title: optionalString(300),
     description: optionalString(1200),
     ...sortFields,
@@ -64,7 +74,7 @@ export const jobSchema = z
     requirements: z.array(z.string()).default([]),
     benefit_items: legacyTitleDescArray(itemWithTitleDesc),
     qualification_items: legacyTitleDescArray(itemWithTitleDesc),
-    recruitment_steps: legacyTitleDescArray(itemWithTitleDesc),
+    recruitment_steps: legacyTitleDescArray(stepItemWithIcon),
     gallery_media_ids: z.array(z.string()).default([]),
     faqs: z.array(faqItemSchema).default([]),
   })

@@ -435,6 +435,7 @@ const japanEmptyTimeline = {
 };
 
 const japanEmptyStep = {
+  icon_key: "",
   step_label: "",
   title: "",
   description: "",
@@ -443,6 +444,7 @@ const japanEmptyStep = {
 };
 
 const japanStepFields: PageEditorField[] = [
+  { kind: "icon", path: "icon_key", label: "Icon" },
   { kind: "text", path: "step_label", label: "Step label" },
   { kind: "text", path: "title", label: "Title" },
   { kind: "textarea", path: "description", label: "Description" },

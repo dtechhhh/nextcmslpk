@@ -29,6 +29,7 @@ const iconTitleDescSchema = z
 
 const trainingStepSchema = z
   .object({
+    icon_key: iconKeySchema,
     step_label: optionalString(80),
     title: optionalString(180),
     description: optionalString(700),

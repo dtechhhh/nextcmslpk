@@ -2,6 +2,7 @@ import * as LucideIcons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const fallbackIcon = LucideIcons.CircleHelpIcon as LucideIcon;
+export const FALLBACK_ICON = fallbackIcon;
 
 function icon(name: string) {
   return (
@@ -17,7 +18,9 @@ export const ICON_REGISTRY = {
   users: icon("UsersIcon"),
   building: icon("BuildingIcon"),
   building_2: icon("Building2Icon"),
+  book: icon("BookOpenIcon"),
   book_open: icon("BookOpenIcon"),
+  check: icon("CheckIcon"),
   globe: icon("GlobeIcon"),
   map_pin: icon("MapPinIcon"),
   phone: icon("PhoneIcon"),
@@ -42,6 +45,7 @@ export const ICON_REGISTRY = {
   newspaper: icon("NewspaperIcon"),
   calendar_days: icon("CalendarDaysIcon"),
   star: icon("StarIcon"),
+  heart: icon("HeartIcon"),
   circle_check: icon("CircleCheckIcon"),
   home: icon("HomeIcon"),
   map: icon("MapIcon"),

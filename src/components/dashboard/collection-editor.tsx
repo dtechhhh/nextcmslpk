@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CalloutPicker } from "@/components/dashboard/forms/callout-picker";
+import { IconPicker } from "@/components/dashboard/forms/icon-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
 import { StatusBadge } from "@/components/dashboard/collection-list";
@@ -1191,6 +1192,13 @@ function renderControl({
           mediaType="IMAGE"
           cropPreset={field.cropPreset}
           onChange={(mediaId) => setValue(path, mediaId)}
+        />
+      );
+    case "icon":
+      return (
+        <IconPicker
+          value={toInputValue(rawValue)}
+          onChange={(iconKey) => setValue(path, iconKey)}
         />
       );
   }

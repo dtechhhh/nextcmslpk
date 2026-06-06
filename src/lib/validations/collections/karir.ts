@@ -5,6 +5,7 @@ import {
   ctaFields,
   ctaDefaults,
   faqItemSchema,
+  iconKeySchema,
   identityFields,
   identityDefaults,
   legacyTitleDescArray,
@@ -21,6 +22,15 @@ const sortFields = {
 
 const itemWithTitleDesc = z
   .object({
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
+const stepItemWithIcon = z
+  .object({
+    icon_key: iconKeySchema,
     title: optionalString(300),
     description: optionalString(1200),
     ...sortFields,
@@ -54,7 +64,7 @@ export const karirSchema = z
     responsibilities: z.array(z.string()).default([]),
     requirements: z.array(z.string()).default([]),
     benefits: legacyTitleDescArray(itemWithTitleDesc),
-    recruitment_steps: legacyTitleDescArray(itemWithTitleDesc),
+    recruitment_steps: legacyTitleDescArray(stepItemWithIcon),
     faqs: z.array(faqItemSchema).default([]),
   })
   .passthrough();
