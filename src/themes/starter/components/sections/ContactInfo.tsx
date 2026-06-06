@@ -1,5 +1,6 @@
 import {
   Clock,
+  Languages,
   Mail,
   MapPin,
   Phone,
@@ -22,9 +23,11 @@ interface ContactInfoProps {
   description?: string
   phone?: string
   email?: string
+  emailSubject?: string
   address?: string
   mapUrl?: string
   operationalHours?: string
+  languageSupport?: string[]
   socialLinks?: ContactInfoSocialLinks
   ctaLabel?: string
   ctaHref?: string
@@ -36,9 +39,11 @@ function ContactInfo({
   description,
   phone,
   email,
+  emailSubject,
   address,
   mapUrl,
   operationalHours,
+  languageSupport = [],
   socialLinks,
   ctaLabel,
   ctaHref,
@@ -78,7 +83,12 @@ function ContactInfo({
               {email ? (
                 <p className="flex gap-3">
                   <Mail aria-hidden="true" className="mt-1 size-5 text-primary-500" />
-                  <a href={`mailto:${email}`} className="hover:text-primary-500">
+                  <a
+                    href={`mailto:${email}${
+                      emailSubject ? `?subject=${encodeURIComponent(emailSubject)}` : ""
+                    }`}
+                    className="hover:text-primary-500"
+                  >
                     {email}
                   </a>
                 </p>
@@ -93,6 +103,12 @@ function ContactInfo({
                 <p className="flex gap-3">
                   <Clock aria-hidden="true" className="mt-1 size-5 text-primary-500" />
                   <span>{operationalHours}</span>
+                </p>
+              ) : null}
+              {languageSupport.length > 0 ? (
+                <p className="flex gap-3">
+                  <Languages aria-hidden="true" className="mt-1 size-5 text-primary-500" />
+                  <span>{languageSupport.join(", ")}</span>
                 </p>
               ) : null}
             </div>

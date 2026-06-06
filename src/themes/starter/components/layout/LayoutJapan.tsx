@@ -39,7 +39,9 @@ export async function LayoutJapan({
 
   const lpkName = stringValue(brand.lpk_name) || tenant.name;
   const tagline = stringValue(brand.tagline);
-  const lineAccountId = stringValue(lineContact.line_official_account_id);
+  const isLineEnabled = booleanValue(lineContact.is_enabled, true);
+  const isBusinessEmailEnabled = booleanValue(businessEmail.is_enabled, true);
+  const lineAccountId = isLineEnabled ? stringValue(lineContact.line_official_account_id) : "";
   const defaultLineMessage =
     stringValue(lineContact.default_message_template) ||
     "Hello, I would like to consult with {lpk_name}.";
@@ -93,15 +95,19 @@ export async function LayoutJapan({
           isEnabled: booleanValue(item.is_enabled, true),
           sortOrder: numberValue(item.sort_order),
         }))}
-        primaryCTA={{
-          label:
-            stringValue(headerPrimaryCta.label) ||
-            stringValue(lineContact.line_display_label) ||
-            "Contact via LINE",
-          lineAccountId,
-          lineMessageTemplate:
-            stringValue(headerPrimaryCta.line_message_template) || defaultLineMessage,
-        }}
+        primaryCTA={
+          lineAccountId
+            ? {
+                label:
+                  stringValue(headerPrimaryCta.label) ||
+                  stringValue(lineContact.line_display_label) ||
+                  "Contact via LINE",
+                lineAccountId,
+                lineMessageTemplate:
+                  stringValue(headerPrimaryCta.line_message_template) || defaultLineMessage,
+              }
+            : undefined
+        }
         secondaryCTA={{
           label: stringValue(headerSecondaryCta.label) || "Company Profile",
           type: headerDownloadUrl ? "document" : "internal_link",
@@ -131,17 +137,17 @@ export async function LayoutJapan({
           phone: stringValue(businessInfo.phone_label),
           address: stringValue(businessInfo.address),
           operationalHours: stringValue(businessInfo.operational_hours),
-          email: stringValue(businessEmail.email),
+          email: isBusinessEmailEnabled ? stringValue(businessEmail.email) : "",
         }}
         lineContact={
-          booleanValue(lineContact.is_enabled, false) && lineAccountId
+          lineAccountId
             ? {
                 href: buildLineUrl(lineAccountId, defaultLineMessage, {
                   lpk_name: lpkName,
                 }),
                 displayLabel:
                   stringValue(lineContact.line_display_label) ||
-                  "LINEで相談する",
+                  "Konsultasi via LINE",
                 isEnabled: true,
               }
             : undefined

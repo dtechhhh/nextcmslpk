@@ -16,6 +16,8 @@ import { HeaderBrand } from "@/themes/starter/components/layout/HeaderBrand";
 import { DocumentDownload } from "@/themes/starter/components/sections/DocumentDownload";
 import { Button } from "@/themes/starter/components/ui/Button";
 
+const JAPAN_HEADER_DOWNLOAD_LABEL = "\u4f1a\u793e\u8cc7\u6599\u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9";
+
 type NavItem = {
   key: string;
   label: string;
@@ -36,7 +38,7 @@ type HeaderJapanProps = {
     isEnabled: boolean;
   };
   navItems: NavItem[];
-  primaryCTA: {
+  primaryCTA?: {
     label: string;
     lineAccountId: string;
     lineMessageTemplate: string;
@@ -70,11 +72,11 @@ export function HeaderJapan({
     [navItems],
   );
   const logo = logoSrc || logoLightSrc;
-  const lineHref = primaryCTA.lineAccountId
+  const lineHref = primaryCTA?.lineAccountId
     ? buildLineUrl(primaryCTA.lineAccountId, primaryCTA.lineMessageTemplate, {
         lpk_name: lpkName,
       })
-    : "#";
+    : "";
 
   return (
     <header className={cn("z-40 bg-white", sticky && "sticky top-0")}>
@@ -105,10 +107,12 @@ export function HeaderJapan({
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Button render={<a href={lineHref} />} variant="line">
-              <MessageCircle aria-hidden="true" className="size-4" />
-              {primaryCTA.label}
-            </Button>
+            {lineHref && primaryCTA ? (
+              <Button render={<a href={lineHref} />} variant="line">
+                <MessageCircle aria-hidden="true" className="size-4" />
+                {primaryCTA.label}
+              </Button>
+            ) : null}
             <SecondaryCTA secondaryCTA={secondaryCTA} />
           </div>
 
@@ -133,14 +137,16 @@ export function HeaderJapan({
                     {item.label}
                   </a>
                 ))}
-                <Button
-                  render={<a href={lineHref} />}
-                  variant="line"
-                  className="mt-3 w-full"
-                >
-                  <MessageCircle aria-hidden="true" className="size-4" />
-                  {primaryCTA.label}
-                </Button>
+                {lineHref && primaryCTA ? (
+                  <Button
+                    render={<a href={lineHref} />}
+                    variant="line"
+                    className="mt-3 w-full"
+                  >
+                    <MessageCircle aria-hidden="true" className="size-4" />
+                    {primaryCTA.label}
+                  </Button>
+                ) : null}
                 <SecondaryCTA secondaryCTA={secondaryCTA} mobile />
               </div>
             </SheetContent>
@@ -167,6 +173,7 @@ function SecondaryCTA({
       <DocumentDownload
         label={secondaryCTA.label}
         fileUrl={secondaryCTA.documentUrl}
+        fallbackLabel={JAPAN_HEADER_DOWNLOAD_LABEL}
         size={mobile ? "md" : "sm"}
         variant="outline"
       />

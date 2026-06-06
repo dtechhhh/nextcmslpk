@@ -34,6 +34,7 @@ const ICON_REGISTRY: Record<string, LucideIcon> = {
 
 interface StepFlowItem {
   iconKey: string
+  stepLabel?: string
   title: string
   description: string
   sortOrder: number
@@ -105,6 +106,11 @@ function StepFlow({ title, subtitle, items }: StepFlowProps) {
                     <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-white text-[var(--color-primary)] shadow-[0_1px_3px_rgba(0,0,0,0.08)] lg:mx-auto">
                       <Icon aria-hidden="true" className="size-6" />
                     </div>
+                    {step.stepLabel ? (
+                      <p className="mb-2 text-xs font-semibold uppercase text-primary-600">
+                        {step.stepLabel}
+                      </p>
+                    ) : null}
                     <h3 className="text-base font-semibold text-neutral-900">
                       {step.title}
                     </h3>

@@ -15,6 +15,10 @@ import { IconPicker } from "@/components/dashboard/forms/icon-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
 import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
+import {
+  useEditorExitGuard,
+  useLongRunningOperationNotice,
+} from "@/components/dashboard/use-editor-operation-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,7 +73,6 @@ type PageEditorProps = {
 
 type PublishStatus = "DRAFT" | "PUBLISHED" | "CLOSED" | "FILLED";
 type FieldErrors = Record<string, string[]>;
-type SaveMode = "auto" | "manual";
 type SaveState = "saved" | "dirty" | "saving" | "error";
 
 export function PageEditor({
@@ -101,10 +104,16 @@ export function PageEditor({
   const saveSequenceRef = useRef(0);
   const pendingSaveCountRef = useRef(0);
   const { start } = useCmsBusy();
+  const { operationNotice, watchOperation } = useLongRunningOperationNotice();
 
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
+
+  const hasUnsavedChanges = useCallback(
+    () => JSON.stringify(dataRef.current) !== lastSavedSerializedRef.current,
+    [],
+  );
 
   const setValue = useCallback((path: string, value: unknown) => {
     setData((current) => setAtPath(current, path, value));
@@ -112,23 +121,16 @@ export function PageEditor({
   }, []);
 
   const save = useCallback(
-    async (mode: SaveMode, showSuccessToast = mode === "manual") => {
+    async (showSuccessToast = true) => {
       const snapshot = dataRef.current;
       const serializedSnapshot = JSON.stringify(snapshot);
-
-      if (mode === "auto" && serializedSnapshot === lastSavedSerializedRef.current) {
-        return true;
-      }
 
       const clientValidation = validationSchema.safeParse(snapshot);
 
       if (!clientValidation.success) {
         setErrors(zodErrorToFieldErrors(clientValidation.error));
         setSaveState("error");
-
-        if (mode === "manual") {
-          toast.error("Periksa field yang belum valid.");
-        }
+        toast.error("Periksa field yang belum valid.");
 
         return false;
       }
@@ -138,8 +140,10 @@ export function PageEditor({
       pendingSaveCountRef.current += 1;
       setIsSaving(true);
       setSaveState("saving");
-      const stopBusy = start(
-        mode === "auto" ? "Menyimpan otomatis..." : "Menyimpan draft...",
+      const stopBusy = start("Menyimpan draft...");
+      const stopNotice = watchOperation(
+        "Koneksi lambat. Draft masih disimpan, mohon tunggu.",
+        "Belum ada respons dari server. Jangan tutup halaman sampai proses selesai atau gagal.",
       );
 
       try {
@@ -184,15 +188,16 @@ export function PageEditor({
           form: ["Draft gagal disimpan. Coba lagi."],
         });
         setSaveState("error");
-        toast.error("Draft gagal disimpan.");
+        toast.error("Draft gagal disimpan. Coba lagi.");
         return false;
       } finally {
+        stopNotice();
         stopBusy();
         pendingSaveCountRef.current = Math.max(pendingSaveCountRef.current - 1, 0);
         setIsSaving(pendingSaveCountRef.current > 0);
       }
     },
-    [pageId, start, validationSchema],
+    [pageId, start, validationSchema, watchOperation],
   );
 
   useEffect(() => {
@@ -204,16 +209,27 @@ export function PageEditor({
     }
 
     setSaveState((current) => (current === "saving" ? current : "dirty"));
-    const timeoutId = window.setTimeout(() => {
-      void save("auto");
-    }, 1000);
+  }, [data]);
 
-    return () => window.clearTimeout(timeoutId);
-  }, [data, save]);
+  const hasPendingOperation = isSaving || isPublishing || isUnpublishing;
+
+  useEditorExitGuard(
+    useCallback(() => {
+      if (hasPendingOperation) {
+        return "Proses masih berjalan. Tinggalkan halaman sekarang bisa membuat hasil simpan belum pasti.";
+      }
+
+      if (hasUnsavedChanges()) {
+        return "Ada perubahan belum disimpan. Tinggalkan halaman tanpa menyimpan?";
+      }
+
+      return null;
+    }, [hasPendingOperation, hasUnsavedChanges]),
+  );
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void save("manual");
+    void save();
   }
 
   async function handlePublish() {
@@ -221,16 +237,21 @@ export function PageEditor({
     const stopBusy = start(
       status === "PUBLISHED" ? "Mempublish perubahan page..." : "Mempublish page...",
     );
+    let stopNotice: (() => void) | null = null;
 
     try {
       const isDraftSaved =
         JSON.stringify(dataRef.current) === lastSavedSerializedRef.current ||
-        (await save("manual", false));
+        (await save(false));
 
       if (!isDraftSaved) {
         return;
       }
 
+      stopNotice = watchOperation(
+        "Koneksi lambat. Publish page masih diproses, mohon tunggu.",
+        "Belum ada respons dari server. Jangan tutup halaman sampai publish selesai atau gagal.",
+      );
       const response = await publishPage(pageId);
 
       if (!isPageMutationSuccess(response)) {
@@ -257,6 +278,7 @@ export function PageEditor({
       setLastSavedAt(response.page.updatedAt);
       toast.success("Page dipublish.");
     } finally {
+      stopNotice?.();
       stopBusy();
       setIsPublishing(false);
     }
@@ -265,6 +287,10 @@ export function PageEditor({
   async function handleUnpublish() {
     setIsUnpublishing(true);
     const stopBusy = start("Mengembalikan page ke draft...");
+    const stopNotice = watchOperation(
+      "Koneksi lambat. Perubahan status page masih diproses.",
+      "Belum ada respons dari server. Jangan tutup halaman sampai proses selesai atau gagal.",
+    );
 
     try {
       const response = await unpublishPage(pageId);
@@ -278,6 +304,7 @@ export function PageEditor({
       setLastSavedAt(response.page.updatedAt);
       toast.success("Page kembali ke draft.");
     } finally {
+      stopNotice();
       stopBusy();
       setIsUnpublishing(false);
     }
@@ -373,6 +400,15 @@ export function PageEditor({
           ) : null}
         </div>
       </div>
+
+      {operationNotice ? (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100"
+        >
+          {operationNotice}
+        </div>
+      ) : null}
 
       {formError ? (
         <FieldError className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">

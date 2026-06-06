@@ -1,4 +1,5 @@
 import type { TenantModel, VariantModel } from "@/generated/prisma/models";
+import { unstable_cache } from "next/cache";
 import { starterTheme } from "@/themes/starter/registry";
 import { prisma } from "@/server/db/client";
 
@@ -15,6 +16,8 @@ export type DomainResolution =
   | { type: "unavailable"; variant: VariantModel }
   | { type: "ok"; tenant: TenantModel; variant: ResolvedPublicVariant };
 
+const PUBLIC_DOMAIN_CACHE_SECONDS = 300;
+
 export async function resolveDomain(hostInput: string): Promise<DomainResolution> {
   const host = normalizeHost(hostInput);
 
@@ -22,7 +25,11 @@ export async function resolveDomain(hostInput: string): Promise<DomainResolution
     return { type: "not_found" };
   }
 
-  const domain = await findActiveDomainByHost(host);
+  const domain = await unstable_cache(
+    () => findActiveDomainByHost(host),
+    ["public-domain", host],
+    { revalidate: PUBLIC_DOMAIN_CACHE_SECONDS, tags: [`public-domain:${host}`] },
+  )();
 
   if (!domain) {
     return { type: "not_found" };
@@ -162,6 +169,17 @@ export async function resolveVariantHomepageUrl(
   tenantId: string,
   targetVariantKey: string,
 ): Promise<string | null> {
+  return unstable_cache(
+    () => resolveVariantHomepageUrlUncached(tenantId, targetVariantKey),
+    ["public-variant-homepage-url", tenantId, targetVariantKey],
+    { revalidate: PUBLIC_DOMAIN_CACHE_SECONDS, tags: [`tenant:${tenantId}`] },
+  )();
+}
+
+async function resolveVariantHomepageUrlUncached(
+  tenantId: string,
+  targetVariantKey: string,
+) {
   const variant = await prisma.variant.findFirst({
     where: {
       tenantId,

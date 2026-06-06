@@ -8,6 +8,10 @@ import { IconPicker } from "@/components/dashboard/forms/icon-picker";
 import { MediaPicker } from "@/components/dashboard/forms/media-picker";
 import { SortableList } from "@/components/dashboard/forms/sortable-list";
 import { useCmsBusy } from "@/components/cms/cms-busy-feedback";
+import {
+  useEditorExitGuard,
+  useLongRunningOperationNotice,
+} from "@/components/dashboard/use-editor-operation-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +57,6 @@ type GlobalConfigEditorProps = {
 };
 
 type FieldErrors = Record<string, string[]>;
-type SaveMode = "auto" | "manual";
 type SaveState = "saved" | "dirty" | "saving" | "error";
 
 export function GlobalConfigEditor({
@@ -77,10 +80,16 @@ export function GlobalConfigEditor({
   const saveSequenceRef = useRef(0);
   const pendingSaveCountRef = useRef(0);
   const { start } = useCmsBusy();
+  const { operationNotice, watchOperation } = useLongRunningOperationNotice();
 
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
+
+  const hasUnsavedChanges = useCallback(
+    () => JSON.stringify(dataRef.current) !== lastSavedSerializedRef.current,
+    [],
+  );
 
   const setValue = useCallback((path: string, value: unknown) => {
     setData((current) => setAtPath(current, path, value));
@@ -88,23 +97,16 @@ export function GlobalConfigEditor({
   }, []);
 
   const save = useCallback(
-    async (mode: SaveMode) => {
+    async () => {
       const snapshot = dataRef.current;
       const serializedSnapshot = JSON.stringify(snapshot);
-
-      if (mode === "auto" && serializedSnapshot === lastSavedSerializedRef.current) {
-        return;
-      }
 
       const clientValidation = validationSchema.safeParse(snapshot);
 
       if (!clientValidation.success) {
         setErrors(zodErrorToFieldErrors(clientValidation.error));
         setSaveState("error");
-
-        if (mode === "manual") {
-          toast.error("Periksa field yang belum valid.");
-        }
+        toast.error("Periksa field yang belum valid.");
 
         return;
       }
@@ -114,8 +116,10 @@ export function GlobalConfigEditor({
       pendingSaveCountRef.current += 1;
       setIsSaving(true);
       setSaveState("saving");
-      const stopBusy = start(
-        mode === "auto" ? "Menyimpan konfigurasi otomatis..." : "Menyimpan konfigurasi...",
+      const stopBusy = start("Menyimpan konfigurasi...");
+      const stopNotice = watchOperation(
+        "Koneksi lambat. Konfigurasi masih disimpan, mohon tunggu.",
+        "Belum ada respons dari server. Jangan tutup halaman sampai proses selesai atau gagal.",
       );
 
       try {
@@ -148,19 +152,18 @@ export function GlobalConfigEditor({
           );
         }
 
-        if (mode === "manual") {
-          toast.success("Global config tersimpan.");
-        }
+        toast.success("Global config tersimpan.");
       } catch {
         setSaveState("error");
-        toast.error("Global config gagal disimpan.");
+        toast.error("Global config gagal disimpan. Coba lagi.");
       } finally {
+        stopNotice();
         stopBusy();
         pendingSaveCountRef.current = Math.max(pendingSaveCountRef.current - 1, 0);
         setIsSaving(pendingSaveCountRef.current > 0);
       }
     },
-    [definition.configKey, start, validationSchema, variantId],
+    [definition.configKey, start, validationSchema, variantId, watchOperation],
   );
 
   useEffect(() => {
@@ -172,16 +175,25 @@ export function GlobalConfigEditor({
     }
 
     setSaveState((current) => (current === "saving" ? current : "dirty"));
-    const timeoutId = window.setTimeout(() => {
-      void save("auto");
-    }, 1000);
+  }, [data]);
 
-    return () => window.clearTimeout(timeoutId);
-  }, [data, save]);
+  useEditorExitGuard(
+    useCallback(() => {
+      if (isSaving) {
+        return "Proses masih berjalan. Tinggalkan halaman sekarang bisa membuat hasil simpan belum pasti.";
+      }
+
+      if (hasUnsavedChanges()) {
+        return "Ada perubahan belum disimpan. Tinggalkan halaman tanpa menyimpan?";
+      }
+
+      return null;
+    }, [hasUnsavedChanges, isSaving]),
+  );
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void save("manual");
+    void save();
   }
 
   return (
@@ -212,6 +224,15 @@ export function GlobalConfigEditor({
           </Button>
         </div>
       </div>
+
+      {operationNotice ? (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100"
+        >
+          {operationNotice}
+        </div>
+      ) : null}
 
       <FieldGroup>
         {definition.sections.map((section) => (
