@@ -12,6 +12,10 @@ const japanMediaHeroSchema = z
     headline: optionalString(220),
     subheadline: optionalString(600),
     eyebrow_label: optionalString(120),
+    primary_cta_label: optionalString(120),
+    primary_line_message_template: optionalString(600),
+    secondary_cta_label: optionalString(120),
+    secondary_href: optionalString(500),
   })
   .passthrough();
 
@@ -34,6 +38,10 @@ export const newsPageSchema = z
       headline: "",
       subheadline: "",
       eyebrow_label: "",
+      primary_cta_label: "",
+      primary_line_message_template: "",
+      secondary_cta_label: "",
+      secondary_href: "",
     }),
     filter_config: z
       .object({

@@ -224,6 +224,24 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       ),
     ),
   ]);
+  const heroPrimaryCtaLabel = stringValueWithMissingFallback(
+    hero,
+    "primary_cta_label",
+    "Konsultasi Gratis via WhatsApp",
+  );
+  const heroPrimaryCTA = heroPrimaryCtaLabel
+    ? {
+        label: heroPrimaryCtaLabel,
+        href: whatsappHref,
+        variant: "whatsapp" as const,
+      }
+    : undefined;
+  const heroSecondaryCTA = stringValue(hero.secondary_cta_label)
+    ? {
+        label: stringValue(hero.secondary_cta_label),
+        href: stringValue(hero.secondary_cta_href) || "/program",
+      }
+    : undefined;
 
   return (
     <>
@@ -236,38 +254,16 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           headline={stringValue(hero.headline) || page.title}
           subheadline={stringValue(hero.subheadline)}
           eyebrowLabel={stringValue(hero.eyebrow_label)}
-          primaryCTA={{
-            label: stringValue(hero.primary_cta_label) || "Konsultasi Gratis via WhatsApp",
-            href: whatsappHref,
-            variant: "whatsapp",
-          }}
-          secondaryCTA={
-            stringValue(hero.secondary_cta_label)
-              ? {
-                  label: stringValue(hero.secondary_cta_label),
-                  href: stringValue(hero.secondary_cta_href) || "/program",
-                }
-              : undefined
-          }
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
           priority
         />
       ) : (
         <PlainHero
           title={stringValue(hero.headline) || page.title}
           subtitle={stringValue(hero.subheadline)}
-          primaryCTA={{
-            label: stringValue(hero.primary_cta_label) || "Konsultasi Gratis via WhatsApp",
-            href: whatsappHref,
-            variant: "whatsapp",
-          }}
-          secondaryCTA={
-            stringValue(hero.secondary_cta_label)
-              ? {
-                  label: stringValue(hero.secondary_cta_label),
-                  href: stringValue(hero.secondary_cta_href) || "/program",
-                }
-              : undefined
-          }
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
         />
       )}
       <OfferBanner
@@ -1192,8 +1188,21 @@ export async function renderJapanDetailPage(options: JapanDetailPageOptions) {
     noStore();
   }
 
+  const listPageKey = options.collectionKey === "sector" ? "sector_page" : "news_page";
+  const page = preview.isPreview
+    ? await resolvePageData(context.variantId, listPageKey)
+    : await unstable_cache(
+        () => resolvePageData(context.variantId, listPageKey),
+        ["public-japan-detail-page", context.variantId, listPageKey],
+        {
+          revalidate: options.revalidate,
+          tags: resolveTags([`page:${context.variantId}:${listPageKey}`], context.variantId),
+        },
+      )();
+
   const commonProps = {
     item,
+    page,
     globalConfig: context.globalConfig,
     tenantName: getLpkName(context.globalConfig, context.tenant.name),
     variantId: context.variantId,
@@ -3781,6 +3790,12 @@ function isRecord(value: unknown): value is PublicJson {
 
 function stringValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function stringValueWithMissingFallback(recordValue: PublicJson, key: string, fallback: string) {
+  return Object.prototype.hasOwnProperty.call(recordValue, key)
+    ? stringValue(recordValue[key])
+    : fallback;
 }
 
 function booleanValue(value: unknown, fallback: boolean) {

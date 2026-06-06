@@ -1421,16 +1421,25 @@ function BlockFields({
       );
     case "sector_callout":
       return (
-        <Field className="md:col-span-2">
-          <FieldLabel>Sektor terkait</FieldLabel>
-          <CalloutPicker
-            variantId={variantId}
-            collectionKey="sector"
-            value={readString(data.sector_id)}
-            onChange={(id) => onChange("data.sector_id", id)}
-            placeholder="Pilih sektor..."
-          />
-        </Field>
+        <>
+          <Field className="md:col-span-2">
+            <FieldLabel>Sektor terkait</FieldLabel>
+            <CalloutPicker
+              variantId={variantId}
+              collectionKey="sector"
+              value={readString(data.sector_id)}
+              onChange={(id) => onChange("data.sector_id", id)}
+              placeholder="Pilih sektor..."
+            />
+          </Field>
+          <Field>
+            <FieldLabel>Label tombol</FieldLabel>
+            <Input
+              value={readString(data.cta_label)}
+              onChange={(event) => onChange("data.cta_label", event.target.value)}
+            />
+          </Field>
+        </>
       );
     case "whatsapp_cta":
       return (
@@ -1547,7 +1556,7 @@ function getDefaultBlockData(type: ContentBlockType) {
     case "line_cta":
       return { label: "", line_message_template: "" };
     case "sector_callout":
-      return { sector_id: "" };
+      return { sector_id: "", cta_label: "" };
   }
 }
 

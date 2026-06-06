@@ -136,32 +136,41 @@ export function MediaPicker({
     let cancelled = false;
 
     async function load() {
-      const response = await listMedia(
-        tenantId,
-        {
-          mediaType,
-          status: "ACTIVE",
-          query,
-        },
-        {
-          page,
-          pageSize: MEDIA_PICKER_PAGE_SIZE,
-        },
-      );
+      setLoading(true);
 
-      if (cancelled) {
-        return;
+      try {
+        const response = await listMedia(
+          tenantId,
+          {
+            mediaType,
+            status: "ACTIVE",
+            query,
+          },
+          {
+            page,
+            pageSize: MEDIA_PICKER_PAGE_SIZE,
+          },
+          {
+            includeUsage: false,
+          },
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!isMediaListSuccess(response)) {
+          toast.error(getActionErrorMessage(response, "Media gagal dimuat."));
+          return;
+        }
+
+        setItems(response.items);
+        setTotalPages(Math.max(response.totalPages, 1));
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-
-      setLoading(false);
-
-      if (!isMediaListSuccess(response)) {
-        toast.error(getActionErrorMessage(response, "Media gagal dimuat."));
-        return;
-      }
-
-      setItems(response.items);
-      setTotalPages(Math.max(response.totalPages, 1));
     }
 
     void load();

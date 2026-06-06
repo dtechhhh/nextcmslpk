@@ -27,7 +27,11 @@ import { DocumentDownload } from "@/themes/starter/components/sections/DocumentD
 import { FAQ } from "@/themes/starter/components/sections/FAQ";
 import { FacilityGallery } from "@/themes/starter/components/sections/FacilityGallery";
 import { FilterBar, type FilterBarFilter } from "@/themes/starter/components/sections/FilterBar";
-import { HeroSection } from "@/themes/starter/components/sections/HeroSection";
+import {
+  HeroSection,
+  type HeroCTA,
+  type HeroPrimaryCTA,
+} from "@/themes/starter/components/sections/HeroSection";
 import { HeroSlider } from "@/themes/starter/components/sections/HeroSlider";
 import { RelatedItems } from "@/themes/starter/components/sections/RelatedItems";
 import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
@@ -66,6 +70,7 @@ type JapanListPageProps = JapanPageProps & {
 
 type JapanDetailPageProps = {
   item: PublicCollectionItem;
+  page?: PublicPageData | null;
   globalConfig: Record<string, PublicJson>;
   tenantName: string;
   variantId: string;
@@ -78,6 +83,10 @@ type JapanNewsDetailPageProps = JapanDetailPageProps & {
 
 const JAPAN_DOWNLOAD_LABEL = "Unduh dokumen";
 const JAPAN_DETAIL_LABEL = "Lihat detail";
+
+function displayText(source: PublicJson, key: string, fallback: string) {
+  return stringValue(source[key]) || fallback;
+}
 
 function getJapanTargetPageHref(targetPage: string) {
   const targetMap: Record<string, string> = {
@@ -95,6 +104,7 @@ export async function JapanHomepage({
   latestNews,
 }: JapanHomepageProps) {
   const data = page.dataJson;
+  const display = record(data.display_text);
   const whyIndonesia = record(data.why_indonesia_section);
 
   return (
@@ -109,7 +119,7 @@ export async function JapanHomepage({
       />
       <StatsBar items={sortedRecords(data.stats).map(toStatItem)} />
       <JapanDocumentCardGrid
-        title="Pencapaian"
+        title={displayText(display, "achievements_title", "Pencapaian")}
         items={sortedRecords(data.achievements).map((item, index) => ({
           id: `achievement-${index}`,
           title: stringValue(item.title),
@@ -130,7 +140,7 @@ export async function JapanHomepage({
         ctaHref={getJapanTargetPageHref(stringValue(whyIndonesia.target_page))}
       />
       <CardGrid
-        title="Alasan HIT Dipilih"
+        title={displayText(display, "why_us_title", "Alasan HIT Dipilih")}
         variant="japan"
         items={sortedRecords(data.why_us_cards).map((item, index) => ({
           id: stringValue(item.key) || `why-us-${index}`,
@@ -142,14 +152,16 @@ export async function JapanHomepage({
         }))}
       />
       <CardGrid
-        title="Berita Terbaru"
+        title={displayText(display, "latest_news_title", "Berita Terbaru")}
         variant="japan"
-        items={latestNews.map((item) => newsCard(item))}
-        ctaLabel="Lihat Semua Berita"
+        items={latestNews.map((item) =>
+          newsCard(item, { newBadgeLabel: displayText(display, "new_badge_label", "Baru") }),
+        )}
+        ctaLabel={displayText(display, "latest_news_cta_label", "Lihat Semua Berita")}
         ctaHref="/news"
       />
       <JapanDocumentCardGrid
-        title="Perizinan dan Informasi Legal"
+        title={displayText(display, "legalities_title", "Perizinan dan Informasi Legal")}
         items={sortedRecords(data.legalities).map((item, index) => ({
           id: `legality-${index}`,
           title: stringValue(item.title),
@@ -173,6 +185,7 @@ export async function JapanHomepage({
 
 export async function JapanAboutPage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const display = record(data.display_text);
   const story = record(data.story);
   const visionMission = record(data.vision_mission);
 
@@ -193,7 +206,7 @@ export async function JapanAboutPage(props: JapanPageProps) {
         body={stringValue(story.body)}
       />
       <Timeline
-        title="Linimasa"
+        title={displayText(display, "timeline_title", "Linimasa")}
         items={sortedRecords(data.timeline).map((item, index) => ({
           yearLabel: stringValue(item.year_label),
           title: stringValue(item.title),
@@ -209,20 +222,20 @@ export async function JapanAboutPage(props: JapanPageProps) {
         missionDescription={stringValue(visionMission.mission_description)}
       />
       <CardGrid
-        title="Nilai yang Kami Pegang"
+        title={displayText(display, "values_title", "Nilai yang Kami Pegang")}
         variant="japan"
         items={sortedRecords(data.values).map(iconCard)}
       />
       <FacilityGallery
-        title="Fasilitas Pelatihan"
+        title={displayText(display, "facilities_title", "Fasilitas Pelatihan")}
         items={await resolveGalleryItems(sortedRecords(data.facilities), "image_id")}
       />
       <TeamGrid
-        title="Tim"
+        title={displayText(display, "team_title", "Tim")}
         members={await resolveTeamMembers(sortedRecords(data.team_members))}
       />
       <JapanDocumentCardGrid
-        title="Ringkasan Legalitas"
+        title={displayText(display, "legal_overview_title", "Ringkasan Legalitas")}
         items={sortedRecords(data.legal_overview).map((item, index) => ({
           id: `legal-overview-${index}`,
           title: stringValue(item.title),
@@ -245,6 +258,7 @@ export async function JapanAboutPage(props: JapanPageProps) {
 
 export async function JapanTrainingMethodPage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const display = record(data.display_text);
 
   return (
     <>
@@ -257,26 +271,26 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
       />
       <DocumentSection config={record(data.curriculum_download)} />
       <CardGrid
-        title="Pilar Pelatihan"
+        title={displayText(display, "training_pillars_title", "Pilar Pelatihan")}
         variant="japan"
         items={sortedRecords(data.training_pillars).map(iconCard)}
       />
       <StepFlow
-        title="Alur Pelatihan"
+        title={displayText(display, "training_flow_title", "Alur Pelatihan")}
         items={sortedRecords(data.training_flow).map(toStepItem)}
       />
       <CardGrid
-        title="Area Kurikulum"
+        title={displayText(display, "curriculum_areas_title", "Area Kurikulum")}
         variant="japan"
         items={sortedRecords(data.curriculum_areas).map(iconCard)}
       />
       <CardGrid
-        title="Aspek Evaluasi"
+        title={displayText(display, "evaluation_items_title", "Aspek Evaluasi")}
         variant="japan"
         items={sortedRecords(data.evaluation_items).map(iconCard)}
       />
       <FacilityGallery
-        title="Galeri Pelatihan"
+        title={displayText(display, "training_gallery_title", "Galeri Pelatihan")}
         items={await resolveGalleryItems(sortedRecords(data.training_gallery), "media_id")}
       />
       <FinalCTA
@@ -291,6 +305,7 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
 
 export async function JapanCandidateProfilePage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const display = record(data.display_text);
   const whyIndonesia = record(data.why_indonesia);
   const partnerPerspective = record(data.partner_perspective);
 
@@ -311,12 +326,12 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         bullets={arrayOfStrings(whyIndonesia.bullet_items)}
       />
       <CardGrid
-        title="Keunggulan Kandidat"
+        title={displayText(display, "candidate_strengths_title", "Keunggulan Kandidat")}
         variant="japan"
         items={sortedRecords(data.candidate_strengths).map(iconCard)}
       />
       <CardGrid
-        title="Status Izin Tinggal yang Didukung"
+        title={displayText(display, "supported_pathways_title", "Status Izin Tinggal yang Didukung")}
         variant="japan"
         items={sortedRecords(data.supported_pathways).map((item, index) => ({
           id: `pathway-${index}`,
@@ -327,11 +342,11 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         }))}
       />
       <TeamGrid
-        title="Contoh Kandidat"
+        title={displayText(display, "candidate_examples_title", "Contoh Kandidat")}
         members={await resolveCandidateExamples(sortedRecords(data.candidate_examples))}
       />
       <CardGrid
-        title="Kerangka Persiapan Kerja"
+        title={displayText(display, "readiness_framework_title", "Kerangka Persiapan Kerja")}
         variant="japan"
         items={sortedRecords(data.readiness_framework).map(iconCard)}
       />
@@ -352,6 +367,7 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
 
 export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const display = record(data.display_text);
   const networkOverview = record(data.network_overview);
 
   return (
@@ -370,7 +386,7 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         description={stringValue(networkOverview.description)}
       />
       <CardGrid
-        title="Area Cakupan"
+        title={displayText(display, "coverage_regions_title", "Area Cakupan")}
         variant="japan"
         items={sortedRecords(data.coverage_regions).map((item, index) => ({
           id: `region-${index}`,
@@ -380,21 +396,21 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         }))}
       />
       <CardGrid
-        title="Kanal Rekrutmen"
+        title={displayText(display, "recruitment_sources_title", "Kanal Rekrutmen")}
         variant="japan"
         items={sortedRecords(data.recruitment_sources).map(iconCard)}
       />
       <StepFlow
-        title="Alur Seleksi"
+        title={displayText(display, "screening_flow_title", "Alur Seleksi")}
         items={sortedRecords(data.screening_flow).map(toStepItem)}
       />
       <CardGrid
-        title="Titik Jaringan"
+        title={displayText(display, "network_nodes_title", "Titik Jaringan")}
         variant="japan"
         items={await resolveNetworkNodeCards(sortedRecords(data.network_nodes))}
       />
       <CardGrid
-        title="Kontrol Kualitas"
+        title={displayText(display, "quality_control_title", "Kontrol Kualitas")}
         variant="japan"
         items={sortedRecords(data.quality_control_items).map(iconCard)}
       />
@@ -418,6 +434,7 @@ export async function JapanSectorListPage({
   currentFilters,
 }: JapanListPageProps) {
   const data = page.dataJson;
+  const display = record(data.display_text);
 
   return (
     <>
@@ -434,6 +451,7 @@ export async function JapanSectorListPage({
         filters={filters}
         currentFilters={currentFilters}
         detailPathPrefix="/sectors"
+        display={display}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
@@ -455,6 +473,7 @@ export async function JapanNewsListPage({
   currentFilters,
 }: JapanListPageProps) {
   const data = page.dataJson;
+  const display = record(data.display_text);
 
   return (
     <>
@@ -471,6 +490,7 @@ export async function JapanNewsListPage({
         filters={filters}
         currentFilters={currentFilters}
         detailPathPrefix="/news"
+        display={display}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
@@ -484,11 +504,13 @@ export async function JapanNewsListPage({
 
 export async function JapanSectorDetailPage({
   item,
+  page,
   globalConfig,
   tenantName,
   isPreview,
 }: JapanDetailPageProps) {
   const data = item.dataJson;
+  const display = record(page?.dataJson.display_text);
   const lineHref = getLineHref(
     globalConfig,
     tenantName,
@@ -508,16 +530,17 @@ export async function JapanSectorDetailPage({
       <DetailHero item={item} />
       <CollectionDetail
         breadcrumb={[
-          { label: "Beranda", href: "/" },
-          { label: "Sektor", href: "/sectors" },
+          { label: displayText(display, "breadcrumb_home_label", "Beranda"), href: "/" },
+          { label: displayText(display, "breadcrumb_sector_label", "Sektor"), href: "/sectors" },
           { label: item.title },
         ]}
-        mainContent={<SectorDetailMain item={item} />}
+        mainContent={<SectorDetailMain item={item} display={display} />}
         sidebar={
           <SectorSidebar
             item={item}
             lineHref={lineHref}
             documentUrl={documentUrl ?? undefined}
+            display={display}
           />
         }
       />
@@ -527,12 +550,14 @@ export async function JapanSectorDetailPage({
 
 export async function JapanNewsDetailPage({
   item,
+  page,
   globalConfig,
   tenantName,
   variantId,
   isPreview,
   relatedItems,
 }: JapanNewsDetailPageProps) {
+  const display = record(page?.dataJson.display_text);
   const blocks = await resolveJapanContentBlocks(
     arrayOfRecords(item.dataJson.content_blocks),
     variantId,
@@ -561,8 +586,8 @@ export async function JapanNewsDetailPage({
       <DetailHero item={item} />
       <CollectionDetail
         breadcrumb={[
-          { label: "Beranda", href: "/" },
-          { label: "Berita", href: "/news" },
+          { label: displayText(display, "breadcrumb_home_label", "Beranda"), href: "/" },
+          { label: displayText(display, "breadcrumb_news_label", "Berita"), href: "/news" },
           { label: item.title },
         ]}
         mainContent={
@@ -589,7 +614,7 @@ export async function JapanNewsDetailPage({
                 </Badge>
               ))}
               {isNewItem(item.publishedAt) ? (
-                <Badge variant="new_badge">Baru</Badge>
+                <Badge variant="new_badge">{displayText(display, "new_badge_label", "Baru")}</Badge>
               ) : null}
             </div>
             {authorName || authorImageUrl ? (
@@ -625,7 +650,7 @@ export async function JapanNewsDetailPage({
         }
       />
       <RelatedItems
-        title="Berita Terkait"
+        title={displayText(display, "related_news_title", "Berita Terkait")}
         variant="japan"
         items={relatedItems
           .filter((related) => related.slug !== item.slug)
@@ -645,6 +670,7 @@ export async function JapanNewsDetailPage({
 
 export async function JapanContactPage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const display = record(data.display_text);
   const channels = record(data.contact_channels);
   const partnershipPic = record(data.partnership_pic);
   const businessInfo = record(data.business_info);
@@ -671,6 +697,9 @@ export async function JapanContactPage(props: JapanPageProps) {
     arrayOfStrings(businessInfo.language_support).length > 0
       ? arrayOfStrings(businessInfo.language_support)
       : arrayOfStrings(globalBusinessInfo.language_support);
+  const lineCtaLabel =
+    stringValue(channels.line_cta_label) ||
+    displayText(display, "line_cta_label", "Hubungi via LINE");
 
   return (
     <>
@@ -683,13 +712,13 @@ export async function JapanContactPage(props: JapanPageProps) {
       />
       <ContactChannels
         lineHref={lineHref}
-        lineLabel={stringValue(channels.line_cta_label) || "Hubungi via LINE"}
+        lineLabel={lineCtaLabel}
         email={contactEmail}
         emailSubject={emailSubject}
       />
       <PartnershipPic config={partnershipPic} />
       <ContactInfo
-        headline="Informasi Bisnis"
+        headline={displayText(display, "business_info_title", "Informasi Bisnis")}
         description={stringValue(globalContactNote.short_note)}
         phone={stringValue(globalBusinessInfo.phone_label)}
         email={contactEmail}
@@ -704,13 +733,13 @@ export async function JapanContactPage(props: JapanPageProps) {
           stringValue(businessInfo.business_hours) ||
           stringValue(globalBusinessInfo.operational_hours)
         }
-        ctaLabel="Hubungi via LINE"
+        ctaLabel={displayText(display, "business_info_cta_label", lineCtaLabel)}
         languageSupport={languageSupport}
         ctaHref={lineHref}
         ctaVariant="line"
       />
       <StepFlow
-        title="Alur Kontak"
+        title={displayText(display, "inquiry_flow_title", "Alur Kontak")}
         items={sortedRecords(data.inquiry_flow).map((item, index) => ({
           iconKey: stringValue(item.icon_key) || "check",
           title: stringValue(item.title),
@@ -746,14 +775,8 @@ async function JapanHero({
   const subheadline = stringValue(hero.subheadline);
   const eyebrowLabel = stringValue(hero.eyebrow_label);
   const mediaType = stringValue(hero.media_type);
-  const lineHref = withLineCTA ? getLineHref(globalConfig, tenantName) : undefined;
-  const primaryCTA = lineHref
-    ? {
-        label: "Hubungi via LINE",
-        href: lineHref,
-        variant: "line" as const,
-      }
-    : undefined;
+  const primaryCTA = getHeroPrimaryCTA(hero, globalConfig, tenantName, withLineCTA);
+  const secondaryCTA = getHeroSecondaryCTA(hero);
 
   if (mediaType === "slider") {
     const slideIds = arrayOfStrings(hero.slider_media_ids);
@@ -774,6 +797,7 @@ async function JapanHero({
           subheadline={subheadline}
           eyebrowLabel={eyebrowLabel}
           primaryCTA={primaryCTA}
+          secondaryCTA={secondaryCTA}
         />
       );
     }
@@ -783,7 +807,15 @@ async function JapanHero({
   const mediaSrc = await resolveMediaUrl(mediaId);
 
   if (!mediaSrc) {
-    return <PlainHero title={headline} subtitle={subheadline} eyebrowLabel={eyebrowLabel} />;
+    return (
+      <PlainHero
+        title={headline}
+        subtitle={subheadline}
+        eyebrowLabel={eyebrowLabel}
+        primaryCTA={primaryCTA}
+        secondaryCTA={secondaryCTA}
+      />
+    );
   }
 
   const heroMediaType = mediaType === "video" ? "video" : "image";
@@ -797,6 +829,7 @@ async function JapanHero({
       subheadline={subheadline}
       eyebrowLabel={eyebrowLabel}
       primaryCTA={primaryCTA}
+      secondaryCTA={secondaryCTA}
       priority
     />
   );
@@ -806,14 +839,47 @@ function getMediaProxyUrl(mediaId: string) {
   return `/api/media/${encodeURIComponent(mediaId)}`;
 }
 
+function getHeroPrimaryCTA(
+  hero: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  tenantName: string,
+  useLegacyLineFallback = false,
+): HeroPrimaryCTA | undefined {
+  const label =
+    stringValue(hero.primary_cta_label) ||
+    (useLegacyLineFallback && !hasOwnField(hero, "primary_cta_label")
+      ? "Hubungi via LINE"
+      : "");
+  const href = label
+    ? getLineHref(globalConfig, tenantName, stringValue(hero.primary_line_message_template))
+    : undefined;
+
+  return label && href ? { label, href, variant: "line" } : undefined;
+}
+
+function getHeroSecondaryCTA(hero: PublicJson): HeroCTA | undefined {
+  const label = stringValue(hero.secondary_cta_label);
+  const href = stringValue(hero.secondary_href);
+
+  return label && href ? { label, href } : undefined;
+}
+
+function hasOwnField(value: PublicJson, key: string) {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
 function PlainHero({
   title,
   subtitle,
   eyebrowLabel,
+  primaryCTA,
+  secondaryCTA,
 }: {
   title: string;
   subtitle?: string;
   eyebrowLabel?: string;
+  primaryCTA?: HeroPrimaryCTA;
+  secondaryCTA?: HeroCTA;
 }) {
   return (
     <section className="bg-primary-700 py-20 text-white md:py-24">
@@ -825,6 +891,30 @@ function PlainHero({
         ) : null}
         <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{title}</h1>
         {subtitle ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p> : null}
+        {primaryCTA || secondaryCTA ? (
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            {primaryCTA ? (
+              <Button
+                render={<a href={primaryCTA.href} />}
+                size="lg"
+                variant={primaryCTA.variant}
+                className="w-full sm:w-auto"
+              >
+                {primaryCTA.label}
+              </Button>
+            ) : null}
+            {secondaryCTA ? (
+              <Button
+                render={<a href={secondaryCTA.href} />}
+                size="lg"
+                variant="outline"
+                className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+              >
+                {secondaryCTA.label}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </Container>
     </section>
   );
@@ -1182,17 +1272,26 @@ function JapanCollectionList({
   filters,
   currentFilters,
   detailPathPrefix,
+  display,
 }: {
   kind: "sector" | "news";
   collection: JapanListPageProps["collection"];
   filters: FilterBarFilter[];
   currentFilters: Record<string, string>;
   detailPathPrefix: string;
+  display: PublicJson;
 }) {
   const safePage = Math.min(Math.max(collection.page, 1), Math.max(collection.totalPages, 1));
   const pages = Array.from({ length: collection.totalPages }, (_, index) => index + 1);
   const startItem = collection.total === 0 ? 0 : (safePage - 1) * collection.pageSize + 1;
   const endItem = Math.min(safePage * collection.pageSize, collection.total);
+  const cardCtaLabel = displayText(
+    display,
+    "card_cta_label",
+    kind === "news" ? "Baca" : "Lihat Detail",
+  );
+  const featuredBadgeLabel = displayText(display, "featured_badge_label", "Unggulan");
+  const newBadgeLabel = displayText(display, "new_badge_label", "Baru");
 
   return (
     <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
@@ -1229,9 +1328,9 @@ function JapanCollectionList({
                 <CardContent className="flex flex-1 flex-col p-5">
                   <div className="mb-3 flex flex-wrap gap-2">
                     {kind === "news" && isNewItem(item.publishedAt) ? (
-                      <Badge variant="new_badge">Baru</Badge>
+                      <Badge variant="new_badge">{newBadgeLabel}</Badge>
                     ) : null}
-                    {item.isFeatured ? <Badge variant="outline">Unggulan</Badge> : null}
+                    {item.isFeatured ? <Badge variant="outline">{featuredBadgeLabel}</Badge> : null}
                   </div>
                   <h3 className="text-lg font-semibold leading-snug text-neutral-900">
                     {item.title}
@@ -1262,7 +1361,7 @@ function JapanCollectionList({
                   ) : null}
                 </CardContent>
                 <CardFooter className="p-5">
-                  <Button className="w-full">{kind === "news" ? "Baca" : "Lihat Detail"}</Button>
+                  <Button className="w-full">{cardCtaLabel}</Button>
                 </CardFooter>
               </Card>
               </a>
@@ -1350,7 +1449,7 @@ function DetailHero({ item }: { item: PublicCollectionItem }) {
   return <PlainHero title={item.title} subtitle={subtitle} />;
 }
 
-function SectorDetailMain({ item }: { item: PublicCollectionItem }) {
+function SectorDetailMain({ item, display }: { item: PublicCollectionItem; display: PublicJson }) {
   const data = item.dataJson;
   const subtitle = getCollectionSubtitle(item);
 
@@ -1374,13 +1473,28 @@ function SectorDetailMain({ item }: { item: PublicCollectionItem }) {
           </p>
         ) : null}
       </section>
-      <InlineCardSet title="Kesesuaian" items={sortedRecords(data.suitability_items)} />
-      <InlineCardSet title="Contoh Posisi" items={sortedRecords(data.example_positions)} />
-      <InlineCardSet title="Keterkaitan Pelatihan" items={sortedRecords(data.training_alignment_items)} />
-      <RequirementList items={arrayOfStrings(data.candidate_requirements)} />
-      <StepFlow title="Proses" items={sortedRecords(data.process_items).map(toStepItem)} />
+      <InlineCardSet
+        title={displayText(display, "suitability_title", "Kesesuaian")}
+        items={sortedRecords(data.suitability_items)}
+      />
+      <InlineCardSet
+        title={displayText(display, "example_positions_title", "Contoh Posisi")}
+        items={sortedRecords(data.example_positions)}
+      />
+      <InlineCardSet
+        title={displayText(display, "training_alignment_title", "Keterkaitan Pelatihan")}
+        items={sortedRecords(data.training_alignment_items)}
+      />
+      <RequirementList
+        title={displayText(display, "requirements_title", "Syarat Kandidat")}
+        items={arrayOfStrings(data.candidate_requirements)}
+      />
+      <StepFlow
+        title={displayText(display, "process_title", "Proses")}
+        items={sortedRecords(data.process_items).map(toStepItem)}
+      />
       <FAQ
-        title="Pertanyaan Umum"
+        title={displayText(display, "faq_title", "Pertanyaan Umum")}
         items={sortedRecords(data.faqs).map((faq, index) => ({
           question: stringValue(faq.question),
           answer: stringValue(faq.answer),
@@ -1396,30 +1510,42 @@ function SectorSidebar({
   item,
   lineHref,
   documentUrl,
+  display,
 }: {
   item: PublicCollectionItem;
   lineHref?: string;
   documentUrl?: string;
+  display: PublicJson;
 }) {
   const data = item.dataJson;
 
   return (
     <Card variant="japan" className="p-5">
       <CardContent className="p-0">
-        <h2 className="text-lg font-semibold text-neutral-900">Kontak Kemitraan</h2>
+        <h2 className="text-lg font-semibold text-neutral-900">
+          {displayText(display, "sidebar_title", "Kontak Kemitraan")}
+        </h2>
         <p className="mt-3 text-sm leading-6 text-neutral-600">
-          Konsultasikan ketersediaan kandidat, kesesuaian pelatihan, dan kebutuhan dokumen untuk sektor ini.
+          {displayText(
+            display,
+            "sidebar_description",
+            "Konsultasikan ketersediaan kandidat, kesesuaian pelatihan, dan kebutuhan dokumen untuk sektor ini.",
+          )}
         </p>
         {lineHref ? (
           <Button render={<a href={lineHref} />} variant="line" className="mt-6 w-full">
           <MessageCircle aria-hidden="true" className="size-4" />
-          {stringValue(data.primary_cta_label) || "Hubungi via LINE"}
+          {stringValue(data.primary_cta_label) ||
+            displayText(display, "detail_primary_cta_label", "Hubungi via LINE")}
           </Button>
         ) : null}
         {documentUrl ? (
           <div className="mt-3">
             <DocumentDownload
-              label={stringValue(data.secondary_cta_label) || "Unduh Materi"}
+              label={
+                stringValue(data.secondary_cta_label) ||
+                displayText(display, "detail_secondary_cta_label", "Unduh Materi")
+              }
               fileUrl={documentUrl}
               fallbackLabel={JAPAN_DOWNLOAD_LABEL}
               variant="outline"
@@ -1463,14 +1589,14 @@ function InlineCardSet({ title, items }: { title: string; items: PublicJson[] })
   );
 }
 
-function RequirementList({ items }: { items: string[] }) {
+function RequirementList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) {
     return null;
   }
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-neutral-900">Syarat Kandidat</h2>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
       <ul className="mt-5 grid gap-3 md:grid-cols-2">
         {items.map((item) => (
           <li key={item} className="flex gap-3 rounded-xl border border-neutral-200 bg-white p-4">
@@ -1672,15 +1798,15 @@ async function resolveJapanContentBlocks(
 
         return sector
           ? {
-              type,
-              sortOrder,
-              data: {
-                title: sector.title,
-                description: sector.excerpt || stringValue(sector.dataJson.short_description),
-                ctaLabel: "Lihat Detail",
-                ctaHref: `/sectors/${sector.slug}`,
-              },
-            }
+            type,
+            sortOrder,
+            data: {
+              title: sector.title,
+              description: sector.excerpt || stringValue(sector.dataJson.short_description),
+              ctaLabel: stringValue(data.cta_label) || "Lihat Detail",
+              ctaHref: `/sectors/${sector.slug}`,
+            },
+          }
           : null;
       }
 
@@ -1800,15 +1926,17 @@ function toStepItem(item: PublicJson, index: number) {
   };
 }
 
-function newsCard(item: PublicCollectionItem) {
+function newsCard(item: PublicCollectionItem, labels: { newBadgeLabel?: string } = {}) {
+  const isNew = isNewItem(item.publishedAt);
+
   return {
     id: item.id,
     title: item.title,
     description: item.excerpt,
     href: `/news/${item.slug}`,
     imageSrc: item.thumbnailSrc,
-    badge: isNewItem(item.publishedAt) ? "Baru" : undefined,
-    badgeVariant: isNewItem(item.publishedAt) ? ("new" as const) : undefined,
+    badge: isNew ? labels.newBadgeLabel || "Baru" : undefined,
+    badgeVariant: isNew ? ("new" as const) : undefined,
     meta: item.publishedAt ? formatDate(item.publishedAt) : undefined,
     isEnabled: true,
   };

@@ -5,7 +5,6 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { Prisma } from "@/generated/prisma/client";
 import { AppError, AuthError, ForbiddenError, ValidationError } from "@/lib/errors";
-import { getMediaProxyUrl } from "@/lib/media-url";
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import {
@@ -15,6 +14,7 @@ import {
   deleteMedia as deleteStorageMedia,
   generatePresignedUploadUrl as generateStoragePresignedUploadUrl,
   getMediaReferences as getStorageMediaReferences,
+  getPublicUrl,
   getTotalReferenceCount,
   MEDIA_CLEANUP_MAX_DELETE_ITEMS,
   scanMediaCleanup as scanStorageMediaCleanup,
@@ -54,6 +54,13 @@ const pageSchema = z
   ])
   .optional()
   .transform((page) => page ?? { page: 1, pageSize: 24 });
+
+const listOptionsSchema = z
+  .object({
+    includeUsage: z.boolean().default(false),
+  })
+  .optional()
+  .transform((options) => options ?? { includeUsage: false });
 
 const updateAltTextSchema = z.object({
   mediaId: z.string().cuid(),
@@ -133,7 +140,7 @@ export async function confirmUpload(input: unknown) {
       ok: true,
       media: {
         ...upload,
-        publicUrl: getMediaProxyUrl(upload.mediaId),
+        publicUrl: upload.publicUrl,
       },
     };
   } catch (error) {
@@ -288,7 +295,7 @@ export async function createCroppedImage(input: unknown) {
       ok: true,
       media: {
         ...cropped,
-        publicUrl: getMediaProxyUrl(cropped.mediaId),
+        publicUrl: cropped.publicUrl,
       },
     };
   } catch (error) {
@@ -296,13 +303,19 @@ export async function createCroppedImage(input: unknown) {
   }
 }
 
-export async function listMedia(tenantId: string, filter: unknown = {}, page: unknown = {}) {
+export async function listMedia(
+  tenantId: string,
+  filter: unknown = {},
+  page: unknown = {},
+  options: unknown = {},
+) {
   try {
     const session = await requireTenantSession(tenantId);
     const parsedFilter = listFilterSchema.safeParse(filter);
     const parsedPage = pageSchema.safeParse(page);
+    const parsedOptions = listOptionsSchema.safeParse(options);
 
-    if (!parsedFilter.success || !parsedPage.success) {
+    if (!parsedFilter.success || !parsedPage.success || !parsedOptions.success) {
       throw new ValidationError({
         filter: ["Filter media tidak valid."],
       });
@@ -312,6 +325,7 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
     const where: Prisma.MediaAssetWhereInput = {};
     const normalizedFilter = parsedFilter.data ?? {};
     const normalizedPage = parsedPage.data;
+    const normalizedOptions = parsedOptions.data;
 
     if (normalizedFilter.mediaType) {
       where.mediaType = normalizedFilter.mediaType;
@@ -364,17 +378,23 @@ export async function listMedia(tenantId: string, filter: unknown = {}, page: un
       db.mediaAsset.count({ where }),
     ]);
 
-    const itemsWithUsage = await Promise.all(
-      items.map(async (item) => {
-        const references = await getStorageMediaReferences(session.tenantId, item.id);
+    const itemsWithUsage = normalizedOptions.includeUsage
+      ? await Promise.all(
+          items.map(async (item) => {
+            const references = await getStorageMediaReferences(session.tenantId, item.id);
 
-        return {
+            return {
+              ...item,
+              publicUrl: getPublicUrl(item.storagePath),
+              usageCount: getTotalReferenceCount(references),
+            };
+          }),
+        )
+      : items.map((item) => ({
           ...item,
-          publicUrl: getMediaProxyUrl(item.id),
-          usageCount: getTotalReferenceCount(references),
-        };
-      }),
-    );
+          publicUrl: getPublicUrl(item.storagePath),
+          usageCount: 0,
+        }));
 
     return {
       ok: true,
@@ -472,7 +492,7 @@ export async function generatePresignedUploadUrl(input: unknown) {
       ok: true,
       mediaId: result.mediaId,
       presignedUrl: result.presignedUrl,
-      publicUrl: getMediaProxyUrl(result.mediaId),
+      publicUrl: result.publicUrl,
       storagePath: result.storagePath,
       expiresAt: result.expiresAt.toISOString(),
     };

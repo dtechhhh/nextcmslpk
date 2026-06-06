@@ -1,36 +1,6 @@
 import type { CSSProperties } from "react"
-import {
-  Award,
-  BookOpen,
-  Briefcase,
-  Building,
-  Check,
-  Clock,
-  Globe,
-  GraduationCap,
-  Heart,
-  HelpCircle,
-  Plane,
-  Star,
-  Users,
-  type LucideIcon,
-} from "lucide-react"
+import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry"
 import { Container } from "@/themes/starter/components/ui/Container"
-
-const ICON_REGISTRY: Record<string, LucideIcon> = {
-  graduation_cap: GraduationCap,
-  briefcase: Briefcase,
-  plane: Plane,
-  users: Users,
-  building: Building,
-  clock: Clock,
-  star: Star,
-  heart: Heart,
-  check: Check,
-  globe: Globe,
-  award: Award,
-  book: BookOpen,
-}
 
 interface StepFlowItem {
   iconKey: string
@@ -80,7 +50,7 @@ function StepFlow({ title, subtitle, items }: StepFlowProps) {
           style={{ "--step-count": steps.length } as CSSProperties}
         >
           {steps.map((step, index) => {
-            const Icon = ICON_REGISTRY[step.iconKey] ?? HelpCircle
+            const Icon = ICON_REGISTRY[step.iconKey as IconKey] ?? FALLBACK_ICON
             const stepNumber = index + 1
             const isLast = index === steps.length - 1
 
