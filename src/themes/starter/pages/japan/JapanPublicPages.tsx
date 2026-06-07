@@ -81,8 +81,24 @@ type JapanNewsDetailPageProps = JapanDetailPageProps & {
   relatedItems: PublicCollectionItem[];
 };
 
+type LeadershipQuoteData = {
+  isEnabled: boolean;
+  quote: string;
+  attributionName: string;
+  attributionRole: string;
+  photoImageId: string;
+};
+
 const JAPAN_DOWNLOAD_LABEL = "Unduh dokumen";
 const JAPAN_DETAIL_LABEL = "Lihat detail";
+const DEFAULT_LEADERSHIP_QUOTE = {
+  isEnabled: true,
+  quote:
+    "「私たちは単なる労働力の送り出し機関ではありません。候補者が日本で成功するまで、責任を持って関わり続ける長期的なパートナーです。」",
+  attributionName: "Aris Supriyadi",
+  attributionRole: "代表取締役",
+  photoImageId: "",
+};
 
 function displayText(source: PublicJson, key: string, fallback: string) {
   return stringValue(source[key]) || fallback;
@@ -187,6 +203,7 @@ export async function JapanAboutPage(props: JapanPageProps) {
   const data = props.page.dataJson;
   const display = record(data.display_text);
   const story = record(data.story);
+  const leadershipQuote = getLeadershipQuote(data.leadership_quote);
   const visionMission = record(data.vision_mission);
 
   return (
@@ -205,6 +222,7 @@ export async function JapanAboutPage(props: JapanPageProps) {
         title={stringValue(story.headline)}
         body={stringValue(story.body)}
       />
+      <LeadershipQuoteSection quoteData={leadershipQuote} />
       <Timeline
         title={displayText(display, "timeline_title", "Linimasa")}
         items={sortedRecords(data.timeline).map((item, index) => ({
@@ -990,6 +1008,58 @@ async function SplitSection({
               </Button>
             ) : null}
           </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+async function LeadershipQuoteSection({
+  quoteData,
+}: {
+  quoteData: LeadershipQuoteData;
+}) {
+  if (!quoteData.isEnabled || !quoteData.quote) {
+    return null;
+  }
+
+  const photoSrc = await resolveMediaUrl(quoteData.photoImageId);
+  const attribution = [quoteData.attributionName, quoteData.attributionRole]
+    .filter(Boolean)
+    .join(" / ");
+
+  return (
+    <section className="bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+      <Container>
+        <div
+          className={
+            photoSrc
+              ? "grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center"
+              : "mx-auto max-w-5xl"
+          }
+        >
+          <blockquote>
+            <div className="mb-8 h-1 w-20 bg-red-500" />
+            <p className="text-2xl font-semibold leading-relaxed tracking-normal md:text-3xl md:leading-relaxed">
+              {quoteData.quote}
+            </p>
+            {attribution ? (
+              <footer className="mt-8 text-sm font-medium tracking-normal text-white/75">
+                {attribution}
+              </footer>
+            ) : null}
+          </blockquote>
+          {photoSrc ? (
+            <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-white/15 bg-white/10">
+              <Image
+                src={photoSrc}
+                alt={quoteData.attributionName || quoteData.attributionRole || ""}
+                fill
+                sizes="280px"
+                className="object-cover"
+              />
+            </div>
+          ) : null}
         </div>
       </Container>
     </section>
@@ -1908,7 +1978,7 @@ function toStatItem(item: PublicJson) {
 
 function toProofStatItem(item: PublicJson) {
   return {
-    iconKey: "check",
+    iconKey: stringValue(item.icon_key) || "check",
     value: stringValue(item.value),
     label: stringValue(item.label),
     isEnabled: booleanValue(item.is_enabled, true),
@@ -2083,4 +2153,40 @@ function booleanValue(value: unknown, fallback: boolean) {
 
 function numberValue(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function getLeadershipQuote(value: unknown): LeadershipQuoteData {
+  if (!isRecord(value)) {
+    return DEFAULT_LEADERSHIP_QUOTE;
+  }
+
+  return {
+    isEnabled: booleanValue(value.is_enabled, DEFAULT_LEADERSHIP_QUOTE.isEnabled),
+    quote: stringWithFieldDefault(value, "quote", DEFAULT_LEADERSHIP_QUOTE.quote),
+    attributionName: stringWithFieldDefault(
+      value,
+      "attribution_name",
+      DEFAULT_LEADERSHIP_QUOTE.attributionName,
+    ),
+    attributionRole: stringWithFieldDefault(
+      value,
+      "attribution_role",
+      DEFAULT_LEADERSHIP_QUOTE.attributionRole,
+    ),
+    photoImageId: stringWithFieldDefault(
+      value,
+      "photo_image_id",
+      DEFAULT_LEADERSHIP_QUOTE.photoImageId,
+    ),
+  };
+}
+
+function stringWithFieldDefault(
+  source: PublicJson,
+  key: string,
+  fallback: string,
+) {
+  return Object.prototype.hasOwnProperty.call(source, key)
+    ? stringValue(source[key])
+    : fallback;
 }

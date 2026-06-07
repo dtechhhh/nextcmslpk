@@ -44,6 +44,8 @@ import {
   scanMediaCleanup,
   updateMediaAltText,
 } from "@/server/actions/tenant/media";
+import { optimizeImageForUpload } from "@/lib/client-image-optimization";
+import { getMediaProxyUrl } from "@/lib/media-url";
 import { cn } from "@/lib/utils";
 
 type MediaType = "IMAGE" | "DOCUMENT" | "VIDEO";
@@ -71,8 +73,9 @@ type UploadEntry = {
   fileName: string;
   mediaType: MediaType;
   fileSize: number;
+  originalFileSize?: number;
   progress: number;
-  status: "uploading" | "confirming" | "done" | "error";
+  status: "optimizing" | "uploading" | "confirming" | "done" | "error";
   error?: string;
 };
 
@@ -217,16 +220,44 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
       mediaType: getMediaTypeForFile(file),
       fileSize: file.size,
       progress: 0,
-      status: "uploading",
+      status: file.type.startsWith("image/") ? "optimizing" : "uploading",
     };
 
     setUploads((current) => [...current, entry]);
 
     try {
+      let uploadFileCandidate = file;
+
+      if (file.type.startsWith("image/")) {
+        const optimizedUpload = await optimizeImageForUpload(file);
+        uploadFileCandidate = optimizedUpload.file;
+
+        setUploads((current) =>
+          current.map((u) =>
+            u.id === entry.id
+              ? {
+                  ...u,
+                  fileName: uploadFileCandidate.name,
+                  mediaType: getMediaTypeForFile(uploadFileCandidate),
+                  fileSize: uploadFileCandidate.size,
+                  originalFileSize: optimizedUpload.optimized
+                    ? optimizedUpload.originalSize
+                    : undefined,
+                  status: "uploading",
+                }
+              : u,
+          ),
+        );
+      } else {
+        setUploads((current) =>
+          current.map((u) => (u.id === entry.id ? { ...u, status: "uploading" } : u)),
+        );
+      }
+
       const presignedResult = await generatePresignedUploadUrl({
-        fileName: file.name,
-        contentType: file.type,
-        fileSize: file.size,
+        fileName: uploadFileCandidate.name,
+        contentType: uploadFileCandidate.type,
+        fileSize: uploadFileCandidate.size,
       });
 
       if (!isPresignedSuccess(presignedResult)) {
@@ -240,7 +271,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
         return;
       }
 
-      await uploadToR2(presignedResult.presignedUrl, file, (progress) => {
+      await uploadToR2(presignedResult.presignedUrl, uploadFileCandidate, (progress) => {
         setUploads((current) =>
           current.map((u) => (u.id === entry.id ? { ...u, progress } : u)),
         );
@@ -546,13 +577,25 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
                 )}
                 <span className="min-w-0 flex-1 truncate">{entry.fileName}</span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {formatFileSize(entry.fileSize)}
+                  {entry.originalFileSize
+                    ? `${formatFileSize(entry.originalFileSize)} -> ${formatFileSize(entry.fileSize)}`
+                    : formatFileSize(entry.fileSize)}
                 </span>
+                {entry.status === "optimizing" ? (
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    Optimizing
+                  </span>
+                ) : null}
                 {entry.status === "uploading" && (
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {Math.round(entry.progress)}%
                   </span>
                 )}
+                {entry.status === "confirming" ? (
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    Confirming
+                  </span>
+                ) : null}
                 {entry.status === "error" && entry.error && (
                   <span className="shrink-0 text-xs text-destructive">{entry.error}</span>
                 )}
@@ -983,13 +1026,13 @@ function MediaCard({
         {media.mediaType === "IMAGE" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={media.publicUrl}
+            src={getDashboardMediaPreviewUrl(media)}
             alt={media.altText ?? media.fileName}
             className="h-full w-full object-cover"
           />
         ) : media.mediaType === "VIDEO" ? (
           <video
-            src={media.publicUrl}
+            src={getDashboardMediaPreviewUrl(media)}
             className="h-full w-full object-cover"
             muted
             playsInline
@@ -1115,7 +1158,7 @@ function MediaListRow({
         {media.mediaType === "IMAGE" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={media.publicUrl}
+            src={getDashboardMediaPreviewUrl(media)}
             alt={media.fileName}
             className="h-full w-full object-cover"
           />
@@ -1271,6 +1314,10 @@ function getMediaTypeForFile(file: File): MediaType {
   }
 
   return "IMAGE";
+}
+
+function getDashboardMediaPreviewUrl(media: MediaItem) {
+  return getMediaProxyUrl(media.id);
 }
 
 function isAllowedLibraryUploadFile(file: File) {

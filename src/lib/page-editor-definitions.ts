@@ -392,15 +392,13 @@ const japanIconTitleDescSortFields: PageEditorField[] = [
 ];
 
 const japanProofStatFields: PageEditorField[] = [
+  { kind: "icon", path: "icon_key", label: "Ikon" },
   { kind: "text", path: "value", label: "Nilai" },
   { kind: "text", path: "label", label: "Label" },
   ...japanSortableFields,
 ];
 
-const japanStatFields: PageEditorField[] = [
-  { kind: "icon", path: "icon_key", label: "Ikon" },
-  ...japanProofStatFields,
-];
+const japanStatFields: PageEditorField[] = japanProofStatFields;
 
 const japanTimelineFields: PageEditorField[] = [
   { kind: "text", path: "year_label", label: "Label tahun" },
@@ -444,6 +442,15 @@ const japanEmptyFinalCtaWithDoc = {
   secondary_document_url: "",
 };
 
+const japanDefaultLeadershipQuote = {
+  is_enabled: true,
+  quote:
+    "「私たちは単なる労働力の送り出し機関ではありません。候補者が日本で成功するまで、責任を持って関わり続ける長期的なパートナーです。」",
+  attribution_name: "Aris Supriyadi",
+  attribution_role: "代表取締役",
+  photo_image_id: "",
+};
+
 const japanEmptyIconTitleDesc = {
   icon_key: "",
   title: "",
@@ -453,16 +460,14 @@ const japanEmptyIconTitleDesc = {
 };
 
 const japanEmptyProofStat = {
+  icon_key: "",
   value: "",
   label: "",
   sort_order: 0,
   is_enabled: true,
 };
 
-const japanEmptyStat = {
-  icon_key: "",
-  ...japanEmptyProofStat,
-};
+const japanEmptyStat = { ...japanEmptyProofStat };
 
 const japanEmptyTimeline = {
   year_label: "",
@@ -1219,11 +1224,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
             addLabel: "Tambah statistik",
             defaultItem: statDefault(0),
             sortOrderField: "sort_order",
-            fields: [
-              { kind: "text", path: "value", label: "Value" },
-              { kind: "text", path: "label", label: "Label" },
-              ...sortableFields,
-            ],
+            fields: statFields,
           },
         ],
       },
@@ -1738,6 +1739,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         headline: "",
         body: "",
       },
+      leadership_quote: japanDefaultLeadershipQuote,
       timeline: [],
       vision_mission: {
         vision_headline: "",
@@ -1788,6 +1790,18 @@ export const PAGE_EDITOR_DEFINITIONS = {
           { kind: "text", path: "story.eyebrow_label", label: "Label kecil" },
           { kind: "text", path: "story.headline", label: "Judul utama" },
           { kind: "textarea", path: "story.body", label: "Isi cerita" },
+        ],
+      },
+      {
+        key: "leadership_quote",
+        title: "Kutipan pimpinan",
+        classification: "recommended",
+        fields: [
+          { kind: "switch", path: "leadership_quote.is_enabled", label: "Aktif" },
+          { kind: "textarea", path: "leadership_quote.quote", label: "Kutipan" },
+          { kind: "text", path: "leadership_quote.attribution_name", label: "Nama atribusi" },
+          { kind: "text", path: "leadership_quote.attribution_role", label: "Jabatan atribusi" },
+          { kind: "media", path: "leadership_quote.photo_image_id", label: "Foto opsional" },
         ],
       },
       {

@@ -23,6 +23,7 @@ const japanMediaHeroSchema = z
 
 const proofStatSchema = z
   .object({
+    icon_key: iconKeySchema,
     value: optionalString(80),
     label: optionalString(160),
     ...enabledSortFields,

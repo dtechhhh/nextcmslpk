@@ -24,6 +24,7 @@ const japanMediaHeroSchema = z
 
 const proofStatSchema = z
   .object({
+    icon_key: iconKeySchema,
     value: optionalString(80),
     label: optionalString(160),
     ...enabledSortFields,
@@ -78,6 +79,16 @@ const legalOverviewSchema = z
   })
   .passthrough();
 
+const leadershipQuoteSchema = z
+  .object({
+    is_enabled: z.boolean().default(true),
+    quote: optionalString(900),
+    attribution_name: optionalString(140),
+    attribution_role: optionalString(160),
+    photo_image_id: mediaIdSchema,
+  })
+  .passthrough();
+
 const japanFinalCtaSchema = z
   .object({
     headline: optionalString(220),
@@ -117,6 +128,14 @@ export const tentangKamiJapanSchema = z
         headline: "",
         body: "",
       }),
+    leadership_quote: leadershipQuoteSchema.default({
+      is_enabled: true,
+      quote:
+        "「私たちは単なる労働力の送り出し機関ではありません。候補者が日本で成功するまで、責任を持って関わり続ける長期的なパートナーです。」",
+      attribution_name: "Aris Supriyadi",
+      attribution_role: "代表取締役",
+      photo_image_id: "",
+    }),
     timeline: z.array(timelineSchema).default([]),
     vision_mission: z
       .object({

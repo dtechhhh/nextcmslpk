@@ -71,6 +71,7 @@ import {
   getCmsFilterLabel,
   getCmsPublishStatusLabel,
 } from "@/lib/cms-field-guidance";
+import { getMediaProxyUrl } from "@/lib/media-url";
 import {
   deleteItem,
   listItems,
@@ -573,12 +574,12 @@ export function CollectionList({
 }
 
 function Thumbnail({ item }: { item: ListItem }) {
-  if (item.thumbnailImage?.publicUrl) {
+  if (item.thumbnailImage?.id) {
     return (
       <div className="size-10 overflow-hidden rounded-md bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={item.thumbnailImage.publicUrl}
+          src={getMediaProxyUrl(item.thumbnailImage.id)}
           alt={item.title}
           className="size-full object-cover"
         />

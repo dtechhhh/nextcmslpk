@@ -42,6 +42,8 @@ import {
   validateLogoImageDimensions,
   type MediaPreset,
 } from "@/lib/media-constraints";
+import { getMediaProxyUrl } from "@/lib/media-url";
+import { optimizeImageForUpload } from "@/lib/client-image-optimization";
 
 type MediaType = "IMAGE" | "DOCUMENT" | "VIDEO";
 
@@ -95,6 +97,8 @@ export function MediaPicker({
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadPhase, setUploadPhase] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [cropTarget, setCropTarget] = useState<MediaItem | null>(null);
   const [cropZoom, setCropZoom] = useState(1);
@@ -193,7 +197,7 @@ export function MediaPicker({
   }
 
   function beginMediaSelection(item: MediaItem) {
-    if (cropConfig && item.mediaType === "IMAGE" && item.publicUrl) {
+    if (cropConfig && item.mediaType === "IMAGE") {
       setCropTarget(item);
       setCropZoom(1);
       setCropPosition({ x: 50, y: 50 });
@@ -261,6 +265,8 @@ export function MediaPicker({
     const file = files[0];
 
     setUploading(true);
+    setUploadPhase(null);
+    setUploadProgress(null);
     setUploadError(null);
 
     try {
@@ -278,7 +284,11 @@ export function MediaPicker({
         return;
       }
 
-      const validationError = await validateFileForPreset(file, mediaPreset);
+      setUploadPhase("Mengoptimasi gambar...");
+      const optimizedUpload = await optimizeImageForUpload(file, { mediaPreset });
+      const uploadFileCandidate = optimizedUpload.file;
+
+      const validationError = await validateFileForPreset(uploadFileCandidate, mediaPreset);
 
       if (validationError) {
         setUploadError(validationError);
@@ -287,10 +297,11 @@ export function MediaPicker({
         return;
       }
 
+      setUploadPhase("Menyiapkan upload...");
       const presignedResult = await generatePresignedUploadUrl({
-        fileName: file.name,
-        contentType: file.type,
-        fileSize: file.size,
+        fileName: uploadFileCandidate.name,
+        contentType: uploadFileCandidate.type,
+        fileSize: uploadFileCandidate.size,
       });
 
       if (!isPresignedSuccess(presignedResult)) {
@@ -299,8 +310,17 @@ export function MediaPicker({
         return;
       }
 
-      await uploadFile(presignedResult.presignedUrl, file);
+      setUploadPhase(
+        optimizedUpload.optimized
+          ? `Mengupload hasil optimasi ${formatFileSize(optimizedUpload.originalSize)} -> ${formatFileSize(optimizedUpload.optimizedSize)}...`
+          : "Mengupload media...",
+      );
+      setUploadProgress(0);
 
+      await uploadFile(presignedResult.presignedUrl, uploadFileCandidate, setUploadProgress);
+
+      setUploadPhase("Mengonfirmasi upload...");
+      setUploadProgress(null);
       const confirmResult = await confirmUpload(presignedResult.mediaId);
 
       if (!isConfirmSuccess(confirmResult)) {
@@ -313,10 +333,10 @@ export function MediaPicker({
         confirmResult.media,
         {
           id: presignedResult.mediaId,
-          fileName: file.name,
-          mimeType: file.type,
-          fileSize: file.size,
-          mediaType: getMediaTypeForUploadedFile(file),
+          fileName: uploadFileCandidate.name,
+          mimeType: uploadFileCandidate.type,
+          fileSize: uploadFileCandidate.size,
+          mediaType: getMediaTypeForUploadedFile(uploadFileCandidate),
           status: "ACTIVE",
           width: null,
           height: null,
@@ -330,11 +350,17 @@ export function MediaPicker({
       ]);
       setTotalPages((current) => Math.max(current, 1));
       beginMediaSelection(uploadedItem);
-      toast.success("Media berhasil diupload.");
+      toast.success(
+        optimizedUpload.optimized
+          ? `Media berhasil diupload. Dioptimasi ${formatFileSize(optimizedUpload.originalSize)} -> ${formatFileSize(optimizedUpload.optimizedSize)}.`
+          : "Media berhasil diupload.",
+      );
     } catch {
       setUploadError("Upload ke storage gagal. Periksa konfigurasi CORS R2.");
     } finally {
       setUploading(false);
+      setUploadPhase(null);
+      setUploadProgress(null);
     }
 
     event.target.value = "";
@@ -427,6 +453,12 @@ export function MediaPicker({
             {uploadError ? (
               <p className="text-xs text-destructive">{uploadError}</p>
             ) : null}
+            {uploading && uploadPhase ? (
+              <p className="text-xs text-muted-foreground">
+                {uploadPhase}
+                {uploadProgress !== null ? ` ${Math.round(uploadProgress)}%` : ""}
+              </p>
+            ) : null}
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
               {loading ? (
@@ -462,16 +494,16 @@ export function MediaPicker({
                             mediaPreset === "logo" ? "aspect-square" : "aspect-video",
                           )}
                         >
-                          {item.mediaType === "IMAGE" && item.publicUrl ? (
+                          {item.mediaType === "IMAGE" ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={item.publicUrl}
+                              src={getMediaPreviewUrl(item)}
                               alt={item.fileName}
                               className="h-full w-full object-contain"
                             />
-                          ) : item.mediaType === "VIDEO" && item.publicUrl ? (
+                          ) : item.mediaType === "VIDEO" ? (
                             <video
-                              src={item.publicUrl}
+                              src={getMediaPreviewUrl(item)}
                               className="h-full w-full object-cover"
                               muted
                               playsInline
@@ -566,7 +598,7 @@ export function MediaPicker({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={cropTarget.publicUrl}
+                    src={getMediaPreviewUrl(cropTarget)}
                     alt={cropTarget.fileName}
                     className="absolute max-w-none select-none"
                     style={getCropPreviewStyle(cropRect)}
@@ -693,15 +725,26 @@ function RangeField({
   );
 }
 
-async function uploadFile(url: string, file: File): Promise<void> {
+async function uploadFile(
+  url: string,
+  file: File,
+  onProgress?: (progress: number) => void,
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
     xhr.open("PUT", url);
     xhr.setRequestHeader("Content-Type", file.type);
 
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress((event.loaded / event.total) * 100);
+      }
+    });
+
     xhr.addEventListener("load", () => {
       if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress?.(100);
         resolve();
       } else {
         reject(new Error(`Upload failed with status ${xhr.status}`));
@@ -880,6 +923,10 @@ function toUploadedMediaItem(media: Record<string, unknown>, fallback: MediaItem
   };
 }
 
+function getMediaPreviewUrl(item: MediaItem) {
+  return getMediaProxyUrl(item.id);
+}
+
 function getAcceptedMimeTypes(mediaType: MediaType) {
   if (mediaType === "IMAGE") {
     return "image/jpeg,image/png,image/webp";
@@ -922,6 +969,18 @@ function getSelectedFallbackLabel(mediaType: MediaType) {
   }
 
   return "Document selected";
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function isMediaType(value: unknown): value is MediaType {

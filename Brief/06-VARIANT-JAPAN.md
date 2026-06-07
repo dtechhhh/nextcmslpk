@@ -220,10 +220,13 @@ hero
   media_type, media_id, headline, subheadline, eyebrow_label
 
 proof_stats[]                           [recommended]
-  value, label, sort_order, is_enabled
+  icon_key, value, label, sort_order, is_enabled
 
 story                                   [required]
   image_id, eyebrow_label, headline, body
+
+leadership_quote                        [recommended]
+  is_enabled, quote, attribution_name, attribution_role, photo_image_id
 
 timeline[]                              [recommended]
   year_label, title, description, sort_order, is_enabled
@@ -292,7 +295,7 @@ hero
   media_type, media_id, headline, subheadline, eyebrow_label
 
 proof_stats[]                           [recommended]
-  value, label, sort_order, is_enabled
+  icon_key, value, label, sort_order, is_enabled
 
 why_indonesia                           [required]
   image_id, headline, description, bullet_items[]
@@ -329,7 +332,7 @@ hero
   media_type, media_id, headline, subheadline, eyebrow_label
 
 proof_stats[]                           [recommended]
-  value, label, sort_order, is_enabled
+  icon_key, value, label, sort_order, is_enabled
 
 network_overview                        [required]
   map_image_id, headline, description
@@ -511,6 +514,7 @@ Homepage              | final_cta            | required
 Tentang Kami          | hero                 | required
 Tentang Kami          | proof_stats          | recommended
 Tentang Kami          | story                | required
+Tentang Kami          | leadership_quote     | recommended
 Tentang Kami          | timeline             | recommended
 Tentang Kami          | vision_mission       | required
 Tentang Kami          | values               | recommended
