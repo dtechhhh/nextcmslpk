@@ -10,6 +10,7 @@ import {
 export { mediaIdSchema, optionalString, sortOrderSchema };
 
 export const statusSchema = z.enum(["DRAFT", "PUBLISHED", "CLOSED", "FILLED"]);
+export const iconKeySchema = z.string().trim().max(120).default("");
 
 export const identityFields = {
   title: optionalString(200),

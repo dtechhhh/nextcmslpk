@@ -64,6 +64,12 @@ export type CollectionField = (
       cropPreset?: MediaCropPreset;
     }
   | {
+      kind: "icon";
+      path: string;
+      label: string;
+      placeholder?: string;
+    }
+  | {
       kind: "media-array";
       path: string;
       label: string;
@@ -188,6 +194,16 @@ const titleDescFields: CollectionField[] = [
   { kind: "text", path: "title", label: "Judul" },
   { kind: "textarea", path: "description", label: "Deskripsi" },
   { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const stepItem = {
+  icon_key: "",
+  ...titleDescItem,
+};
+
+const stepItemFields: CollectionField[] = [
+  { kind: "icon", path: "icon_key", label: "Icon" },
+  ...titleDescFields,
 ];
 
 const faqFields: CollectionField[] = [
@@ -331,7 +347,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "string-array", path: "benefits", label: "Benefits", itemLabel: "Benefit" },
           { kind: "array", path: "why_choose_items", label: "Why choose items", itemLabel: "Item", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "curriculum_items", label: "Curriculum items", itemLabel: "Curriculum", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "array", path: "timeline_items", label: "Timeline items", itemLabel: "Step", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "timeline_items", label: "Timeline items", itemLabel: "Step", defaultItem: stepItem, sortOrderField: "sort_order", fields: stepItemFields },
           { kind: "array", path: "cost_items", label: "Cost items", itemLabel: "Cost", defaultItem: { title: "", amount_label: "", ...enabledSortFields }, sortOrderField: "sort_order", fields: [
             { kind: "text", path: "title", label: "Title" },
             { kind: "text", path: "amount_label", label: "Amount label" },
@@ -472,7 +488,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "array", path: "overview_items", label: "Overview items", itemLabel: "Item", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "benefit_items", label: "Benefit items", itemLabel: "Benefit", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "qualification_items", label: "Qualification items", itemLabel: "Qualification", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "array", path: "recruitment_steps", label: "Recruitment steps", itemLabel: "Step", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "recruitment_steps", label: "Recruitment steps", itemLabel: "Step", defaultItem: stepItem, sortOrderField: "sort_order", fields: stepItemFields },
           { kind: "media-array", path: "gallery_media_ids", label: "Gallery images", itemLabel: "Image", addLabel: "Add image", cropPreset: "thumbnail" },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
         ],
@@ -732,7 +748,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "string-array", path: "requirements", label: "Requirements", itemLabel: "Requirement" },
           { kind: "string-array", path: "benefits", label: "Benefits", itemLabel: "Benefit" },
           { kind: "array", path: "overview_items", label: "Overview items", itemLabel: "Item", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
-          { kind: "array", path: "recruitment_steps", label: "Recruitment steps", itemLabel: "Step", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "recruitment_steps", label: "Recruitment steps", itemLabel: "Step", defaultItem: stepItem, sortOrderField: "sort_order", fields: stepItemFields },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
         ],
       },
@@ -896,7 +912,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "array", path: "example_positions", label: "Contoh posisi", itemLabel: "Posisi", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "training_alignment_items", label: "Kesesuaian pelatihan", itemLabel: "Kesesuaian", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "string-array", path: "candidate_requirements", label: "Syarat kandidat", itemLabel: "Syarat" },
-          { kind: "array", path: "process_items", label: "Proses", itemLabel: "Proses", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
+          { kind: "array", path: "process_items", label: "Proses", itemLabel: "Proses", defaultItem: stepItem, sortOrderField: "sort_order", fields: stepItemFields },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
         ],
       },

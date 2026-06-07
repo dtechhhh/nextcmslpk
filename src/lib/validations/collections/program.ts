@@ -5,6 +5,7 @@ import {
   ctaFields,
   ctaDefaults,
   faqItemSchema,
+  iconKeySchema,
   identityFields,
   identityDefaults,
   legacyTitleDescArray,
@@ -27,6 +28,15 @@ const optionalHttpUrl = optionalString(500).refine(
 
 const itemWithTitleDesc = z
   .object({
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
+const stepItemWithIcon = z
+  .object({
+    icon_key: iconKeySchema,
     title: optionalString(300),
     description: optionalString(1200),
     ...sortFields,
@@ -82,7 +92,7 @@ export const programSchema = z
     highlight_label: optionalString(200),
     why_choose_items: legacyTitleDescArray(itemWithTitleDesc),
     curriculum_items: legacyTitleDescArray(itemWithTitleDesc),
-    timeline_items: legacyTitleDescArray(itemWithTitleDesc),
+    timeline_items: legacyTitleDescArray(stepItemWithIcon),
     requirements: z.array(z.union([z.string(), textItem])).default([]),
     benefits: z.array(z.union([z.string(), textItem])).default([]),
     cost_items: legacyTitleDescArray(costItem),
