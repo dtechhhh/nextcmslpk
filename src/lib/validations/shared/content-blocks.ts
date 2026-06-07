@@ -106,6 +106,7 @@ export const sectorCalloutBlockSchema = z.object({
   type: z.literal("sector_callout"),
   data: z.object({
     sector_id: contentIdSchema,
+    cta_label: optionalString(120),
   }),
 });
 
@@ -144,6 +145,6 @@ export function getDefaultBlockData(
     case "line_cta":
       return { label: "", line_message_template: "" };
     case "sector_callout":
-      return { sector_id: "" };
+      return { sector_id: "", cta_label: "" };
   }
 }

@@ -173,6 +173,7 @@ export function MediaLibrary({ tenantId }: MediaLibraryProps) {
         tenantId,
         { mediaType, status: "ACTIVE", query: query || undefined },
         { page, pageSize: PAGE_SIZE },
+        { includeUsage: true },
       );
 
       if (isMediaListSuccess(response)) {

@@ -1,40 +1,10 @@
 import Image from "next/image"
-import {
-  Award,
-  BookOpen,
-  Briefcase,
-  Building,
-  Check,
-  Clock,
-  Globe,
-  GraduationCap,
-  Heart,
-  HelpCircle,
-  Plane,
-  Star,
-  Users,
-  type LucideIcon,
-} from "lucide-react"
+import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry"
 import { Badge } from "@/themes/starter/components/ui/Badge"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Card, CardContent, CardFooter } from "@/themes/starter/components/ui/Card"
 import { Container } from "@/themes/starter/components/ui/Container"
 import { cn } from "@/lib/utils"
-
-const ICON_REGISTRY: Record<string, LucideIcon> = {
-  graduation_cap: GraduationCap,
-  briefcase: Briefcase,
-  plane: Plane,
-  users: Users,
-  building: Building,
-  clock: Clock,
-  star: Star,
-  heart: Heart,
-  check: Check,
-  globe: Globe,
-  award: Award,
-  book: BookOpen,
-}
 
 interface CardGridItem {
   id: string
@@ -124,7 +94,7 @@ function CardGridCard({
   item: CardGridItem
   variant: "indonesia" | "japan"
 }) {
-  const Icon = item.iconKey ? ICON_REGISTRY[item.iconKey] ?? HelpCircle : null
+  const Icon = item.iconKey ? ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON : null
   const badgeVariant = item.badgeVariant === "new" ? "new_badge" : item.badgeVariant
 
   const card = (

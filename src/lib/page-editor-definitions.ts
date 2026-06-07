@@ -286,6 +286,23 @@ const japanHeroFields: PageEditorField[] = [
   { kind: "text", path: "headline", label: "Judul utama" },
   { kind: "textarea", path: "subheadline", label: "Subjudul" },
   { kind: "text", path: "eyebrow_label", label: "Label kecil" },
+  { kind: "text", path: "primary_cta_label", label: "Label CTA utama" },
+  {
+    kind: "textarea",
+    path: "primary_line_message_template",
+    label: "Template pesan LINE utama",
+  },
+  {
+    kind: "text",
+    path: "secondary_cta_label",
+    label: "Label CTA kedua",
+  },
+  {
+    kind: "text",
+    path: "secondary_href",
+    label: "Link CTA kedua",
+    inputType: "url",
+  },
 ];
 
 const japanBasicHeroFields: PageEditorField[] = [
@@ -299,6 +316,23 @@ const japanBasicHeroFields: PageEditorField[] = [
   { kind: "text", path: "headline", label: "Judul utama" },
   { kind: "textarea", path: "subheadline", label: "Subjudul" },
   { kind: "text", path: "eyebrow_label", label: "Label kecil" },
+  { kind: "text", path: "primary_cta_label", label: "Label CTA utama" },
+  {
+    kind: "textarea",
+    path: "primary_line_message_template",
+    label: "Template pesan LINE utama",
+  },
+  {
+    kind: "text",
+    path: "secondary_cta_label",
+    label: "Label CTA kedua",
+  },
+  {
+    kind: "text",
+    path: "secondary_href",
+    label: "Link CTA kedua",
+    inputType: "url",
+  },
 ];
 
 const japanFinalCtaFields: PageEditorField[] = [
@@ -381,6 +415,10 @@ const japanEmptyHero = {
   headline: "",
   subheadline: "",
   eyebrow_label: "",
+  primary_cta_label: "",
+  primary_line_message_template: "",
+  secondary_cta_label: "",
+  secondary_href: "",
 };
 
 const japanEmptyHomepageHero = {
@@ -474,6 +512,164 @@ const japanEmptyGalleryItem = {
   sort_order: 0,
   is_enabled: true,
 };
+
+const japanHomepageDisplayText = {
+  achievements_title: "",
+  why_us_title: "",
+  latest_news_title: "",
+  latest_news_cta_label: "",
+  legalities_title: "",
+  new_badge_label: "",
+};
+
+const japanAboutDisplayText = {
+  timeline_title: "",
+  values_title: "",
+  facilities_title: "",
+  team_title: "",
+  legal_overview_title: "",
+};
+
+const japanTrainingDisplayText = {
+  training_pillars_title: "",
+  training_flow_title: "",
+  curriculum_areas_title: "",
+  evaluation_items_title: "",
+  training_gallery_title: "",
+};
+
+const japanCandidateDisplayText = {
+  candidate_strengths_title: "",
+  supported_pathways_title: "",
+  candidate_examples_title: "",
+  readiness_framework_title: "",
+};
+
+const japanRecruitmentDisplayText = {
+  coverage_regions_title: "",
+  recruitment_sources_title: "",
+  screening_flow_title: "",
+  network_nodes_title: "",
+  quality_control_title: "",
+};
+
+const japanSectorPageDisplayText = {
+  card_cta_label: "",
+  featured_badge_label: "",
+  breadcrumb_home_label: "",
+  breadcrumb_sector_label: "",
+  suitability_title: "",
+  example_positions_title: "",
+  training_alignment_title: "",
+  requirements_title: "",
+  process_title: "",
+  faq_title: "",
+  sidebar_title: "",
+  sidebar_description: "",
+  detail_primary_cta_label: "",
+  detail_secondary_cta_label: "",
+};
+
+const japanNewsPageDisplayText = {
+  card_cta_label: "",
+  featured_badge_label: "",
+  new_badge_label: "",
+  breadcrumb_home_label: "",
+  breadcrumb_news_label: "",
+  related_news_title: "",
+};
+
+const japanContactDisplayText = {
+  line_cta_label: "",
+  business_info_title: "",
+  business_info_cta_label: "",
+  inquiry_flow_title: "",
+};
+
+function japanDisplayTextSection(fields: PageEditorField[]): PageEditorSection {
+  return {
+    key: "display_text",
+    title: "Teks tampilan",
+    classification: "recommended",
+    fields: fields.map((field) => ({
+      ...field,
+      path: `display_text.${field.path}`,
+    })),
+  };
+}
+
+const japanHomepageDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "achievements_title", label: "Judul section pencapaian" },
+  { kind: "text", path: "why_us_title", label: "Judul section alasan memilih kami" },
+  { kind: "text", path: "latest_news_title", label: "Judul section berita terbaru" },
+  { kind: "text", path: "latest_news_cta_label", label: "Label tombol semua berita" },
+  { kind: "text", path: "legalities_title", label: "Judul section legalitas" },
+  { kind: "text", path: "new_badge_label", label: "Label badge baru" },
+];
+
+const japanAboutDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "timeline_title", label: "Judul section linimasa" },
+  { kind: "text", path: "values_title", label: "Judul section nilai" },
+  { kind: "text", path: "facilities_title", label: "Judul section fasilitas" },
+  { kind: "text", path: "team_title", label: "Judul section tim" },
+  { kind: "text", path: "legal_overview_title", label: "Judul section ringkasan legalitas" },
+];
+
+const japanTrainingDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "training_pillars_title", label: "Judul section pilar pelatihan" },
+  { kind: "text", path: "training_flow_title", label: "Judul section alur pelatihan" },
+  { kind: "text", path: "curriculum_areas_title", label: "Judul section area kurikulum" },
+  { kind: "text", path: "evaluation_items_title", label: "Judul section evaluasi" },
+  { kind: "text", path: "training_gallery_title", label: "Judul section galeri pelatihan" },
+];
+
+const japanCandidateDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "candidate_strengths_title", label: "Judul section keunggulan kandidat" },
+  { kind: "text", path: "supported_pathways_title", label: "Judul section izin tinggal" },
+  { kind: "text", path: "candidate_examples_title", label: "Judul section contoh kandidat" },
+  { kind: "text", path: "readiness_framework_title", label: "Judul section persiapan kerja" },
+];
+
+const japanRecruitmentDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "coverage_regions_title", label: "Judul section area cakupan" },
+  { kind: "text", path: "recruitment_sources_title", label: "Judul section kanal rekrutmen" },
+  { kind: "text", path: "screening_flow_title", label: "Judul section alur seleksi" },
+  { kind: "text", path: "network_nodes_title", label: "Judul section titik jaringan" },
+  { kind: "text", path: "quality_control_title", label: "Judul section kontrol kualitas" },
+];
+
+const japanSectorPageDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "card_cta_label", label: "Label tombol kartu sektor" },
+  { kind: "text", path: "featured_badge_label", label: "Label badge unggulan" },
+  { kind: "text", path: "breadcrumb_home_label", label: "Label breadcrumb beranda" },
+  { kind: "text", path: "breadcrumb_sector_label", label: "Label breadcrumb sektor" },
+  { kind: "text", path: "suitability_title", label: "Judul section kesesuaian" },
+  { kind: "text", path: "example_positions_title", label: "Judul section contoh posisi" },
+  { kind: "text", path: "training_alignment_title", label: "Judul section keterkaitan pelatihan" },
+  { kind: "text", path: "requirements_title", label: "Judul section syarat kandidat" },
+  { kind: "text", path: "process_title", label: "Judul section proses" },
+  { kind: "text", path: "faq_title", label: "Judul section pertanyaan umum" },
+  { kind: "text", path: "sidebar_title", label: "Judul sidebar detail" },
+  { kind: "textarea", path: "sidebar_description", label: "Deskripsi sidebar detail" },
+  { kind: "text", path: "detail_primary_cta_label", label: "Fallback tombol utama detail" },
+  { kind: "text", path: "detail_secondary_cta_label", label: "Fallback tombol kedua detail" },
+];
+
+const japanNewsPageDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "card_cta_label", label: "Label tombol kartu berita" },
+  { kind: "text", path: "featured_badge_label", label: "Label badge unggulan" },
+  { kind: "text", path: "new_badge_label", label: "Label badge baru" },
+  { kind: "text", path: "breadcrumb_home_label", label: "Label breadcrumb beranda" },
+  { kind: "text", path: "breadcrumb_news_label", label: "Label breadcrumb berita" },
+  { kind: "text", path: "related_news_title", label: "Judul section berita terkait" },
+];
+
+const japanContactDisplayTextFields: PageEditorField[] = [
+  { kind: "text", path: "line_cta_label", label: "Fallback label tombol LINE" },
+  { kind: "text", path: "business_info_title", label: "Judul section informasi bisnis" },
+  { kind: "text", path: "business_info_cta_label", label: "Label tombol informasi bisnis" },
+  { kind: "text", path: "inquiry_flow_title", label: "Judul section alur kontak" },
+];
 
 
 export const PAGE_EDITOR_DEFINITIONS = {
@@ -1274,6 +1470,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/",
     defaultData: {
       hero: japanEmptyHomepageHero,
+      display_text: japanHomepageDisplayText,
       stats: [
         { ...japanEmptyStat, sort_order: 0 },
         { ...japanEmptyStat, sort_order: 1 },
@@ -1344,6 +1541,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanHomepageDisplayTextFields),
       {
         key: "stats",
         title: "Statistik",
@@ -1532,6 +1730,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/about",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanAboutDisplayText,
       proof_stats: [],
       story: {
         image_id: "",
@@ -1562,6 +1761,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanAboutDisplayTextFields),
       {
         key: "proof_stats",
         title: "Statistik bukti",
@@ -1744,6 +1944,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/training-method",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanTrainingDisplayText,
       curriculum_download: {
         headline: "",
         description: "",
@@ -1768,6 +1969,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanTrainingDisplayTextFields),
       {
         key: "curriculum_download",
         title: "Unduhan kurikulum",
@@ -1889,6 +2091,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/candidate-profile",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanCandidateDisplayText,
       proof_stats: [],
       why_indonesia: {
         image_id: "",
@@ -1917,6 +2120,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanCandidateDisplayTextFields),
       {
         key: "proof_stats",
         title: "Statistik bukti",
@@ -2073,6 +2277,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/recruitment-network",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanRecruitmentDisplayText,
       proof_stats: [],
       network_overview: {
         map_image_id: "",
@@ -2096,6 +2301,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanRecruitmentDisplayTextFields),
       {
         key: "proof_stats",
         title: "Statistik bukti",
@@ -2237,6 +2443,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/sectors",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanSectorPageDisplayText,
       filter_config: {
         enable_sector_category_filter: true,
       },
@@ -2252,6 +2459,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanSectorPageDisplayTextFields),
       {
         key: "filter_config",
         title: "Filter",
@@ -2283,6 +2491,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/news",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanNewsPageDisplayText,
       filter_config: {
         enable_category_filter: true,
         enable_tag_filter: true,
@@ -2299,6 +2508,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanNewsPageDisplayTextFields),
       {
         key: "filter_config",
         title: "Filter",
@@ -2335,6 +2545,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/contact",
     defaultData: {
       hero: japanEmptyHero,
+      display_text: japanContactDisplayText,
       contact_channels: {
         line_official_account_id: "",
         line_cta_label: "",
@@ -2368,6 +2579,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           path: `hero.${field.path}`,
         })),
       },
+      japanDisplayTextSection(japanContactDisplayTextFields),
       {
         key: "contact_channels",
         title: "Channel kontak",

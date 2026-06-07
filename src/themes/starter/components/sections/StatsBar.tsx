@@ -1,36 +1,6 @@
-import {
-  Award,
-  BookOpen,
-  Briefcase,
-  Building,
-  Check,
-  Clock,
-  Globe,
-  GraduationCap,
-  Heart,
-  HelpCircle,
-  Plane,
-  Star,
-  Users,
-  type LucideIcon,
-} from "lucide-react"
+import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry"
 import { Container } from "@/themes/starter/components/ui/Container"
 import { cn } from "@/lib/utils"
-
-const ICON_REGISTRY: Record<string, LucideIcon> = {
-  graduation_cap: GraduationCap,
-  briefcase: Briefcase,
-  plane: Plane,
-  users: Users,
-  building: Building,
-  clock: Clock,
-  star: Star,
-  heart: Heart,
-  check: Check,
-  globe: Globe,
-  award: Award,
-  book: BookOpen,
-}
 
 interface StatsBarItem {
   iconKey: string
@@ -72,7 +42,7 @@ function StatsBar({ items, variant = "light" }: StatsBarProps) {
       <Container>
         <div className={cn("grid grid-cols-2 gap-y-10", desktopGridClass)}>
           {enabledItems.map((item, index) => {
-            const Icon = ICON_REGISTRY[item.iconKey] ?? HelpCircle
+            const Icon = ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON
 
             return (
               <div

@@ -1,13 +1,12 @@
 import * as LucideIcons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-const fallbackIcon = LucideIcons.CircleHelpIcon as LucideIcon;
-export const FALLBACK_ICON = fallbackIcon;
+export const FALLBACK_ICON = LucideIcons.CircleHelpIcon as LucideIcon;
 
 function icon(name: string) {
   return (
     (LucideIcons as unknown as Record<string, LucideIcon | undefined>)[name] ??
-    fallbackIcon
+    FALLBACK_ICON
   );
 }
 
@@ -18,9 +17,7 @@ export const ICON_REGISTRY = {
   users: icon("UsersIcon"),
   building: icon("BuildingIcon"),
   building_2: icon("Building2Icon"),
-  book: icon("BookOpenIcon"),
   book_open: icon("BookOpenIcon"),
-  check: icon("CheckIcon"),
   globe: icon("GlobeIcon"),
   map_pin: icon("MapPinIcon"),
   phone: icon("PhoneIcon"),
@@ -45,8 +42,10 @@ export const ICON_REGISTRY = {
   newspaper: icon("NewspaperIcon"),
   calendar_days: icon("CalendarDaysIcon"),
   star: icon("StarIcon"),
-  heart: icon("HeartIcon"),
   circle_check: icon("CircleCheckIcon"),
+  check: icon("CheckIcon"),
+  heart: icon("HeartIcon"),
+  book: icon("BookOpenIcon"),
   home: icon("HomeIcon"),
   map: icon("MapIcon"),
   target: icon("TargetIcon"),
@@ -66,8 +65,8 @@ export const ICON_OPTIONS = Object.keys(ICON_REGISTRY).map((key) => ({
 
 export function getIconComponent(iconKey: string | null | undefined) {
   if (!iconKey) {
-    return fallbackIcon;
+    return FALLBACK_ICON;
   }
 
-  return ICON_REGISTRY[iconKey as IconKey] ?? fallbackIcon;
+  return ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
 }
