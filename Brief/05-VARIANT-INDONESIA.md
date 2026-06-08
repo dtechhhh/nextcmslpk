@@ -313,7 +313,7 @@ hero
   secondary_cta_label, secondary_cta_href
 
 proof_stats[]                           [recommended]
-  value, label, sort_order, is_enabled
+  icon_key, value, label, sort_order, is_enabled
 
 story                                   [required]
   badge_label, headline, body, image_id

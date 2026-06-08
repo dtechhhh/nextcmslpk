@@ -1316,12 +1316,7 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
         />
       )}
       <StatsBar
-        items={sortedRecords(data.proof_stats).map((item) => ({
-          iconKey: "check",
-          value: stringValue(item.value),
-          label: stringValue(item.label),
-          isEnabled: booleanValue(item.is_enabled, true),
-        }))}
+        items={sortedRecords(data.proof_stats).map(toStatItem)}
       />
       <TentangKamiStorySection
         imageId={stringValue(story.image_id)}
