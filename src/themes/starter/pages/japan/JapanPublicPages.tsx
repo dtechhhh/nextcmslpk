@@ -2,7 +2,9 @@ import Image from "next/image";
 import { Check, Mail, MessageCircle } from "lucide-react";
 
 import { normalizeActionLabel } from "@/lib/display-label";
+import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
 import { buildLineUrl } from "@/lib/line";
+import { cn } from "@/lib/utils";
 import {
   resolveCollectionList,
   resolveMediaUrl,
@@ -14,7 +16,7 @@ import { Badge } from "@/themes/starter/components/ui/Badge";
 import { Button } from "@/themes/starter/components/ui/Button";
 import { Card, CardContent, CardFooter } from "@/themes/starter/components/ui/Card";
 import { Container } from "@/themes/starter/components/ui/Container";
-import { CardGrid } from "@/themes/starter/components/sections/CardGrid";
+import { CardGrid, type CardGridItem } from "@/themes/starter/components/sections/CardGrid";
 import { CollectionDetail } from "@/themes/starter/components/sections/CollectionDetail";
 import { ContactInfo } from "@/themes/starter/components/sections/ContactInfo";
 import {
@@ -297,9 +299,9 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
         title={displayText(display, "training_flow_title", "Alur Pelatihan")}
         items={sortedRecords(data.training_flow).map(toStepItem)}
       />
-      <CardGrid
+      <CurriculumAreasSection
         title={displayText(display, "curriculum_areas_title", "Area Kurikulum")}
-        variant="japan"
+        stats={sortedRecords(data.curriculum_stats).map(toProofStatItem)}
         items={sortedRecords(data.curriculum_areas).map(iconCard)}
       />
       <CardGrid
@@ -359,9 +361,9 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
-      <TeamGrid
+      <CandidateExamplesSection
         title={displayText(display, "candidate_examples_title", "Contoh Kandidat")}
-        members={await resolveCandidateExamples(sortedRecords(data.candidate_examples))}
+        items={await resolveCandidateExamples(sortedRecords(data.candidate_examples))}
       />
       <CardGrid
         title={displayText(display, "readiness_framework_title", "Kerangka Persiapan Kerja")}
@@ -1148,6 +1150,251 @@ async function DocumentSection({ config }: { config: PublicJson }) {
   );
 }
 
+function CurriculumAreasSection({
+  title,
+  stats,
+  items,
+}: {
+  title: string;
+  stats: CurriculumStatItem[];
+  items: CardGridItem[];
+}) {
+  const enabledStats = stats.filter((item) => item.isEnabled);
+  const enabledItems = items.filter((item) => item.isEnabled !== false);
+  const statGridClass =
+    enabledStats.length <= 3
+      ? "lg:grid-cols-3"
+      : enabledStats.length === 4
+        ? "lg:grid-cols-4"
+        : enabledStats.length === 5
+          ? "lg:grid-cols-5"
+          : "lg:grid-cols-6";
+
+  if (enabledStats.length === 0 && enabledItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+            {title}
+          </h2>
+        </div>
+
+        {enabledStats.length > 0 ? (
+          <div
+            className={cn(
+              "mb-10 grid grid-cols-2 gap-y-8 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-8 shadow-sm",
+              statGridClass,
+            )}
+          >
+            {enabledStats.map((item, index) => {
+              const Icon = ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON;
+
+              return (
+                <div
+                  key={`${item.iconKey}-${item.label}-${index}`}
+                  className={cn(
+                    "flex flex-col items-center px-4 text-center",
+                    index > 0 && "lg:border-l lg:border-dashed lg:border-neutral-200",
+                  )}
+                >
+                  <Icon
+                    aria-hidden="true"
+                    className="mb-3 size-7 text-[var(--color-primary)]"
+                  />
+                  <p className="text-2xl font-bold leading-none text-neutral-900 md:text-3xl">
+                    {item.value}
+                  </p>
+                  <p className="mt-2 text-sm leading-5 text-neutral-500">
+                    {item.label}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {enabledItems.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {enabledItems.map((item) => {
+              const Icon = item.iconKey
+                ? ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON
+                : null;
+
+              return (
+                <Card key={item.id} variant="japan" className="h-full gap-0 py-0">
+                  {Icon ? (
+                    <div className="px-4 pt-6">
+                      <div className="flex size-12 items-center justify-center rounded-xl bg-[var(--color-section-alt)] text-[var(--color-primary)]">
+                        <Icon aria-hidden="true" className="size-6" />
+                      </div>
+                    </div>
+                  ) : null}
+                  <CardContent className="flex flex-1 flex-col pt-5">
+                    <h3 className="text-lg font-semibold leading-snug text-neutral-900">
+                      {item.title}
+                    </h3>
+                    {item.description ? (
+                      <p className="mt-3 text-sm leading-6 text-neutral-600">
+                        {item.description}
+                      </p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+type CurriculumStatItem = {
+  iconKey: string;
+  value: string;
+  label: string;
+  isEnabled: boolean;
+};
+
+function CandidateExamplesSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: CandidateExampleCard[];
+}) {
+  const enabledItems = items
+    .filter(
+      (item) =>
+        item.isEnabled &&
+        (item.name ||
+          item.backgroundText ||
+          item.targetPathText ||
+          item.languageText ||
+          item.characterText),
+    )
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  if (enabledItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+            {title}
+          </h2>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {enabledItems.map((item) => (
+            <CandidateExampleCard key={`${item.sortOrder}-${item.name}`} item={item} />
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function CandidateExampleCard({ item }: { item: CandidateExampleCard }) {
+  const details = [
+    { label: item.backgroundLabel, value: item.backgroundText },
+    { label: item.targetPathLabel, value: item.targetPathText },
+    { label: item.languageLabel, value: item.languageText },
+    { label: item.characterLabel, value: item.characterText },
+  ].filter((detail) => detail.value);
+
+  return (
+    <Card variant="japan" className="h-full p-6">
+      <CardContent className="flex h-full flex-col p-0">
+        <div className="flex items-start gap-4">
+          <div className="relative flex size-16 shrink-0 overflow-hidden rounded-full bg-[var(--color-section-alt)] text-[var(--color-primary)] ring-1 ring-neutral-200">
+            {item.imageSrc ? (
+              <Image
+                src={item.imageSrc}
+                alt={item.name}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            ) : (
+              <span className="m-auto text-xl font-bold tracking-normal">
+                {item.initials}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xl font-bold leading-tight text-neutral-900">
+              {item.name}
+            </h3>
+            {item.ageOriginLabel ? (
+              <p className="mt-1 text-sm font-medium text-neutral-500">
+                {item.ageOriginLabel}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        {item.highlightTags.length > 0 ? (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {item.highlightTags.map((tag) => (
+              <Badge key={tag} variant="outline">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
+
+        <dl className="mt-6 flex flex-1 flex-col gap-5">
+          {details.map((detail) => (
+            <div key={detail.label}>
+              <dt className="text-xs font-semibold uppercase tracking-normal text-neutral-500">
+                {detail.label}
+              </dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-700">
+                {detail.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        {item.readinessIsEnabled && item.readinessLabel ? (
+          <div className="mt-6 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+            <Check aria-hidden="true" className="size-4" />
+            <span>{item.readinessLabel}</span>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+type CandidateExampleCard = {
+  initials: string;
+  name: string;
+  ageOriginLabel: string;
+  backgroundLabel: string;
+  backgroundText: string;
+  targetPathLabel: string;
+  targetPathText: string;
+  languageLabel: string;
+  languageText: string;
+  characterLabel: string;
+  characterText: string;
+  readinessLabel: string;
+  readinessIsEnabled: boolean;
+  highlightTags: string[];
+  imageSrc?: string;
+  sortOrder: number;
+  isEnabled: boolean;
+};
+
 function JapanDocumentCardGrid({
   title,
   items,
@@ -1933,15 +2180,47 @@ async function resolveTeamMembers(items: PublicJson[]) {
 
 async function resolveCandidateExamples(items: PublicJson[]) {
   return Promise.all(
-    items.map(async (item, index) => ({
-      name: stringValue(item.title),
-      role: stringValue(item.profile_label),
-      bio: stringValue(item.description),
-      imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
-      sortOrder: numberValue(item.sort_order) ?? index,
-      isEnabled: booleanValue(item.is_enabled, true),
-    })),
+    items.map(async (item, index) => {
+      const name = stringValue(item.name) || stringValue(item.title);
+      const targetPathText =
+        stringValue(item.target_path_text) || stringValue(item.profile_label);
+      const backgroundText =
+        stringValue(item.background_text) || stringValue(item.description);
+
+      return {
+        initials: stringValue(item.initials) || buildCandidateInitials(name),
+        name,
+        ageOriginLabel: stringValue(item.age_origin_label),
+        backgroundLabel: stringValue(item.background_label) || "Latar belakang",
+        backgroundText,
+        targetPathLabel: stringValue(item.target_path_label) || "Target jalur",
+        targetPathText,
+        languageLabel: stringValue(item.language_label) || "Kemampuan bahasa",
+        languageText: stringValue(item.language_text),
+        characterLabel: stringValue(item.character_label) || "Karakter",
+        characterText: stringValue(item.character_text),
+        readinessLabel:
+          stringValue(item.readiness_label) || "Siap seleksi perusahaan",
+        readinessIsEnabled: booleanValue(item.readiness_is_enabled, true),
+        highlightTags: arrayOfStrings(item.highlight_tags),
+        imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
+        sortOrder: numberValue(item.sort_order) ?? index,
+        isEnabled: booleanValue(item.is_enabled, true),
+      };
+    }),
   );
+}
+
+function buildCandidateInitials(name: string) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+
+  return initials || "JP";
 }
 
 async function resolveNetworkNodeCards(items: PublicJson[]) {

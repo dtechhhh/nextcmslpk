@@ -37,7 +37,7 @@ function HeroSlider({
   eyebrowLabel,
   primaryCTA,
   secondaryCTA,
-  autoPlayMs = 5000,
+  autoPlayMs = 3200,
 }: HeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
@@ -130,7 +130,7 @@ function HeroSlider({
             priority={index === 0}
             sizes="100vw"
             className={cn(
-              "object-cover transition-opacity duration-700 ease-in-out",
+              "object-cover transition-opacity duration-500 ease-in-out",
               index === activeIndex ? "opacity-100" : "opacity-0"
             )}
           />

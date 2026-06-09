@@ -1,9 +1,14 @@
 "use client";
 
 import {
+  ArrowRightLeftIcon,
   ChevronDownIcon,
+  PencilIcon,
   Loader2Icon,
   PlusIcon,
+  SaveIcon,
+  Trash2Icon,
+  XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -23,9 +28,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   addOptionValue,
+  deleteOptionValue,
   getOptionSetValues,
   listOptionSets,
+  mergeOptionValue,
   toggleOptionValue,
+  updateOptionValueLabel,
 } from "@/server/actions/tenant/options";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +51,7 @@ type OptionValueRow = {
   sortOrder: number;
   isActive: boolean;
   createdAt: string;
+  usageCount: number;
 };
 
 type OptionDataManagerProps = {
@@ -58,6 +67,11 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
   const [valuesLoading, setValuesLoading] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [addingValue, setAddingValue] = useState(false);
+  const [rowActionId, setRowActionId] = useState<string | null>(null);
+  const [editingValueId, setEditingValueId] = useState<string | null>(null);
+  const [editLabel, setEditLabel] = useState("");
+  const [mergeSourceId, setMergeSourceId] = useState<string | null>(null);
+  const [mergeTargetId, setMergeTargetId] = useState("");
   const { start } = useCmsBusy();
 
   useEffect(() => {
@@ -90,15 +104,13 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
     return () => { cancelled = true; };
   }, [variantId, start]);
 
-  async function toggleExpand(optionSetId: string) {
-    if (expandedId === optionSetId) {
-      setExpandedId(null);
-      setExpandedValues([]);
-      return;
+  async function loadValues(optionSetId: string, options: { showLoading?: boolean } = {}) {
+    const showLoading = options.showLoading ?? true;
+
+    if (showLoading) {
+      setValuesLoading(true);
     }
 
-    setExpandedId(optionSetId);
-    setValuesLoading(true);
     const stopBusy = start("Memuat values...");
 
     try {
@@ -110,9 +122,26 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
         toast.error(getErrorMessage(response, "Values gagal dimuat."));
       }
     } finally {
-      setValuesLoading(false);
+      if (showLoading) {
+        setValuesLoading(false);
+      }
       stopBusy();
     }
+  }
+
+  async function toggleExpand(optionSetId: string) {
+    if (expandedId === optionSetId) {
+      setExpandedId(null);
+      setExpandedValues([]);
+      setEditingValueId(null);
+      setMergeSourceId(null);
+      return;
+    }
+
+    setExpandedId(optionSetId);
+    setEditingValueId(null);
+    setMergeSourceId(null);
+    await loadValues(optionSetId);
   }
 
   async function handleAddValue(optionSetId: string) {
@@ -143,6 +172,7 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
   }
 
   async function handleToggleActive(valueId: string, isActive: boolean) {
+    setRowActionId(`toggle:${valueId}`);
     const stopBusy = start("Mengubah status value...");
 
     try {
@@ -158,6 +188,145 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
         toast.error(getErrorMessage(response, "Status gagal diubah."));
       }
     } finally {
+      setRowActionId(null);
+      stopBusy();
+    }
+  }
+
+  function startEditing(value: OptionValueRow) {
+    setEditingValueId(value.id);
+    setEditLabel(value.label);
+    setMergeSourceId(null);
+  }
+
+  function cancelEditing() {
+    setEditingValueId(null);
+    setEditLabel("");
+  }
+
+  async function handleUpdateLabel(valueId: string) {
+    const label = editLabel.trim();
+
+    if (!label) {
+      return;
+    }
+
+    setRowActionId(`edit:${valueId}`);
+    const stopBusy = start("Menyimpan label value...");
+
+    try {
+      const response = await updateOptionValueLabel({ valueId, label });
+
+      if (isValueSuccess(response)) {
+        setExpandedValues((current) =>
+          current.map((value) => (value.id === valueId ? response.value : value)),
+        );
+        cancelEditing();
+        toast.success("Label value diperbarui.");
+      } else {
+        toast.error(getErrorMessage(response, "Label value gagal diubah."));
+      }
+    } finally {
+      setRowActionId(null);
+      stopBusy();
+    }
+  }
+
+  async function handleDeleteValue(optionSetId: string, value: OptionValueRow) {
+    if (value.usageCount > 0) {
+      toast.error("Value masih dipakai. Gunakan merge atau nonaktifkan value.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Hapus value "${value.label}"? Tindakan ini tidak bisa dibatalkan.`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setRowActionId(`delete:${value.id}`);
+    const stopBusy = start("Menghapus value...");
+
+    try {
+      const response = await deleteOptionValue({ valueId: value.id });
+
+      if (isDeleteSuccess(response)) {
+        setExpandedValues((current) => current.filter((item) => item.id !== value.id));
+        setOptionSets((current) =>
+          current.map((set) =>
+            set.id === optionSetId
+              ? { ...set, valuesCount: Math.max(0, set.valuesCount - 1) }
+              : set,
+          ),
+        );
+        toast.success("Value dihapus.");
+      } else {
+        toast.error(getErrorMessage(response, "Value gagal dihapus."));
+      }
+    } finally {
+      setRowActionId(null);
+      stopBusy();
+    }
+  }
+
+  function startMerge(value: OptionValueRow) {
+    const firstTarget = expandedValues.find((item) => item.id !== value.id);
+
+    setMergeSourceId(value.id);
+    setMergeTargetId(firstTarget?.id ?? "");
+    setEditingValueId(null);
+  }
+
+  function cancelMerge() {
+    setMergeSourceId(null);
+    setMergeTargetId("");
+  }
+
+  async function handleMergeValue(optionSetId: string, sourceValue: OptionValueRow) {
+    if (!mergeTargetId) {
+      return;
+    }
+
+    const targetValue = expandedValues.find((value) => value.id === mergeTargetId);
+    const confirmed = window.confirm(
+      `Gabungkan "${sourceValue.label}" ke "${targetValue?.label ?? "target"}"? Semua konten yang memakai value ini akan diarahkan ke target.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setRowActionId(`merge:${sourceValue.id}`);
+    const stopBusy = start("Menggabungkan value...");
+
+    try {
+      const response = await mergeOptionValue({
+        sourceValueId: sourceValue.id,
+        targetValueId: mergeTargetId,
+      });
+
+      if (isMergeSuccess(response)) {
+        cancelMerge();
+        setOptionSets((current) =>
+          current.map((set) =>
+            set.id === optionSetId
+              ? { ...set, valuesCount: Math.max(0, set.valuesCount - 1) }
+              : set,
+          ),
+        );
+
+        if (expandedId) {
+          await loadValues(expandedId, { showLoading: false });
+        }
+
+        toast.success(
+          `Value digabung. ${response.affectedItems} konten diperbarui.`,
+        );
+      } else {
+        toast.error(getErrorMessage(response, "Value gagal digabung."));
+      }
+    } finally {
+      setRowActionId(null);
       stopBusy();
     }
   }
@@ -195,6 +364,20 @@ export function OptionDataManager({ variantId, variantLabel }: OptionDataManager
               onNewLabelChange={setNewLabel}
               onAddValue={() => handleAddValue(optionSet.id)}
               onToggleActive={handleToggleActive}
+              rowActionId={rowActionId}
+              editingValueId={editingValueId}
+              editLabel={editLabel}
+              mergeSourceId={mergeSourceId}
+              mergeTargetId={mergeTargetId}
+              onStartEdit={startEditing}
+              onEditLabelChange={setEditLabel}
+              onCancelEdit={cancelEditing}
+              onSaveEdit={handleUpdateLabel}
+              onDeleteValue={(value) => handleDeleteValue(optionSet.id, value)}
+              onStartMerge={startMerge}
+              onCancelMerge={cancelMerge}
+              onMergeTargetChange={setMergeTargetId}
+              onConfirmMerge={(value) => handleMergeValue(optionSet.id, value)}
             />
           ))}
         </div>
@@ -215,6 +398,20 @@ function OptionSetRow({
   onNewLabelChange,
   onAddValue,
   onToggleActive,
+  rowActionId,
+  editingValueId,
+  editLabel,
+  mergeSourceId,
+  mergeTargetId,
+  onStartEdit,
+  onEditLabelChange,
+  onCancelEdit,
+  onSaveEdit,
+  onDeleteValue,
+  onStartMerge,
+  onCancelMerge,
+  onMergeTargetChange,
+  onConfirmMerge,
 }: {
   optionSet: OptionSetRow;
   bordered: boolean;
@@ -227,6 +424,20 @@ function OptionSetRow({
   onNewLabelChange: (value: string) => void;
   onAddValue: () => void;
   onToggleActive: (valueId: string, isActive: boolean) => void;
+  rowActionId: string | null;
+  editingValueId: string | null;
+  editLabel: string;
+  mergeSourceId: string | null;
+  mergeTargetId: string;
+  onStartEdit: (value: OptionValueRow) => void;
+  onEditLabelChange: (value: string) => void;
+  onCancelEdit: () => void;
+  onSaveEdit: (valueId: string) => void;
+  onDeleteValue: (value: OptionValueRow) => void;
+  onStartMerge: (value: OptionValueRow) => void;
+  onCancelMerge: () => void;
+  onMergeTargetChange: (value: string) => void;
+  onConfirmMerge: (value: OptionValueRow) => void;
 }) {
   return (
     <Collapsible open={expanded} onOpenChange={onToggleExpand}>
@@ -258,26 +469,174 @@ function OptionSetRow({
                   <p className="py-2 text-sm text-muted-foreground">No values yet.</p>
                 ) : (
                   <div className="flex flex-col">
-                    {values.map((value, index) => (
-                      <div
-                        key={value.id}
-                        className={cn(
-                          "flex items-center gap-3 py-2",
-                          index < values.length - 1 && "border-b border-muted",
-                        )}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium">{value.label}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {value.value} &middot; Created {formatDate(value.createdAt)}
-                          </p>
+                    {values.map((value, index) => {
+                      const isEditing = editingValueId === value.id;
+                      const isMerging = mergeSourceId === value.id;
+                      const busy = rowActionId?.endsWith(`:${value.id}`) ?? false;
+                      const deleteDisabled = value.usageCount > 0 || busy;
+                      const mergeDisabled = values.length < 2 || busy;
+
+                      return (
+                        <div
+                          key={value.id}
+                          className={cn(
+                            "flex flex-col gap-3 py-3 md:flex-row md:items-center",
+                            index < values.length - 1 && "border-b border-muted",
+                          )}
+                        >
+                          <div className="min-w-0 flex-1">
+                            {isEditing ? (
+                              <Field>
+                                <FieldLabel className="sr-only">Edit value label</FieldLabel>
+                                <Input
+                                  value={editLabel}
+                                  className="h-8 text-sm"
+                                  maxLength={200}
+                                  disabled={busy}
+                                  onChange={(event) => onEditLabelChange(event.target.value)}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                      event.preventDefault();
+                                      onSaveEdit(value.id);
+                                    }
+
+                                    if (event.key === "Escape") {
+                                      event.preventDefault();
+                                      onCancelEdit();
+                                    }
+                                  }}
+                                />
+                              </Field>
+                            ) : (
+                              <>
+                                <p className="text-sm font-medium">{value.label}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {value.value} &middot; {value.usageCount} usage &middot; Created {formatDate(value.createdAt)}
+                                </p>
+                              </>
+                            )}
+
+                            {isMerging ? (
+                              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <select
+                                  value={mergeTargetId}
+                                  className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                                  disabled={busy}
+                                  onChange={(event) => onMergeTargetChange(event.target.value)}
+                                >
+                                  {values
+                                    .filter((target) => target.id !== value.id)
+                                    .map((target) => (
+                                      <option key={target.id} value={target.id}>
+                                        {target.label}
+                                      </option>
+                                    ))}
+                                </select>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={!mergeTargetId || busy}
+                                  onClick={() => onConfirmMerge(value)}
+                                >
+                                  {busy ? (
+                                    <Loader2Icon className="size-4 animate-spin" />
+                                  ) : (
+                                    <ArrowRightLeftIcon className="size-4" />
+                                  )}
+                                  Merge
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={busy}
+                                  onClick={onCancelMerge}
+                                >
+                                  <XIcon className="size-4" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                            <Switch
+                              checked={value.isActive}
+                              disabled={busy}
+                              onCheckedChange={(checked) => onToggleActive(value.id, checked)}
+                            />
+
+                            {isEditing ? (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={!editLabel.trim() || busy}
+                                  onClick={() => onSaveEdit(value.id)}
+                                >
+                                  {busy ? (
+                                    <Loader2Icon className="size-4 animate-spin" />
+                                  ) : (
+                                    <SaveIcon className="size-4" />
+                                  )}
+                                  Save
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={busy}
+                                  onClick={onCancelEdit}
+                                >
+                                  <XIcon className="size-4" />
+                                  Cancel
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={busy}
+                                  onClick={() => onStartEdit(value)}
+                                >
+                                  <PencilIcon className="size-4" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={mergeDisabled}
+                                  onClick={() => onStartMerge(value)}
+                                >
+                                  <ArrowRightLeftIcon className="size-4" />
+                                  Merge
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={deleteDisabled}
+                                  title={
+                                    value.usageCount > 0
+                                      ? "Value masih dipakai. Gunakan merge atau nonaktifkan."
+                                      : "Delete"
+                                  }
+                                  onClick={() => onDeleteValue(value)}
+                                >
+                                  <Trash2Icon className="size-4" />
+                                  Delete
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <Switch
-                          checked={value.isActive}
-                          onCheckedChange={(checked) => onToggleActive(value.id, checked)}
-                        />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -348,6 +707,28 @@ function isValueSuccess(value: unknown): value is {
   value: OptionValueRow;
 } {
   return isRecord(value) && value.ok === true && isRecord(value.value);
+}
+
+function isDeleteSuccess(value: unknown): value is {
+  ok: true;
+  valueId: string;
+} {
+  return isRecord(value) && value.ok === true && typeof value.valueId === "string";
+}
+
+function isMergeSuccess(value: unknown): value is {
+  ok: true;
+  sourceValueId: string;
+  targetValue: OptionValueRow;
+  affectedItems: number;
+  replacedReferences: number;
+} {
+  return (
+    isRecord(value) &&
+    value.ok === true &&
+    typeof value.sourceValueId === "string" &&
+    isRecord(value.targetValue)
+  );
 }
 
 function getErrorMessage(value: unknown, fallback: string): string {
