@@ -31,6 +31,15 @@ const iconTitleDescSchema = z
   })
   .passthrough();
 
+const proofStatSchema = z
+  .object({
+    icon_key: iconKeySchema,
+    value: optionalString(80),
+    label: optionalString(160),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
 const trainingStepSchema = z
   .object({
     icon_key: iconKeySchema,
@@ -92,9 +101,10 @@ export const metodePelatihanSchema = z
         file_id: "",
         button_label: "",
         is_enabled: false,
-      }),
+    }),
     training_pillars: z.array(iconTitleDescSchema).min(3).max(6).default([]),
     training_flow: z.array(trainingStepSchema).min(3).max(6).default([]),
+    curriculum_stats: z.array(proofStatSchema).default([]),
     curriculum_areas: z.array(iconTitleDescSchema).default([]),
     evaluation_items: z.array(iconTitleDescSchema).min(3).max(6).default([]),
     training_gallery: z.array(galleryItemSchema).default([]),

@@ -50,6 +50,20 @@ const pathwaySchema = z
 
 const candidateExampleSchema = z
   .object({
+    initials: optionalString(8),
+    name: optionalString(140),
+    age_origin_label: optionalString(140),
+    background_label: optionalString(80),
+    background_text: optionalString(1000),
+    target_path_label: optionalString(80),
+    target_path_text: optionalString(700),
+    language_label: optionalString(80),
+    language_text: optionalString(400),
+    character_label: optionalString(80),
+    character_text: optionalString(700),
+    readiness_label: optionalString(140),
+    readiness_is_enabled: z.boolean().default(true),
+    highlight_tags: z.array(optionalString(80)).default([]),
     profile_label: optionalString(120),
     title: optionalString(180),
     description: optionalString(1000),
