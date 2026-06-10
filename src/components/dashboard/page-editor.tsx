@@ -784,7 +784,7 @@ function renderControl({
 }
 
 function getMediaPickerType(data: PageEditorData, mediaPath: string) {
-  const mediaTypePath = mediaPath.replace(/media_id$/, "media_type");
+  const mediaTypePath = mediaPath.replace(/(?:media_id|image_id)$/, "media_type");
   const mediaType = getAtPath(data, mediaTypePath);
 
   return mediaType === "video" ? "VIDEO" : "IMAGE";
