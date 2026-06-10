@@ -9,6 +9,7 @@ import {
 
 const japanMediaHeroSchema = z
   .object({
+    model: z.enum(["standard", "candidate_pool"]).default("standard"),
     media_type: z.enum(["image", "video"]).default("image"),
     media_id: mediaIdSchema,
     headline: optionalString(220),
@@ -72,6 +73,45 @@ const candidateExampleSchema = z
   })
   .passthrough();
 
+const candidatePoolCandidateSchema = z
+  .object({
+    initials: optionalString(8),
+    name: optionalString(140),
+    nationality_label: optionalString(120),
+    target_sector_label: optionalString(160),
+    age_label: optionalString(80),
+    image_id: mediaIdSchema,
+    ...enabledSortFields,
+  })
+  .passthrough();
+
+const candidatePoolHeroSchema = z
+  .object({
+    eyebrow_label: optionalString(120),
+    headline: optionalString(220),
+    subheadline: optionalString(700),
+    primary_cta_label: optionalString(120),
+    primary_line_message_template: optionalString(600),
+    secondary_cta_label: optionalString(120),
+    secondary_href: optionalString(500),
+    trust_note: optionalString(220),
+    stats: z.array(proofStatSchema).default([]),
+    candidate_cards: z.array(candidatePoolCandidateSchema).default([]),
+  })
+  .passthrough()
+  .default({
+    eyebrow_label: "",
+    headline: "",
+    subheadline: "",
+    primary_cta_label: "",
+    primary_line_message_template: "",
+    secondary_cta_label: "",
+    secondary_href: "",
+    trust_note: "",
+    stats: [],
+    candidate_cards: [],
+  });
+
 const japanFinalCtaSchema = z
   .object({
     headline: optionalString(220),
@@ -86,6 +126,7 @@ const japanFinalCtaSchema = z
 export const profilKandidatSchema = z
   .object({
     hero: japanMediaHeroSchema.default({
+      model: "standard",
       media_type: "image",
       media_id: "",
       headline: "",
@@ -96,9 +137,11 @@ export const profilKandidatSchema = z
       secondary_cta_label: "",
       secondary_href: "",
     }),
+    candidate_pool_hero: candidatePoolHeroSchema,
     proof_stats: z.array(proofStatSchema).default([]),
     why_indonesia: z
       .object({
+        media_type: z.enum(["image", "video"]).default("image"),
         image_id: mediaIdSchema,
         headline: optionalString(220),
         description: optionalString(1200),
@@ -106,6 +149,7 @@ export const profilKandidatSchema = z
       })
       .passthrough()
       .default({
+        media_type: "image",
         image_id: "",
         headline: "",
         description: "",

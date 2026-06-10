@@ -212,6 +212,96 @@ const faqFields: CollectionField[] = [
   { kind: "switch", path: "is_enabled", label: "Aktif" },
 ];
 
+const sectorCapabilityStat = {
+  icon_key: "",
+  value: "",
+  label: "",
+  ...enabledSortFields,
+};
+
+const sectorCapabilityStatFields: CollectionField[] = [
+  { kind: "icon", path: "icon_key", label: "Ikon" },
+  { kind: "text", path: "value", label: "Nilai" },
+  { kind: "text", path: "label", label: "Keterangan" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const sectorPositionCompetency = {
+  title: "",
+  duties: "",
+  practical_skills: "",
+  tools_equipment: "",
+  safety_focus: "",
+  pass_standard: "",
+  ...enabledSortFields,
+};
+
+const sectorPositionCompetencyFields: CollectionField[] = [
+  { kind: "text", path: "title", label: "Nama posisi" },
+  { kind: "textarea", path: "duties", label: "Tugas utama" },
+  { kind: "textarea", path: "practical_skills", label: "Kompetensi praktik" },
+  { kind: "textarea", path: "tools_equipment", label: "Alat yang dikuasai" },
+  { kind: "textarea", path: "safety_focus", label: "Fokus keselamatan" },
+  { kind: "textarea", path: "pass_standard", label: "Standar kelulusan" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const sectorCurriculumModule = {
+  title: "",
+  description: "",
+  theory_hours_label: "",
+  practical_hours_label: "",
+  evaluation_method: "",
+  ...enabledSortFields,
+};
+
+const sectorCurriculumModuleFields: CollectionField[] = [
+  { kind: "text", path: "title", label: "Nama modul" },
+  { kind: "textarea", path: "description", label: "Cakupan materi" },
+  { kind: "text", path: "theory_hours_label", label: "Jam teori" },
+  { kind: "text", path: "practical_hours_label", label: "Jam praktik" },
+  { kind: "textarea", path: "evaluation_method", label: "Metode evaluasi" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const sectorMediaItem = {
+  title: "",
+  description: "",
+  media_id: "",
+  ...enabledSortFields,
+};
+
+const sectorMediaItemFields: CollectionField[] = [
+  { kind: "text", path: "title", label: "Judul" },
+  { kind: "textarea", path: "description", label: "Keterangan" },
+  { kind: "media", path: "media_id", label: "Media", cropPreset: "thumbnail" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const sectorCandidateSnapshot = {
+  initials: "",
+  name: "",
+  profile_label: "",
+  language_label: "",
+  skill_status_label: "",
+  experience_label: "",
+  availability_label: "",
+  image_id: "",
+  ...enabledSortFields,
+};
+
+const sectorCandidateSnapshotFields: CollectionField[] = [
+  { kind: "text", path: "initials", label: "Inisial" },
+  { kind: "text", path: "name", label: "Nama samaran" },
+  { kind: "text", path: "profile_label", label: "Profil ringkas" },
+  { kind: "text", path: "language_label", label: "Kemampuan bahasa" },
+  { kind: "text", path: "skill_status_label", label: "Status kompetensi" },
+  { kind: "text", path: "experience_label", label: "Pengalaman" },
+  { kind: "text", path: "availability_label", label: "Ketersediaan" },
+  { kind: "media", path: "image_id", label: "Foto", cropPreset: "square" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
 const identityFields: CollectionField[] = [
   { kind: "text", path: "title", label: "Title" },
   { kind: "text", path: "slug", label: "Slug" },
@@ -873,6 +963,21 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       short_description: "",
       status: "DRAFT",
       sector_category_option_id: "",
+      data_status_label: "",
+      pathway_label: "",
+      language_target_label: "",
+      skill_test_label: "",
+      readiness_lead_time_label: "",
+      last_verified_label: "",
+      reference_url: "",
+      capability_stats: [],
+      position_competencies: [],
+      curriculum_modules: [],
+      facility_items: [],
+      candidate_snapshots: [],
+      quality_assurance_items: [],
+      placement_support_items: [],
+      evidence_gallery: [],
       suitability_items: [],
       example_positions: [],
       training_alignment_items: [],
@@ -906,12 +1011,129 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
         ],
       },
       {
-        title: "Konten sektor",
+        title: "Ringkasan keputusan mitra",
+        fields: [
+          { kind: "text", path: "data_status_label", label: "Status data" },
+          { kind: "text", path: "pathway_label", label: "Jalur penempatan" },
+          { kind: "text", path: "language_target_label", label: "Target bahasa" },
+          { kind: "text", path: "skill_test_label", label: "Target tes keterampilan" },
+          { kind: "text", path: "readiness_lead_time_label", label: "Estimasi siap wawancara" },
+          { kind: "text", path: "last_verified_label", label: "Terakhir diverifikasi" },
+          { kind: "text", path: "reference_url", label: "URL referensi resmi", inputType: "url" },
+          {
+            kind: "array",
+            path: "capability_stats",
+            label: "Statistik kapasitas",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
+            defaultItem: sectorCapabilityStat,
+            sortOrderField: "sort_order",
+            fields: sectorCapabilityStatFields,
+          },
+        ],
+      },
+      {
+        title: "Posisi dan kompetensi",
+        fields: [
+          {
+            kind: "array",
+            path: "position_competencies",
+            label: "Posisi yang dilatih",
+            itemLabel: "Posisi",
+            addLabel: "Tambah posisi",
+            defaultItem: sectorPositionCompetency,
+            sortOrderField: "sort_order",
+            fields: sectorPositionCompetencyFields,
+          },
+        ],
+      },
+      {
+        title: "Kurikulum dan fasilitas",
+        fields: [
+          {
+            kind: "array",
+            path: "curriculum_modules",
+            label: "Modul pelatihan",
+            itemLabel: "Modul",
+            addLabel: "Tambah modul",
+            defaultItem: sectorCurriculumModule,
+            sortOrderField: "sort_order",
+            fields: sectorCurriculumModuleFields,
+          },
+          {
+            kind: "array",
+            path: "facility_items",
+            label: "Fasilitas dan alat praktik",
+            itemLabel: "Fasilitas",
+            addLabel: "Tambah fasilitas",
+            defaultItem: sectorMediaItem,
+            sortOrderField: "sort_order",
+            fields: sectorMediaItemFields,
+          },
+        ],
+      },
+      {
+        title: "Kandidat dan quality assurance",
+        fields: [
+          {
+            kind: "array",
+            path: "candidate_snapshots",
+            label: "Contoh kandidat anonim",
+            itemLabel: "Kandidat",
+            addLabel: "Tambah kandidat",
+            defaultItem: sectorCandidateSnapshot,
+            sortOrderField: "sort_order",
+            fields: sectorCandidateSnapshotFields,
+          },
+          {
+            kind: "array",
+            path: "quality_assurance_items",
+            label: "Quality assurance",
+            itemLabel: "Kontrol mutu",
+            addLabel: "Tambah kontrol mutu",
+            defaultItem: titleDescItem,
+            sortOrderField: "sort_order",
+            fields: titleDescFields,
+          },
+          {
+            kind: "array",
+            path: "placement_support_items",
+            label: "Dukungan penempatan",
+            itemLabel: "Dukungan",
+            addLabel: "Tambah dukungan",
+            defaultItem: titleDescItem,
+            sortOrderField: "sort_order",
+            fields: titleDescFields,
+          },
+        ],
+      },
+      {
+        title: "Bukti kemampuan",
+        fields: [
+          {
+            kind: "array",
+            path: "evidence_gallery",
+            label: "Foto dan bukti pelatihan",
+            itemLabel: "Bukti",
+            addLabel: "Tambah bukti",
+            defaultItem: sectorMediaItem,
+            sortOrderField: "sort_order",
+            fields: sectorMediaItemFields,
+          },
+        ],
+      },
+      {
+        title: "Informasi pendukung",
         fields: [
           { kind: "array", path: "suitability_items", label: "Kesesuaian", itemLabel: "Item", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "example_positions", label: "Contoh posisi", itemLabel: "Posisi", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "array", path: "training_alignment_items", label: "Kesesuaian pelatihan", itemLabel: "Kesesuaian", defaultItem: titleDescItem, sortOrderField: "sort_order", fields: titleDescFields },
           { kind: "string-array", path: "candidate_requirements", label: "Syarat kandidat", itemLabel: "Syarat" },
+        ],
+      },
+      {
+        title: "Proses dan FAQ",
+        fields: [
           { kind: "array", path: "process_items", label: "Proses", itemLabel: "Proses", defaultItem: stepItem, sortOrderField: "sort_order", fields: stepItemFields },
           { kind: "array", path: "faqs", label: "FAQ", itemLabel: "FAQ", defaultItem: faqItem, sortOrderField: "sort_order", fields: faqFields },
         ],

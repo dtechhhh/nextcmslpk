@@ -1050,6 +1050,54 @@ function validatePublishRequirements(
     ];
   }
 
+  if (collectionKey === "sector") {
+    const enabledCount = (path: string) => {
+      const value = getAtPath(data, path);
+
+      return Array.isArray(value)
+        ? value.filter(
+            (item) => !isRecord(item) || item.is_enabled !== false,
+          ).length
+        : 0;
+    };
+
+    if (!readString(data.sector_category_option_id)) {
+      errors.sector_category_option_id = ["Kategori sektor wajib dipilih sebelum terbit."];
+    }
+
+    if (!readString(data.overview)) {
+      errors.overview = ["Gambaran umum kemampuan sektor wajib diisi sebelum terbit."];
+    }
+
+    if (!readString(data.hero_image_id) && !readString(data.thumbnail_image_id)) {
+      errors.hero_image_id = ["Minimal satu gambar sektor wajib dipilih sebelum terbit."];
+    }
+
+    if (enabledCount("capability_stats") < 3) {
+      errors.capability_stats = ["Isi minimal tiga statistik kapasitas sebelum terbit."];
+    }
+
+    if (enabledCount("position_competencies") < 1) {
+      errors.position_competencies = ["Isi minimal satu posisi dan kompetensi sebelum terbit."];
+    }
+
+    if (enabledCount("curriculum_modules") < 1) {
+      errors.curriculum_modules = ["Isi minimal satu modul pelatihan sebelum terbit."];
+    }
+
+    if (enabledCount("quality_assurance_items") < 1) {
+      errors.quality_assurance_items = ["Isi minimal satu kontrol quality assurance sebelum terbit."];
+    }
+
+    if (enabledCount("process_items") < 1) {
+      errors.process_items = ["Isi minimal satu langkah proses kemitraan sebelum terbit."];
+    }
+
+    if (enabledCount("evidence_gallery") < 1) {
+      errors.evidence_gallery = ["Tambahkan minimal satu bukti media sebelum terbit."];
+    }
+  }
+
   if (Object.keys(errors).length > 0) {
     throw new ValidationError(errors);
   }

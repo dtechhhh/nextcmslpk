@@ -35,6 +35,7 @@ import {
   type HeroPrimaryCTA,
 } from "@/themes/starter/components/sections/HeroSection";
 import { HeroSlider } from "@/themes/starter/components/sections/HeroSlider";
+import { ImageFeatureSlider } from "@/themes/starter/components/sections/ImageFeatureSlider";
 import { RelatedItems } from "@/themes/starter/components/sections/RelatedItems";
 import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
 import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
@@ -149,6 +150,7 @@ export async function JapanHomepage({
         }))}
       />
       <SplitSection
+        mediaType={stringValue(whyIndonesia.media_type)}
         imageId={stringValue(whyIndonesia.image_id)}
         eyebrowLabel={stringValue(whyIndonesia.eyebrow_label)}
         title={stringValue(whyIndonesia.headline)}
@@ -325,21 +327,34 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
 
 export async function JapanCandidateProfilePage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const hero = record(data.hero);
   const display = record(data.display_text);
   const whyIndonesia = record(data.why_indonesia);
   const partnerPerspective = record(data.partner_perspective);
+  const useCandidatePoolHero = stringValue(hero.model) === "candidate_pool";
 
   return (
     <>
       <PreviewBanner isPreview={props.isPreview} />
-      <JapanHero
-        hero={record(data.hero)}
-        pageTitle={props.page.title}
-        globalConfig={props.globalConfig}
-        tenantName={props.tenantName}
-      />
+      {useCandidatePoolHero ? (
+        <CandidatePoolHero
+          config={record(data.candidate_pool_hero)}
+          fallbackHero={hero}
+          pageTitle={props.page.title}
+          globalConfig={props.globalConfig}
+          tenantName={props.tenantName}
+        />
+      ) : (
+        <JapanHero
+          hero={hero}
+          pageTitle={props.page.title}
+          globalConfig={props.globalConfig}
+          tenantName={props.tenantName}
+        />
+      )}
       <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} />
       <SplitSection
+        mediaType={stringValue(whyIndonesia.media_type)}
         imageId={stringValue(whyIndonesia.image_id)}
         title={stringValue(whyIndonesia.headline)}
         body={stringValue(whyIndonesia.description)}
@@ -387,21 +402,39 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
 
 export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
   const data = props.page.dataJson;
+  const hero = record(data.hero);
   const display = record(data.display_text);
   const networkOverview = record(data.network_overview);
+  const useNetworkMapHero = stringValue(hero.model) === "network_map";
 
   return (
     <>
       <PreviewBanner isPreview={props.isPreview} />
-      <JapanHero
-        hero={record(data.hero)}
-        pageTitle={props.page.title}
-        globalConfig={props.globalConfig}
-        tenantName={props.tenantName}
-      />
-      <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} />
+      {useNetworkMapHero ? (
+        <NetworkMapHero
+          hero={hero}
+          config={record(data.network_map_hero)}
+          pageTitle={props.page.title}
+          globalConfig={props.globalConfig}
+          tenantName={props.tenantName}
+          proofStats={sortedRecords(data.proof_stats)}
+          coverageRegions={sortedRecords(data.coverage_regions)}
+          recruitmentSources={sortedRecords(data.recruitment_sources)}
+        />
+      ) : (
+        <JapanHero
+          hero={hero}
+          pageTitle={props.page.title}
+          globalConfig={props.globalConfig}
+          tenantName={props.tenantName}
+        />
+      )}
+      {useNetworkMapHero ? null : (
+        <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} />
+      )}
       <ImageFeature
         imageId={stringValue(networkOverview.map_image_id)}
+        galleryMediaIds={arrayOfStrings(networkOverview.gallery_media_ids)}
         title={stringValue(networkOverview.headline)}
         description={stringValue(networkOverview.description)}
       />
@@ -940,7 +973,473 @@ function PlainHero({
   );
 }
 
+async function CandidatePoolHero({
+  config,
+  fallbackHero,
+  pageTitle,
+  globalConfig,
+  tenantName,
+}: {
+  config: PublicJson;
+  fallbackHero: PublicJson;
+  pageTitle: string;
+  globalConfig: Record<string, PublicJson>;
+  tenantName: string;
+}) {
+  const pick = (key: string) => stringValue(config[key]) || stringValue(fallbackHero[key]);
+  const headline = pick("headline") || pageTitle;
+  const subheadline = pick("subheadline");
+  const eyebrowLabel = pick("eyebrow_label");
+  const trustNote = stringValue(config.trust_note);
+  const ctaSource: PublicJson = {
+    ...fallbackHero,
+    primary_cta_label: pick("primary_cta_label"),
+    primary_line_message_template: pick("primary_line_message_template"),
+    secondary_cta_label: pick("secondary_cta_label"),
+    secondary_href: pick("secondary_href"),
+  };
+  const primaryCTA = getHeroPrimaryCTA(ctaSource, globalConfig, tenantName);
+  const secondaryCTA = getHeroSecondaryCTA(ctaSource);
+  const stats = sortedRecords(config.stats)
+    .map(toProofStatItem)
+    .filter((item) => item.isEnabled && (item.value || item.label));
+  const candidateCards = (await resolveCandidatePoolCards(sortedRecords(config.candidate_cards)))
+    .filter(
+      (item) =>
+        item.isEnabled &&
+        (item.name || item.nationalityLabel || item.targetSectorLabel || item.ageLabel),
+    )
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const mediaId = stringValue(fallbackHero.media_id);
+  const mediaSrc = await resolveMediaUrl(mediaId);
+  const isVideo = stringValue(fallbackHero.media_type) === "video";
+
+  return (
+    <section className="relative overflow-hidden bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+      {mediaSrc ? (
+        <div className="absolute inset-0">
+          {isVideo ? (
+            <video
+              className="h-full w-full object-cover"
+              src={getMediaProxyUrl(mediaId)}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label={headline || undefined}
+            />
+          ) : (
+            <Image
+              src={mediaSrc}
+              alt={headline}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-primary-900/80" />
+        </div>
+      ) : null}
+
+      <Container className="relative">
+        <div
+          className={cn(
+            "grid gap-10 lg:items-center",
+            candidateCards.length > 0
+              ? "lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1.05fr)]"
+              : "mx-auto max-w-4xl",
+          )}
+        >
+          <div>
+            {eyebrowLabel ? (
+              <p className="text-sm font-semibold uppercase tracking-normal text-white/70">
+                {eyebrowLabel}
+              </p>
+            ) : null}
+            <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+              {headline}
+            </h1>
+            {subheadline ? (
+              <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">
+                {subheadline}
+              </p>
+            ) : null}
+
+            {primaryCTA || secondaryCTA ? (
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                {primaryCTA ? (
+                  <Button
+                    render={<a href={primaryCTA.href} />}
+                    size="lg"
+                    variant={primaryCTA.variant}
+                    className="w-full sm:w-auto"
+                  >
+                    {primaryCTA.label}
+                  </Button>
+                ) : null}
+                {secondaryCTA ? (
+                  <Button
+                    render={<a href={secondaryCTA.href} />}
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  >
+                    {secondaryCTA.label}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {stats.length > 0 ? (
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                {stats.slice(0, 3).map((item, index) => {
+                  const Icon = ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON;
+
+                  return (
+                    <div
+                      key={`${item.iconKey}-${item.label}-${index}`}
+                      className="rounded-lg border border-white/15 bg-white/10 p-4"
+                    >
+                      <Icon aria-hidden="true" className="mb-3 size-5 text-red-300" />
+                      {item.value ? (
+                        <p className="text-2xl font-bold leading-none text-white">
+                          {item.value}
+                        </p>
+                      ) : null}
+                      {item.label ? (
+                        <p className="mt-2 text-sm leading-5 text-white/70">
+                          {item.label}
+                        </p>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {trustNote ? (
+              <p className="mt-6 max-w-2xl text-sm leading-6 text-white/65">
+                {trustNote}
+              </p>
+            ) : null}
+          </div>
+
+          {candidateCards.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {candidateCards.slice(0, 4).map((item, index) => (
+                <CandidatePoolHeroCard
+                  key={`${item.sortOrder}-${item.name}-${index}`}
+                  item={item}
+                  className={index % 2 === 1 ? "sm:mt-8" : undefined}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function CandidatePoolHeroCard({
+  item,
+  className,
+}: {
+  item: CandidatePoolHeroCardItem;
+  className?: string;
+}) {
+  const displayName =
+    item.name || item.initials || item.targetSectorLabel || item.nationalityLabel || "Kandidat";
+
+  return (
+    <div
+      className={cn(
+        "rounded-lg border border-white/15 bg-white p-4 text-neutral-900 shadow-sm",
+        className,
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="relative flex size-14 shrink-0 overflow-hidden rounded-lg bg-[var(--color-section-alt)] text-[var(--color-primary)] ring-1 ring-neutral-200">
+          {item.imageSrc ? (
+            <Image
+              src={item.imageSrc}
+              alt={displayName}
+              fill
+              sizes="56px"
+              className="object-cover"
+            />
+          ) : (
+            <span className="m-auto text-lg font-bold tracking-normal">
+              {item.initials || buildCandidateInitials(displayName)}
+            </span>
+          )}
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-base font-bold leading-tight text-neutral-950">
+            {displayName}
+          </h3>
+          {item.ageLabel ? (
+            <p className="mt-1 text-sm font-medium text-neutral-500">
+              {item.ageLabel}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {item.nationalityLabel ? (
+          <Badge variant="outline">{item.nationalityLabel}</Badge>
+        ) : null}
+        {item.targetSectorLabel ? (
+          <p className="text-sm font-semibold leading-6 text-neutral-800">
+            {item.targetSectorLabel}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+async function NetworkMapHero({
+  hero,
+  config,
+  pageTitle,
+  globalConfig,
+  tenantName,
+  proofStats,
+  coverageRegions,
+  recruitmentSources,
+}: {
+  hero: PublicJson;
+  config: PublicJson;
+  pageTitle: string;
+  globalConfig: Record<string, PublicJson>;
+  tenantName: string;
+  proofStats: PublicJson[];
+  coverageRegions: PublicJson[];
+  recruitmentSources: PublicJson[];
+}) {
+  const headline = stringValue(hero.headline) || pageTitle;
+  const subheadline = stringValue(hero.subheadline);
+  const eyebrowLabel = stringValue(hero.eyebrow_label);
+  const panelTitle = stringValue(config.panel_title) || "Peta kanal rekrutmen";
+  const panelBadgeLabel = stringValue(config.panel_badge_label) || "Network view";
+  const trustNote = stringValue(config.trust_note);
+  const primaryCTA = getHeroPrimaryCTA(hero, globalConfig, tenantName);
+  const secondaryCTA = getHeroSecondaryCTA(hero);
+  const stats = proofStats
+    .map(toProofStatItem)
+    .filter((item) => item.isEnabled && (item.value || item.label))
+    .slice(0, 3);
+  const regions = coverageRegions
+    .map((item, index) => ({
+      name: stringValue(item.region_name),
+      description: stringValue(item.description),
+      sortOrder: numberValue(item.sort_order) ?? index,
+      isEnabled: booleanValue(item.is_enabled, true),
+    }))
+    .filter((item) => item.isEnabled && (item.name || item.description))
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .slice(0, 5);
+  const sources = recruitmentSources
+    .map((item, index) => ({
+      iconKey: stringValue(item.icon_key) || "check",
+      title: stringValue(item.title),
+      description: stringValue(item.description),
+      sortOrder: numberValue(item.sort_order) ?? index,
+      isEnabled: booleanValue(item.is_enabled, true),
+    }))
+    .filter((item) => item.isEnabled && (item.title || item.description))
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .slice(0, 4);
+  const mediaId = stringValue(hero.media_id);
+  const mediaSrc = await resolveMediaUrl(mediaId);
+  const isVideo = stringValue(hero.media_type) === "video";
+
+  return (
+    <section className="relative overflow-hidden bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+      {mediaSrc ? (
+        <div className="absolute inset-0">
+          {isVideo ? (
+            <video
+              className="h-full w-full object-cover"
+              src={getMediaProxyUrl(mediaId)}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label={headline || undefined}
+            />
+          ) : (
+            <Image
+              src={mediaSrc}
+              alt={headline}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-primary-900/80" />
+        </div>
+      ) : null}
+
+      <Container className="relative">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(420px,1.08fr)] lg:items-center">
+          <div>
+            {eyebrowLabel ? (
+              <p className="text-sm font-semibold uppercase tracking-normal text-white/70">
+                {eyebrowLabel}
+              </p>
+            ) : null}
+            <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+              {headline}
+            </h1>
+            {subheadline ? (
+              <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">
+                {subheadline}
+              </p>
+            ) : null}
+
+            {primaryCTA || secondaryCTA ? (
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                {primaryCTA ? (
+                  <Button
+                    render={<a href={primaryCTA.href} />}
+                    size="lg"
+                    variant={primaryCTA.variant}
+                    className="w-full sm:w-auto"
+                  >
+                    {primaryCTA.label}
+                  </Button>
+                ) : null}
+                {secondaryCTA ? (
+                  <Button
+                    render={<a href={secondaryCTA.href} />}
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  >
+                    {secondaryCTA.label}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {stats.length > 0 ? (
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                {stats.map((item, index) => {
+                  const Icon = ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON;
+
+                  return (
+                    <div
+                      key={`${item.iconKey}-${item.label}-${index}`}
+                      className="rounded-lg border border-white/15 bg-white/10 p-4"
+                    >
+                      <Icon aria-hidden="true" className="mb-3 size-5 text-red-300" />
+                      {item.value ? (
+                        <p className="text-2xl font-bold leading-none text-white">
+                          {item.value}
+                        </p>
+                      ) : null}
+                      {item.label ? (
+                        <p className="mt-2 text-sm leading-5 text-white/70">
+                          {item.label}
+                        </p>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {trustNote ? (
+              <p className="mt-6 max-w-2xl text-sm leading-6 text-white/70">
+                {trustNote}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="rounded-lg border border-white/15 bg-white p-4 text-neutral-900 shadow-2xl md:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-normal text-primary-600">
+                  {panelBadgeLabel}
+                </p>
+                <h2 className="mt-1 text-xl font-bold leading-tight text-neutral-950">
+                  {panelTitle}
+                </h2>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+                <p className="text-sm font-bold text-neutral-950">対応エリア</p>
+                {regions.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {regions.map((item) => (
+                      <Badge key={`${item.sortOrder}-${item.name}`} variant="outline">
+                        {item.name || item.description}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm leading-6 text-neutral-500">
+                    Tambahkan wilayah cakupan untuk mengisi panel jaringan.
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+                <p className="text-sm font-bold text-neutral-950">候補者チャネル</p>
+                {sources.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    {sources.map((item, index) => {
+                      const Icon = ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON;
+
+                      return (
+                        <div
+                          key={`${item.sortOrder}-${item.title}-${index}`}
+                          className="flex items-start gap-2"
+                        >
+                          <Icon
+                            aria-hidden="true"
+                            className="mt-0.5 size-4 shrink-0 text-primary-600"
+                          />
+                          <div>
+                            <p className="text-sm font-semibold leading-5 text-neutral-900">
+                              {item.title}
+                            </p>
+                            {item.description ? (
+                              <p className="text-xs leading-5 text-neutral-500">
+                                {item.description}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm leading-6 text-neutral-500">
+                    Tambahkan kanal rekrutmen untuk mengisi sumber kandidat.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 async function SplitSection({
+  mediaType = "image",
+  mediaId,
   imageId,
   eyebrowLabel,
   title,
@@ -949,6 +1448,8 @@ async function SplitSection({
   ctaLabel,
   ctaHref,
 }: {
+  mediaType?: string;
+  mediaId?: string;
   imageId?: string;
   eyebrowLabel?: string;
   title?: string;
@@ -957,7 +1458,9 @@ async function SplitSection({
   ctaLabel?: string;
   ctaHref?: string;
 }) {
-  const imageSrc = await resolveMediaUrl(imageId || "");
+  const selectedMediaId = mediaId || imageId || "";
+  const mediaSrc = await resolveMediaUrl(selectedMediaId);
+  const isVideo = mediaType === "video";
 
   if (!title && !body && bullets.length === 0) {
     return null;
@@ -967,15 +1470,28 @@ async function SplitSection({
     <section className="bg-white py-16 md:py-20 lg:py-24">
       <Container>
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-          {imageSrc ? (
+          {mediaSrc ? (
             <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-100">
-              <Image
-                src={imageSrc}
-                alt={title || ""}
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-              />
+              {isVideo ? (
+                <video
+                  className="h-full w-full object-cover"
+                  src={getMediaProxyUrl(selectedMediaId)}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label={title || undefined}
+                />
+              ) : (
+                <Image
+                  src={mediaSrc}
+                  alt={title || ""}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover"
+                />
+              )}
             </div>
           ) : null}
           <div>
@@ -1395,6 +1911,38 @@ type CandidateExampleCard = {
   isEnabled: boolean;
 };
 
+type CandidatePoolHeroCardItem = {
+  initials: string;
+  name: string;
+  nationalityLabel: string;
+  targetSectorLabel: string;
+  ageLabel: string;
+  imageSrc?: string;
+  sortOrder: number;
+  isEnabled: boolean;
+};
+
+type SectorMediaItem = {
+  mediaSrc: string;
+  title: string;
+  description: string;
+  sortOrder: number;
+  isEnabled: boolean;
+};
+
+type SectorCandidateSnapshot = {
+  initials: string;
+  name: string;
+  profileLabel: string;
+  languageLabel: string;
+  skillStatusLabel: string;
+  experienceLabel: string;
+  availabilityLabel: string;
+  imageSrc?: string;
+  sortOrder: number;
+  isEnabled: boolean;
+};
+
 function JapanDocumentCardGrid({
   title,
   items,
@@ -1518,16 +2066,26 @@ async function FinalCTA({
 
 async function ImageFeature({
   imageId,
+  galleryMediaIds = [],
   title,
   description,
 }: {
   imageId?: string;
+  galleryMediaIds?: string[];
   title?: string;
   description?: string;
 }) {
-  const imageSrc = await resolveMediaUrl(imageId || "");
+  const slideIds = galleryMediaIds.length > 0 ? galleryMediaIds : imageId ? [imageId] : [];
+  const slides = (
+    await Promise.all(
+      slideIds.map(async (mediaId) => {
+        const mediaSrc = await resolveMediaUrl(mediaId);
+        return mediaSrc ? { mediaSrc, mediaAlt: title || "" } : null;
+      }),
+    )
+  ).filter((slide): slide is { mediaSrc: string; mediaAlt: string } => Boolean(slide));
 
-  if (!imageSrc && !title && !description) {
+  if (slides.length === 0 && !title && !description) {
     return null;
   }
 
@@ -1544,11 +2102,7 @@ async function ImageFeature({
             </p>
           ) : null}
         </div>
-        {imageSrc ? (
-          <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
-            <Image src={imageSrc} alt={title || ""} fill sizes="100vw" className="object-contain" />
-          </div>
-        ) : null}
+        <ImageFeatureSlider slides={slides} title={title} />
       </Container>
     </section>
   );
@@ -1623,6 +2177,7 @@ function JapanCollectionList({
           {collection.items.map((item) => {
             const labels = getJapanCardLabels(kind, item, filters);
             const subtitle = getCollectionSubtitle(item);
+            const sectorFacts = kind === "sector" ? getSectorCardFacts(item) : [];
 
             return (
               <a
@@ -1671,6 +2226,16 @@ function JapanCollectionList({
                       {item.excerpt}
                     </p>
                   ) : null}
+                  {sectorFacts.length > 0 ? (
+                    <dl className="mt-4 space-y-2 border-t border-neutral-200 pt-4">
+                      {sectorFacts.map((fact) => (
+                        <div key={fact.label} className="grid grid-cols-[92px_1fr] gap-2 text-xs">
+                          <dt className="font-medium text-neutral-500">{fact.label}</dt>
+                          <dd className="font-semibold leading-5 text-neutral-800">{fact.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
                   {kind === "news" && item.publishedAt ? (
                     <p className="mt-4 text-sm text-neutral-500">
                       {formatDate(item.publishedAt)}
@@ -1706,6 +2271,14 @@ function JapanCollectionList({
       </Container>
     </section>
   );
+}
+
+function getSectorCardFacts(item: PublicCollectionItem) {
+  return [
+    { label: "Jalur", value: stringValue(item.dataJson.pathway_label) },
+    { label: "Bahasa", value: stringValue(item.dataJson.language_target_label) },
+    { label: "Siap interview", value: stringValue(item.dataJson.readiness_lead_time_label) },
+  ].filter((fact) => fact.value);
 }
 
 function getJapanCardLabels(
@@ -1766,44 +2339,85 @@ function DetailHero({ item }: { item: PublicCollectionItem }) {
   return <PlainHero title={item.title} subtitle={subtitle} />;
 }
 
-function SectorDetailMain({ item, display }: { item: PublicCollectionItem; display: PublicJson }) {
+async function SectorDetailMain({
+  item,
+  display,
+}: {
+  item: PublicCollectionItem;
+  display: PublicJson;
+}) {
   const data = item.dataJson;
-  const subtitle = getCollectionSubtitle(item);
+  const capabilityStats = sortedRecords(data.capability_stats)
+    .map(toProofStatItem)
+    .filter((stat) => stat.isEnabled && (stat.value || stat.label));
+  const positions = sortedRecords(data.position_competencies).filter(
+    (position) =>
+      booleanValue(position.is_enabled, true) &&
+      (stringValue(position.title) || stringValue(position.practical_skills)),
+  );
+  const curriculumModules = sortedRecords(data.curriculum_modules).filter(
+    (module) =>
+      booleanValue(module.is_enabled, true) &&
+      (stringValue(module.title) || stringValue(module.description)),
+  );
+  const facilities = await resolveSectorMediaItems(sortedRecords(data.facility_items));
+  const evidence = await resolveSectorMediaItems(sortedRecords(data.evidence_gallery));
+  const candidates = await resolveSectorCandidateSnapshots(
+    sortedRecords(data.candidate_snapshots),
+  );
+  const hasCapabilityDossier =
+    capabilityStats.length > 0 ||
+    positions.length > 0 ||
+    curriculumModules.length > 0 ||
+    facilities.length > 0 ||
+    evidence.length > 0;
 
   return (
-    <article className="space-y-10">
-      <section>
-        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">
-          {item.title}
-        </h1>
-        {subtitle ? (
-          <p className="mt-3 text-lg font-medium leading-8 text-primary-600">
-            {subtitle}
-          </p>
-        ) : null}
-        {item.excerpt ? (
-          <p className="mt-4 text-lg leading-8 text-neutral-600">{item.excerpt}</p>
-        ) : null}
-        {stringValue(data.overview) ? (
-          <p className="mt-6 whitespace-pre-line leading-8 text-neutral-700">
-            {stringValue(data.overview)}
-          </p>
-        ) : null}
-      </section>
+    <article className="space-y-14">
+      <SectorCapabilitySummary
+        item={item}
+        stats={capabilityStats}
+        data={data}
+      />
+      <SectorPositionCompetencies items={positions} />
+      <SectorCurriculumModules items={curriculumModules} />
+      <SectorMediaGrid
+        title="Fasilitas dan Alat Praktik"
+        description="Media berikut menunjukkan contoh lingkungan, alat, dan simulasi yang digunakan untuk membangun kompetensi kerja."
+        items={facilities}
+      />
+      <SectorCandidateSnapshots items={candidates} />
       <InlineCardSet
-        title={displayText(display, "suitability_title", "Kesesuaian")}
-        items={sortedRecords(data.suitability_items)}
+        title="Quality Assurance"
+        items={sortedRecords(data.quality_assurance_items)}
       />
       <InlineCardSet
-        title={displayText(display, "example_positions_title", "Contoh Posisi")}
-        items={sortedRecords(data.example_positions)}
+        title="Dukungan Penempatan"
+        items={sortedRecords(data.placement_support_items)}
       />
-      <InlineCardSet
-        title={displayText(display, "training_alignment_title", "Keterkaitan Pelatihan")}
-        items={sortedRecords(data.training_alignment_items)}
+      <SectorMediaGrid
+        title="Bukti Pelatihan"
+        description="Contoh dokumentasi aktivitas, hasil praktik, dan evaluasi yang dapat dibahas lebih lanjut bersama mitra."
+        items={evidence}
       />
+      {!hasCapabilityDossier ? (
+        <>
+          <InlineCardSet
+            title={displayText(display, "suitability_title", "Kesesuaian")}
+            items={sortedRecords(data.suitability_items)}
+          />
+          <InlineCardSet
+            title={displayText(display, "example_positions_title", "Contoh Posisi")}
+            items={sortedRecords(data.example_positions)}
+          />
+          <InlineCardSet
+            title={displayText(display, "training_alignment_title", "Keterkaitan Pelatihan")}
+            items={sortedRecords(data.training_alignment_items)}
+          />
+        </>
+      ) : null}
       <RequirementList
-        title={displayText(display, "requirements_title", "Syarat Kandidat")}
+        title={displayText(display, "requirements_title", "Kriteria Awal Kandidat")}
         items={arrayOfStrings(data.candidate_requirements)}
       />
       <StepFlow
@@ -1823,6 +2437,301 @@ function SectorDetailMain({ item, display }: { item: PublicCollectionItem; displ
   );
 }
 
+function SectorCapabilitySummary({
+  item,
+  stats,
+  data,
+}: {
+  item: PublicCollectionItem;
+  stats: ReturnType<typeof toProofStatItem>[];
+  data: PublicJson;
+}) {
+  const summaryFacts = [
+    { label: "Jalur penempatan", value: stringValue(data.pathway_label) },
+    { label: "Target bahasa", value: stringValue(data.language_target_label) },
+    { label: "Tes keterampilan", value: stringValue(data.skill_test_label) },
+    { label: "Siap wawancara", value: stringValue(data.readiness_lead_time_label) },
+  ].filter((fact) => fact.value);
+  const referenceUrl = stringValue(data.reference_url);
+
+  return (
+    <section>
+      <div className="flex flex-wrap items-center gap-2">
+        {stringValue(data.data_status_label) ? (
+          <Badge variant="warning">{stringValue(data.data_status_label)}</Badge>
+        ) : null}
+        {stringValue(data.last_verified_label) ? (
+          <span className="text-sm text-neutral-500">
+            {stringValue(data.last_verified_label)}
+          </span>
+        ) : null}
+      </div>
+      <h2 className="mt-4 text-3xl font-bold leading-tight text-neutral-950 md:text-4xl">
+        Kapabilitas Pelatihan {item.title}
+      </h2>
+      {item.excerpt ? (
+        <p className="mt-4 text-lg leading-8 text-neutral-600">{item.excerpt}</p>
+      ) : null}
+      {stringValue(data.overview) ? (
+        <p className="mt-5 whitespace-pre-line leading-8 text-neutral-700">
+          {stringValue(data.overview)}
+        </p>
+      ) : null}
+
+      {summaryFacts.length > 0 ? (
+        <dl className="mt-7 grid gap-px overflow-hidden rounded-lg border border-neutral-200 bg-neutral-200 sm:grid-cols-2">
+          {summaryFacts.map((fact) => (
+            <div key={fact.label} className="bg-white p-4">
+              <dt className="text-xs font-semibold uppercase tracking-normal text-neutral-500">
+                {fact.label}
+              </dt>
+              <dd className="mt-2 text-sm font-semibold leading-6 text-neutral-900">
+                {fact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
+      {stats.length > 0 ? (
+        <div className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {stats.slice(0, 4).map((stat, index) => {
+            const Icon = ICON_REGISTRY[stat.iconKey as IconKey] ?? FALLBACK_ICON;
+
+            return (
+              <div
+                key={`${stat.label}-${index}`}
+                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+              >
+                <Icon aria-hidden="true" className="size-5 text-primary-600" />
+                <p className="mt-4 text-2xl font-bold leading-none text-neutral-950">
+                  {stat.value}
+                </p>
+                <p className="mt-2 text-sm leading-5 text-neutral-500">{stat.label}</p>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {referenceUrl ? (
+        <a
+          href={referenceUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-5 inline-flex text-sm font-semibold text-primary-600 hover:text-primary-700"
+        >
+          Lihat referensi resmi bidang dan persyaratan terkait
+        </a>
+      ) : null}
+    </section>
+  );
+}
+
+function SectorPositionCompetencies({ items }: { items: PublicJson[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-950">Posisi dan Standar Kompetensi</h2>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">
+        Setiap posisi dipecah menjadi tugas nyata, keterampilan praktik, alat kerja, keselamatan, dan standar kelulusan.
+      </p>
+      <div className="mt-6 space-y-4">
+        {items.map((position, index) => {
+          const details = [
+            { label: "Tugas utama", value: stringValue(position.duties) },
+            { label: "Kompetensi praktik", value: stringValue(position.practical_skills) },
+            { label: "Alat yang dikuasai", value: stringValue(position.tools_equipment) },
+            { label: "Fokus keselamatan", value: stringValue(position.safety_focus) },
+            { label: "Standar kelulusan", value: stringValue(position.pass_standard) },
+          ].filter((detail) => detail.value);
+
+          return (
+            <div key={`${stringValue(position.title)}-${index}`} className="rounded-lg border border-neutral-200 p-5">
+              <h3 className="text-lg font-bold text-neutral-950">
+                {stringValue(position.title) || `Posisi ${index + 1}`}
+              </h3>
+              <dl className="mt-5 grid gap-5 md:grid-cols-2">
+                {details.map((detail) => (
+                  <div key={detail.label}>
+                    <dt className="text-xs font-semibold uppercase tracking-normal text-neutral-500">
+                      {detail.label}
+                    </dt>
+                    <dd className="mt-2 whitespace-pre-line text-sm leading-6 text-neutral-700">
+                      {detail.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SectorCurriculumModules({ items }: { items: PublicJson[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-950">Matriks Kurikulum Praktik</h2>
+      <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200">
+        <div className="hidden grid-cols-[1.2fr_0.55fr_0.55fr_1fr] gap-4 bg-neutral-100 px-5 py-3 text-xs font-semibold uppercase tracking-normal text-neutral-500 md:grid">
+          <span>Modul</span>
+          <span>Teori</span>
+          <span>Praktik</span>
+          <span>Evaluasi</span>
+        </div>
+        <div className="divide-y divide-neutral-200">
+          {items.map((module, index) => (
+            <div
+              key={`${stringValue(module.title)}-${index}`}
+              className="grid gap-4 p-5 md:grid-cols-[1.2fr_0.55fr_0.55fr_1fr]"
+            >
+              <div>
+                <h3 className="font-bold text-neutral-950">{stringValue(module.title)}</h3>
+                {stringValue(module.description) ? (
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    {stringValue(module.description)}
+                  </p>
+                ) : null}
+              </div>
+              <CurriculumValue label="Teori" value={stringValue(module.theory_hours_label)} />
+              <CurriculumValue label="Praktik" value={stringValue(module.practical_hours_label)} />
+              <CurriculumValue label="Evaluasi" value={stringValue(module.evaluation_method)} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CurriculumValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-normal text-neutral-500 md:hidden">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium leading-6 text-neutral-800 md:mt-0">
+        {value || "-"}
+      </p>
+    </div>
+  );
+}
+
+function SectorMediaGrid({
+  title,
+  description,
+  items,
+}: {
+  title: string;
+  description?: string;
+  items: SectorMediaItem[];
+}) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-950">{title}</h2>
+      {description ? (
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">{description}</p>
+      ) : null}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {items.map((media, index) => (
+          <figure key={`${media.mediaSrc}-${index}`} className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+            <div className="relative aspect-video bg-neutral-100">
+              <Image
+                src={media.mediaSrc}
+                alt={media.title || title}
+                fill
+                sizes="(min-width: 768px) 33vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            {media.title || media.description ? (
+              <figcaption className="p-4">
+                {media.title ? <p className="font-bold text-neutral-950">{media.title}</p> : null}
+                {media.description ? (
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">{media.description}</p>
+                ) : null}
+              </figcaption>
+            ) : null}
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SectorCandidateSnapshots({ items }: { items: SectorCandidateSnapshot[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-950">Contoh Kandidat Anonim</h2>
+      <p className="mt-3 text-sm leading-6 text-neutral-600">
+        Profil berikut adalah contoh format shortlist yang dapat disesuaikan dengan kebutuhan lowongan mitra.
+      </p>
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {items.map((candidate, index) => (
+          <div key={`${candidate.name}-${index}`} className="rounded-lg border border-neutral-200 p-5">
+            <div className="flex items-start gap-4">
+              <div className="relative flex size-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100 text-primary-700">
+                {candidate.imageSrc ? (
+                  <Image
+                    src={candidate.imageSrc}
+                    alt={candidate.name}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="m-auto text-lg font-bold">{candidate.initials}</span>
+                )}
+              </div>
+              <div>
+                <h3 className="font-bold text-neutral-950">{candidate.name}</h3>
+                <p className="mt-1 text-sm leading-6 text-neutral-600">{candidate.profileLabel}</p>
+              </div>
+            </div>
+            <dl className="mt-5 grid gap-3 text-sm">
+              <CandidateFact label="Bahasa" value={candidate.languageLabel} />
+              <CandidateFact label="Kompetensi" value={candidate.skillStatusLabel} />
+              <CandidateFact label="Pengalaman" value={candidate.experienceLabel} />
+              <CandidateFact label="Ketersediaan" value={candidate.availabilityLabel} />
+            </dl>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CandidateFact({ label, value }: { label: string; value: string }) {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <div className="grid grid-cols-[100px_1fr] gap-3">
+      <dt className="font-medium text-neutral-500">{label}</dt>
+      <dd className="font-medium leading-6 text-neutral-800">{value}</dd>
+    </div>
+  );
+}
+
 function SectorSidebar({
   item,
   lineHref,
@@ -1835,6 +2744,11 @@ function SectorSidebar({
   display: PublicJson;
 }) {
   const data = item.dataJson;
+  const quickFacts = [
+    { label: "Jalur", value: stringValue(data.pathway_label) },
+    { label: "Bahasa", value: stringValue(data.language_target_label) },
+    { label: "Kesiapan", value: stringValue(data.readiness_lead_time_label) },
+  ].filter((fact) => fact.value);
 
   return (
     <Card variant="japan" className="p-5">
@@ -1849,6 +2763,16 @@ function SectorSidebar({
             "Konsultasikan ketersediaan kandidat, kesesuaian pelatihan, dan kebutuhan dokumen untuk sektor ini.",
           )}
         </p>
+        {quickFacts.length > 0 ? (
+          <dl className="mt-5 divide-y divide-neutral-200 border-y border-neutral-200">
+            {quickFacts.map((fact) => (
+              <div key={fact.label} className="grid grid-cols-[72px_1fr] gap-3 py-3 text-sm">
+                <dt className="font-medium text-neutral-500">{fact.label}</dt>
+                <dd className="font-semibold leading-5 text-neutral-900">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
         {lineHref ? (
           <Button render={<a href={lineHref} />} variant="line" className="mt-6 w-full">
           <MessageCircle aria-hidden="true" className="size-4" />
@@ -2209,6 +3133,72 @@ async function resolveCandidateExamples(items: PublicJson[]) {
       };
     }),
   );
+}
+
+async function resolveCandidatePoolCards(items: PublicJson[]) {
+  return Promise.all(
+    items.map(async (item, index) => {
+      const name = stringValue(item.name);
+
+      return {
+        initials: stringValue(item.initials) || buildCandidateInitials(name),
+        name,
+        nationalityLabel: stringValue(item.nationality_label),
+        targetSectorLabel: stringValue(item.target_sector_label),
+        ageLabel: stringValue(item.age_label),
+        imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
+        sortOrder: numberValue(item.sort_order) ?? index,
+        isEnabled: booleanValue(item.is_enabled, true),
+      };
+    }),
+  );
+}
+
+async function resolveSectorMediaItems(items: PublicJson[]) {
+  const resolved = await Promise.all(
+    items.map(async (item, index) => {
+      const mediaSrc = await resolveMediaUrl(stringValue(item.media_id));
+
+      return mediaSrc
+        ? {
+            mediaSrc,
+            title: stringValue(item.title),
+            description: stringValue(item.description),
+            sortOrder: numberValue(item.sort_order) ?? index,
+            isEnabled: booleanValue(item.is_enabled, true),
+          }
+        : null;
+    }),
+  );
+
+  return resolved
+    .filter((item): item is SectorMediaItem => Boolean(item?.isEnabled))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+async function resolveSectorCandidateSnapshots(items: PublicJson[]) {
+  const resolved = await Promise.all(
+    items.map(async (item, index) => {
+      const name = stringValue(item.name) || `Kandidat ${index + 1}`;
+
+      return {
+        initials: stringValue(item.initials) || buildCandidateInitials(name),
+        name,
+        profileLabel: stringValue(item.profile_label),
+        languageLabel: stringValue(item.language_label),
+        skillStatusLabel: stringValue(item.skill_status_label),
+        experienceLabel: stringValue(item.experience_label),
+        availabilityLabel: stringValue(item.availability_label),
+        imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
+        sortOrder: numberValue(item.sort_order) ?? index,
+        isEnabled: booleanValue(item.is_enabled, true),
+      };
+    }),
+  );
+
+  return resolved
+    .filter((item) => item.isEnabled)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function buildCandidateInitials(name: string) {

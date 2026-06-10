@@ -9,6 +9,7 @@ import {
 
 const japanMediaHeroSchema = z
   .object({
+    model: z.enum(["standard", "network_map"]).default("standard"),
     media_type: z.enum(["image", "video"]).default("image"),
     media_id: mediaIdSchema,
     headline: optionalString(220),
@@ -20,6 +21,19 @@ const japanMediaHeroSchema = z
     secondary_href: optionalString(500),
   })
   .passthrough();
+
+const networkMapHeroSchema = z
+  .object({
+    panel_title: optionalString(180),
+    panel_badge_label: optionalString(120),
+    trust_note: optionalString(220),
+  })
+  .passthrough()
+  .default({
+    panel_title: "",
+    panel_badge_label: "",
+    trust_note: "",
+  });
 
 const proofStatSchema = z
   .object({
@@ -81,6 +95,7 @@ const japanFinalCtaSchema = z
 export const jaringanRekrutmenSchema = z
   .object({
     hero: japanMediaHeroSchema.default({
+      model: "standard",
       media_type: "image",
       media_id: "",
       headline: "",
@@ -91,16 +106,19 @@ export const jaringanRekrutmenSchema = z
       secondary_cta_label: "",
       secondary_href: "",
     }),
+    network_map_hero: networkMapHeroSchema,
     proof_stats: z.array(proofStatSchema).default([]),
     network_overview: z
       .object({
         map_image_id: mediaIdSchema,
+        gallery_media_ids: z.array(mediaIdSchema).default([]),
         headline: optionalString(220),
         description: optionalString(1200),
       })
       .passthrough()
       .default({
         map_image_id: "",
+        gallery_media_ids: [],
         headline: "",
         description: "",
       }),

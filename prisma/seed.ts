@@ -126,7 +126,21 @@ const optionSets = {
     {
       key: "japan_sector_category",
       label: "Japan Sector Category",
-      values: ["製造業", "建設業", "農業", "介護", "食品加工", "外食業", "宿泊業"],
+      values: [
+        "Perawatan Lansia",
+        "Pengolahan Makanan",
+        "Manufaktur",
+        "Montir Kendaraan",
+        "Pengelasan",
+        "Pertanian",
+        "Perikanan",
+        "Perhotelan",
+        "Building Cleaning",
+        "Sopir Truk dan Bus",
+        "CNC dan Machining",
+        "Restoran",
+        "Konstruksi",
+      ],
     },
     {
       key: "japan_candidate_pathway",

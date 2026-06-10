@@ -104,6 +104,7 @@ export const homepageJapanSchema = z
       }),
     why_indonesia_section: z
       .object({
+        media_type: z.enum(["image", "video"]).default("image"),
         image_id: mediaIdSchema,
         eyebrow_label: optionalString(120),
         headline: optionalString(220),
@@ -114,6 +115,7 @@ export const homepageJapanSchema = z
       })
       .passthrough()
       .default({
+        media_type: "image",
         image_id: "",
         eyebrow_label: "",
         headline: "",

@@ -335,6 +335,16 @@ const japanBasicHeroFields: PageEditorField[] = [
   },
 ];
 
+const japanCandidateHeroModelOptions = [
+  { value: "standard", label: "Hero standar" },
+  { value: "candidate_pool", label: "Candidate pool" },
+];
+
+const japanRecruitmentHeroModelOptions = [
+  { value: "standard", label: "Hero standar" },
+  { value: "network_map", label: "Network map" },
+];
+
 const japanFinalCtaFields: PageEditorField[] = [
   { kind: "text", path: "headline", label: "Judul CTA" },
   { kind: "textarea", path: "description", label: "Deskripsi CTA" },
@@ -417,6 +427,25 @@ const japanEmptyHero = {
   primary_line_message_template: "",
   secondary_cta_label: "",
   secondary_href: "",
+};
+
+const japanEmptyCandidatePoolHero = {
+  eyebrow_label: "",
+  headline: "",
+  subheadline: "",
+  primary_cta_label: "",
+  primary_line_message_template: "",
+  secondary_cta_label: "",
+  secondary_href: "",
+  trust_note: "",
+  stats: [],
+  candidate_cards: [],
+};
+
+const japanEmptyNetworkMapHero = {
+  panel_title: "",
+  panel_badge_label: "",
+  trust_note: "",
 };
 
 const japanEmptyHomepageHero = {
@@ -1483,6 +1512,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         max_items: 4,
       },
       why_indonesia_section: {
+        media_type: "image",
         image_id: "",
         eyebrow_label: "",
         headline: "",
@@ -1617,7 +1647,13 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Bagian mengapa Indonesia",
         classification: "recommended",
         fields: [
-          { kind: "media", path: "why_indonesia_section.image_id", label: "Gambar" },
+          {
+            kind: "select",
+            path: "why_indonesia_section.media_type",
+            label: "Jenis media",
+            options: japanBasicMediaTypeOptions,
+          },
+          { kind: "media", path: "why_indonesia_section.image_id", label: "Media" },
           { kind: "text", path: "why_indonesia_section.eyebrow_label", label: "Label kecil" },
           { kind: "text", path: "why_indonesia_section.headline", label: "Judul utama" },
           { kind: "textarea", path: "why_indonesia_section.description", label: "Deskripsi" },
@@ -2122,10 +2158,12 @@ export const PAGE_EDITOR_DEFINITIONS = {
     title: "Profil Kandidat",
     publicPath: "/candidate-profile",
     defaultData: {
-      hero: japanEmptyHero,
+      hero: { ...japanEmptyHero, model: "standard" },
+      candidate_pool_hero: japanEmptyCandidatePoolHero,
       display_text: japanCandidateDisplayText,
       proof_stats: [],
       why_indonesia: {
+        media_type: "image",
         image_id: "",
         headline: "",
         description: "",
@@ -2147,10 +2185,103 @@ export const PAGE_EDITOR_DEFINITIONS = {
         key: "hero",
         title: "Hero",
         classification: "required",
-        fields: japanBasicHeroFields.map((field) => ({
-          ...field,
-          path: `hero.${field.path}`,
-        })),
+        fields: [
+          {
+            kind: "select",
+            path: "hero.model",
+            label: "Model hero",
+            options: japanCandidateHeroModelOptions,
+          },
+          ...japanBasicHeroFields.map((field) => ({
+            ...field,
+            path: `hero.${field.path}`,
+          })),
+        ],
+      },
+      {
+        key: "candidate_pool_hero",
+        title: "Hero candidate pool",
+        classification: "optional",
+        fields: [
+          {
+            kind: "text",
+            path: "candidate_pool_hero.eyebrow_label",
+            label: "Label kecil",
+          },
+          {
+            kind: "text",
+            path: "candidate_pool_hero.headline",
+            label: "Judul utama",
+          },
+          {
+            kind: "textarea",
+            path: "candidate_pool_hero.subheadline",
+            label: "Subjudul",
+          },
+          {
+            kind: "text",
+            path: "candidate_pool_hero.primary_cta_label",
+            label: "Label CTA utama",
+          },
+          {
+            kind: "textarea",
+            path: "candidate_pool_hero.primary_line_message_template",
+            label: "Template pesan LINE utama",
+          },
+          {
+            kind: "text",
+            path: "candidate_pool_hero.secondary_cta_label",
+            label: "Label CTA kedua",
+          },
+          {
+            kind: "text",
+            path: "candidate_pool_hero.secondary_href",
+            label: "Link CTA kedua",
+            inputType: "url",
+          },
+          {
+            kind: "text",
+            path: "candidate_pool_hero.trust_note",
+            label: "Catatan kepercayaan",
+          },
+          {
+            kind: "array",
+            path: "candidate_pool_hero.stats",
+            label: "Statistik ringkas",
+            itemLabel: "Statistik",
+            addLabel: "Tambah statistik",
+            defaultItem: japanEmptyProofStat,
+            sortOrderField: "sort_order",
+            fields: japanProofStatFields,
+          },
+          {
+            kind: "array",
+            path: "candidate_pool_hero.candidate_cards",
+            label: "Kartu kandidat",
+            itemLabel: "Kandidat",
+            addLabel: "Tambah kandidat",
+            defaultItem: {
+              initials: "",
+              name: "",
+              nationality_label: "",
+              target_sector_label: "",
+              age_label: "",
+              image_id: "",
+              sort_order: 0,
+              is_enabled: true,
+            },
+            sortOrderField: "sort_order",
+            fields: [
+              { kind: "text", path: "initials", label: "Inisial" },
+              { kind: "text", path: "name", label: "Nama kandidat" },
+              { kind: "text", path: "nationality_label", label: "Kewarganegaraan" },
+              { kind: "text", path: "target_sector_label", label: "Sektor target" },
+              { kind: "text", path: "age_label", label: "Usia" },
+              { kind: "media", path: "image_id", label: "Foto kandidat" },
+              ...japanSortableFields,
+            ],
+          },
+        ],
       },
       japanDisplayTextSection(japanCandidateDisplayTextFields),
       {
@@ -2175,7 +2306,13 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Mengapa Indonesia",
         classification: "required",
         fields: [
-          { kind: "media", path: "why_indonesia.image_id", label: "Gambar" },
+          {
+            kind: "select",
+            path: "why_indonesia.media_type",
+            label: "Jenis media",
+            options: japanBasicMediaTypeOptions,
+          },
+          { kind: "media", path: "why_indonesia.image_id", label: "Media" },
           { kind: "text", path: "why_indonesia.headline", label: "Judul utama" },
           { kind: "textarea", path: "why_indonesia.description", label: "Deskripsi" },
           {
@@ -2337,11 +2474,13 @@ export const PAGE_EDITOR_DEFINITIONS = {
     title: "Jaringan Rekrutmen",
     publicPath: "/recruitment-network",
     defaultData: {
-      hero: japanEmptyHero,
+      hero: { ...japanEmptyHero, model: "standard" },
+      network_map_hero: japanEmptyNetworkMapHero,
       display_text: japanRecruitmentDisplayText,
       proof_stats: [],
       network_overview: {
         map_image_id: "",
+        gallery_media_ids: [],
         headline: "",
         description: "",
       },
@@ -2357,10 +2496,40 @@ export const PAGE_EDITOR_DEFINITIONS = {
         key: "hero",
         title: "Hero",
         classification: "required",
-        fields: japanBasicHeroFields.map((field) => ({
-          ...field,
-          path: `hero.${field.path}`,
-        })),
+        fields: [
+          {
+            kind: "select",
+            path: "hero.model",
+            label: "Model hero",
+            options: japanRecruitmentHeroModelOptions,
+          },
+          ...japanBasicHeroFields.map((field) => ({
+            ...field,
+            path: `hero.${field.path}`,
+          })),
+        ],
+      },
+      {
+        key: "network_map_hero",
+        title: "Hero network map",
+        classification: "optional",
+        fields: [
+          {
+            kind: "text",
+            path: "network_map_hero.panel_badge_label",
+            label: "Label badge panel",
+          },
+          {
+            kind: "text",
+            path: "network_map_hero.panel_title",
+            label: "Judul panel",
+          },
+          {
+            kind: "text",
+            path: "network_map_hero.trust_note",
+            label: "Catatan kepercayaan",
+          },
+        ],
       },
       japanDisplayTextSection(japanRecruitmentDisplayTextFields),
       {
@@ -2386,6 +2555,14 @@ export const PAGE_EDITOR_DEFINITIONS = {
         classification: "required",
         fields: [
           { kind: "media", path: "network_overview.map_image_id", label: "Gambar peta" },
+          {
+            kind: "media-array",
+            path: "network_overview.gallery_media_ids",
+            label: "Slide foto ringkasan",
+            itemLabel: "Foto",
+            addLabel: "Tambah foto",
+            defaultItem: "",
+          },
           { kind: "text", path: "network_overview.headline", label: "Judul utama" },
           { kind: "textarea", path: "network_overview.description", label: "Deskripsi" },
         ],
