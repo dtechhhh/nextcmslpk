@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Check, Mail, MessageCircle } from "lucide-react";
+import { Check, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 
 import { normalizeActionLabel } from "@/lib/display-label";
 import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
@@ -41,6 +41,7 @@ import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
 import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
 import { TeamGrid } from "@/themes/starter/components/sections/TeamGrid";
 import { Timeline } from "@/themes/starter/components/sections/Timeline";
+import { JapanContactInquiryForm } from "@/themes/starter/pages/japan/JapanContactInquiryForm";
 
 type PublicPageData = {
   title: string;
@@ -725,6 +726,7 @@ export async function JapanContactPage(props: JapanPageProps) {
   const data = props.page.dataJson;
   const display = record(data.display_text);
   const channels = record(data.contact_channels);
+  const inquiryForm = record(data.inquiry_form);
   const partnershipPic = record(data.partnership_pic);
   const businessInfo = record(data.business_info);
   const globalLineContact = record(props.globalConfig.line_business_contact);
@@ -752,27 +754,101 @@ export async function JapanContactPage(props: JapanPageProps) {
       : arrayOfStrings(globalBusinessInfo.language_support);
   const lineCtaLabel =
     stringValue(channels.line_cta_label) ||
-    displayText(display, "line_cta_label", "Hubungi via LINE");
+    displayText(display, "line_cta_label", "LINEで相談する");
+  const contactFaqs = sortedRecords(data.faqs).map((faq, index) => ({
+    question: stringValue(faq.question),
+    answer: stringValue(faq.answer),
+    sortOrder: numberValue(faq.sort_order) ?? index,
+    isEnabled: booleanValue(faq.is_enabled, true),
+  }));
 
   return (
     <>
       <PreviewBanner isPreview={props.isPreview} />
-      <JapanHero
+      <JapanContactHero
         hero={record(data.hero)}
         pageTitle={props.page.title}
-        globalConfig={props.globalConfig}
-        tenantName={props.tenantName}
-      />
-      <ContactChannels
         lineHref={lineHref}
         lineLabel={lineCtaLabel}
+        formLabel={stringValue(channels.form_cta_label) || "お問い合わせフォーム"}
+      />
+      <ContactTrustStrip items={sortedRecords(data.trust_points)} />
+      <ContactChannels
+        title={displayText(display, "contact_channels_title", "ご希望の方法でお問い合わせください")}
+        description={displayText(
+          display,
+          "contact_channels_description",
+          "ご相談内容やお急ぎの度合いに合わせて、LINE、メール、またはお問い合わせフォームをご利用ください。",
+        )}
+        lineHref={lineHref}
+        lineLabel={lineCtaLabel}
+        lineDescription={
+          stringValue(channels.line_description) ||
+          "お急ぎの方や、まずは簡単に相談したい方におすすめです。"
+        }
         email={contactEmail}
         emailSubject={emailSubject}
+        emailDescription={
+          stringValue(channels.email_description) ||
+          "資料の添付や、社内関係者を含むご連絡にご利用ください。"
+        }
+        formLabel={stringValue(channels.form_cta_label) || "フォームに入力する"}
+      />
+      <ContactConsultationTopics
+        title={displayText(display, "consultation_topics_title", "このようなご相談を承ります")}
+        description={displayText(
+          display,
+          "consultation_topics_description",
+          "採用条件がまだ確定していない段階でも、必要な情報を整理しながらご相談いただけます。",
+        )}
+        items={sortedRecords(data.consultation_topics)}
+      />
+      <ContactInquirySection
+        title={displayText(display, "inquiry_form_title", "採用について相談する")}
+        description={displayText(
+          display,
+          "inquiry_form_description",
+          "分かる範囲でご入力ください。入力内容をもとにメールが作成されます。",
+        )}
+        preparationTitle={displayText(
+          display,
+          "preparation_title",
+          "ご相談時にお知らせいただきたい事項",
+        )}
+        preparationDescription={displayText(
+          display,
+          "preparation_description",
+          "すべて決まっている必要はありません。現時点で分かる内容だけでご相談いただけます。",
+        )}
+        preparationItems={arrayOfStrings(data.preparation_items)}
+        email={contactEmail}
+        emailSubject={emailSubject || "インドネシア人材採用に関するお問い合わせ"}
+        submitLabel={stringValue(inquiryForm.submit_label) || "入力内容をメールで送信する"}
+        consentLabel={
+          stringValue(inquiryForm.consent_label) ||
+          "入力内容および個人情報の取り扱いに同意します。"
+        }
+        responseNote={
+          stringValue(inquiryForm.response_note) ||
+          "営業時間内に内容を確認し、担当者より順次ご連絡します。"
+        }
+      />
+      <StepFlow
+        title={displayText(display, "inquiry_flow_title", "お問い合わせからご提案まで")}
+        items={sortedRecords(data.inquiry_flow).map((item, index) => ({
+          iconKey: stringValue(item.icon_key) || "check",
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
       />
       <PartnershipPic config={partnershipPic} />
       <ContactInfo
-        headline={displayText(display, "business_info_title", "Informasi Bisnis")}
-        description={stringValue(globalContactNote.short_note)}
+        headline={displayText(display, "business_info_title", "会社・窓口情報")}
+        description={
+          stringValue(businessInfo.description) || stringValue(globalContactNote.short_note)
+        }
         phone={stringValue(globalBusinessInfo.phone_label)}
         email={contactEmail}
         emailSubject={emailSubject}
@@ -791,23 +867,86 @@ export async function JapanContactPage(props: JapanPageProps) {
         ctaHref={lineHref}
         ctaVariant="line"
       />
-      <StepFlow
-        title={displayText(display, "inquiry_flow_title", "Alur Kontak")}
-        items={sortedRecords(data.inquiry_flow).map((item, index) => ({
-          iconKey: stringValue(item.icon_key) || "check",
-          title: stringValue(item.title),
-          description: stringValue(item.description),
-          sortOrder: numberValue(item.sort_order) ?? index,
-          isEnabled: booleanValue(item.is_enabled, true),
-        }))}
+      <FAQ
+        title={displayText(display, "faq_title", "よくあるご質問")}
+        items={contactFaqs}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Mulai percakapan kemitraan bersama tim kami"
+        defaultHeadline="インドネシア人材の採用について、まずはご相談ください"
       />
     </>
+  );
+}
+
+async function JapanContactHero({
+  hero,
+  pageTitle,
+  lineHref,
+  lineLabel,
+  formLabel,
+}: {
+  hero: PublicJson;
+  pageTitle: string;
+  lineHref?: string;
+  lineLabel: string;
+  formLabel: string;
+}) {
+  const headline =
+    stringValue(hero.headline) ||
+    "採用計画に合ったインドネシア人材をご提案します";
+  const subheadline =
+    stringValue(hero.subheadline) ||
+    "特定技能を中心に、候補者のご紹介、日本語・職業教育、面接調整、入国前準備まで一貫してサポートします。まずは貴社の採用課題をお聞かせください。";
+  const eyebrowLabel =
+    stringValue(hero.eyebrow_label) ||
+    "インドネシア人材の採用をご検討の企業様へ";
+  const mediaId = stringValue(hero.media_id);
+  const mediaSrc = await resolveMediaUrl(mediaId);
+
+  return (
+    <section className="relative flex min-h-[420px] items-center overflow-hidden bg-primary-700 py-16 text-white md:min-h-[460px] md:py-20">
+      {mediaSrc ? (
+        <>
+          <Image
+            src={mediaSrc}
+            alt={stringValue(hero.headline) || pageTitle}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-neutral-950/65" />
+        </>
+      ) : null}
+      <Container className="relative z-10">
+        <p className="text-sm font-semibold text-white/75">{eyebrowLabel}</p>
+        <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+          {headline}
+        </h1>
+        <p className="mt-5 max-w-3xl text-base leading-8 text-white/85 md:text-lg">
+          {subheadline}
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button render={<a href="#contact-inquiry" />} size="lg" className="w-full sm:w-auto">
+            {formLabel}
+          </Button>
+          {lineHref ? (
+            <Button
+              render={<a href={lineHref} />}
+              size="lg"
+              variant="line"
+              className="w-full sm:w-auto"
+            >
+              <MessageCircle aria-hidden="true" className="size-4" />
+              {lineLabel}
+            </Button>
+          ) : null}
+        </div>
+      </Container>
+    </section>
   );
 }
 
@@ -2850,16 +2989,65 @@ function RequirementList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
+function ContactTrustStrip({ items }: { items: PublicJson[] }) {
+  const visibleItems = items.filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) || stringValue(item.description)),
+  );
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="border-y border-neutral-200 bg-white">
+      <Container>
+        <div className="grid divide-y divide-neutral-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+          {visibleItems.slice(0, 3).map((item, index) => {
+            const iconKey = stringValue(item.icon_key) || "shield_check";
+            const Icon = ICON_REGISTRY[iconKey as IconKey] ?? ShieldCheck;
+
+            return (
+              <div key={`${stringValue(item.title)}-${index}`} className="flex gap-4 py-6 md:px-6 first:md:pl-0 last:md:pr-0">
+                <Icon aria-hidden="true" className="mt-1 size-6 shrink-0 text-primary-600" />
+                <div>
+                  <h2 className="font-bold text-neutral-900">{stringValue(item.title)}</h2>
+                  {stringValue(item.description) ? (
+                    <p className="mt-1 text-sm leading-6 text-neutral-600">
+                      {stringValue(item.description)}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function ContactChannels({
+  title,
+  description,
   lineHref,
   lineLabel,
+  lineDescription,
   email,
   emailSubject,
+  emailDescription,
+  formLabel,
 }: {
+  title: string;
+  description: string;
   lineHref?: string;
   lineLabel: string;
+  lineDescription: string;
   email?: string;
   emailSubject?: string;
+  emailDescription: string;
+  formLabel: string;
 }) {
   if (!lineHref && !email) {
     return null;
@@ -2868,23 +3056,29 @@ function ContactChannels({
   return (
     <section className="bg-white py-16 md:py-20 lg:py-24">
       <Container>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">{title}</h2>
+          <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">{description}</p>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-3">
           {lineHref ? (
-            <Card variant="japan" className="p-6">
-              <CardContent className="p-0">
+            <Card variant="japan" className="h-full p-6">
+              <CardContent className="flex h-full flex-col p-0">
                 <MessageCircle aria-hidden="true" className="size-8 text-[var(--color-cta)]" />
                 <h2 className="mt-4 text-2xl font-bold text-neutral-900">LINE</h2>
-                <Button render={<a href={lineHref} />} variant="line" className="mt-6">
+                <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{lineDescription}</p>
+                <Button render={<a href={lineHref} />} variant="line" className="mt-6 w-full">
                   {lineLabel}
                 </Button>
               </CardContent>
             </Card>
           ) : null}
           {email ? (
-            <Card variant="japan" className="p-6">
-              <CardContent className="p-0">
+            <Card variant="japan" className="h-full p-6">
+              <CardContent className="flex h-full flex-col p-0">
                 <Mail aria-hidden="true" className="size-8 text-primary-500" />
-                <h2 className="mt-4 text-2xl font-bold text-neutral-900">Email</h2>
+                <h2 className="mt-4 text-2xl font-bold text-neutral-900">メール</h2>
+                <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{emailDescription}</p>
                 <Button
                   render={
                     <a
@@ -2894,13 +3088,140 @@ function ContactChannels({
                     />
                   }
                   variant="outline"
-                  className="mt-6"
+                  className="mt-6 w-full"
                 >
-                  {email}
+                  メールを送る
                 </Button>
               </CardContent>
             </Card>
           ) : null}
+          <Card variant="japan" className="h-full p-6">
+            <CardContent className="flex h-full flex-col p-0">
+              <ShieldCheck aria-hidden="true" className="size-8 text-primary-500" />
+              <h2 className="mt-4 text-2xl font-bold text-neutral-900">お問い合わせフォーム</h2>
+              <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">
+                採用条件、希望人数、採用時期などを整理してお送りいただけます。
+              </p>
+              <Button render={<a href="#contact-inquiry" />} className="mt-6 w-full">
+                {formLabel}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function ContactConsultationTopics({
+  title,
+  description,
+  items,
+}: {
+  title: string;
+  description: string;
+  items: PublicJson[];
+}) {
+  const visibleItems = items.filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) || stringValue(item.description)),
+  );
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">{title}</h2>
+          <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">{description}</p>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {visibleItems.map((item, index) => {
+            const iconKey = stringValue(item.icon_key) || "check";
+            const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+
+            return (
+              <div key={`${stringValue(item.title)}-${index}`} className="rounded-lg border border-neutral-200 bg-white p-5">
+                <Icon aria-hidden="true" className="size-6 text-primary-600" />
+                <h3 className="mt-4 text-lg font-bold text-neutral-900">{stringValue(item.title)}</h3>
+                {stringValue(item.description) ? (
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    {stringValue(item.description)}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function ContactInquirySection({
+  title,
+  description,
+  preparationTitle,
+  preparationDescription,
+  preparationItems,
+  email,
+  emailSubject,
+  submitLabel,
+  consentLabel,
+  responseNote,
+}: {
+  title: string;
+  description: string;
+  preparationTitle: string;
+  preparationDescription: string;
+  preparationItems: string[];
+  email?: string;
+  emailSubject: string;
+  submitLabel: string;
+  consentLabel: string;
+  responseNote: string;
+}) {
+  if (!email) {
+    return null;
+  }
+
+  return (
+    <section id="contact-inquiry" className="scroll-mt-28 bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)] lg:items-start">
+          <div>
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">{title}</h2>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+            <div className="mt-8">
+              <JapanContactInquiryForm
+                email={email}
+                emailSubject={emailSubject}
+                submitLabel={submitLabel}
+                consentLabel={consentLabel}
+                responseNote={responseNote}
+              />
+            </div>
+          </div>
+          <aside className="rounded-lg bg-primary-700 p-6 text-white md:p-8">
+            <h3 className="text-2xl font-bold">{preparationTitle}</h3>
+            <p className="mt-3 text-sm leading-7 text-white/75">{preparationDescription}</p>
+            {preparationItems.length > 0 ? (
+              <ul className="mt-6 space-y-4">
+                {preparationItems.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm leading-6 text-white/90">
+                    <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-red-300" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </aside>
         </div>
       </Container>
     </section>

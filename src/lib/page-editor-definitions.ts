@@ -615,9 +615,18 @@ const japanNewsPageDisplayText = {
 
 const japanContactDisplayText = {
   line_cta_label: "",
+  contact_channels_title: "",
+  contact_channels_description: "",
+  consultation_topics_title: "",
+  consultation_topics_description: "",
+  inquiry_form_title: "",
+  inquiry_form_description: "",
+  preparation_title: "",
+  preparation_description: "",
   business_info_title: "",
   business_info_cta_label: "",
   inquiry_flow_title: "",
+  faq_title: "",
 };
 
 function japanDisplayTextSection(fields: PageEditorField[]): PageEditorSection {
@@ -700,9 +709,18 @@ const japanNewsPageDisplayTextFields: PageEditorField[] = [
 
 const japanContactDisplayTextFields: PageEditorField[] = [
   { kind: "text", path: "line_cta_label", label: "Fallback label tombol LINE" },
+  { kind: "text", path: "contact_channels_title", label: "Judul section channel kontak" },
+  { kind: "textarea", path: "contact_channels_description", label: "Deskripsi channel kontak" },
+  { kind: "text", path: "consultation_topics_title", label: "Judul topik konsultasi" },
+  { kind: "textarea", path: "consultation_topics_description", label: "Deskripsi topik konsultasi" },
+  { kind: "text", path: "inquiry_form_title", label: "Judul formulir inquiry" },
+  { kind: "textarea", path: "inquiry_form_description", label: "Deskripsi formulir inquiry" },
+  { kind: "text", path: "preparation_title", label: "Judul informasi yang perlu disiapkan" },
+  { kind: "textarea", path: "preparation_description", label: "Deskripsi informasi yang perlu disiapkan" },
   { kind: "text", path: "business_info_title", label: "Judul section informasi bisnis" },
   { kind: "text", path: "business_info_cta_label", label: "Label tombol informasi bisnis" },
   { kind: "text", path: "inquiry_flow_title", label: "Judul section alur kontak" },
+  { kind: "text", path: "faq_title", label: "Judul FAQ" },
 ];
 
 
@@ -2788,9 +2806,20 @@ export const PAGE_EDITOR_DEFINITIONS = {
         line_official_account_id: "",
         line_cta_label: "",
         line_message_template: "",
+        line_description: "",
         business_email: "",
         email_subject_template: "",
+        email_description: "",
+        form_cta_label: "",
       },
+      trust_points: [],
+      consultation_topics: [],
+      inquiry_form: {
+        submit_label: "",
+        consent_label: "",
+        response_note: "",
+      },
+      preparation_items: [],
       partnership_pic: {
         name: "",
         role: "",
@@ -2798,6 +2827,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         description: "",
       },
       business_info: {
+        description: "",
         business_hours: "",
         language_support: [],
         address: "",
@@ -2805,6 +2835,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         map_embed_url: "",
       },
       inquiry_flow: [],
+      faqs: [],
       final_cta: japanEmptyFinalCtaWithDoc,
     },
     sections: [
@@ -2819,6 +2850,23 @@ export const PAGE_EDITOR_DEFINITIONS = {
       },
       japanDisplayTextSection(japanContactDisplayTextFields),
       {
+        key: "trust_points",
+        title: "Trust strip",
+        classification: "recommended",
+        fields: [
+          {
+            kind: "array",
+            path: "trust_points",
+            label: "Poin kepercayaan",
+            itemLabel: "Poin",
+            addLabel: "Tambah poin",
+            defaultItem: japanEmptyIconTitleDesc,
+            sortOrderField: "sort_order",
+            fields: japanIconTitleDescSortFields,
+          },
+        ],
+      },
+      {
         key: "contact_channels",
         title: "Channel kontak",
         classification: "required",
@@ -2826,8 +2874,53 @@ export const PAGE_EDITOR_DEFINITIONS = {
           { kind: "text", path: "contact_channels.line_official_account_id", label: "ID akun resmi LINE" },
           { kind: "text", path: "contact_channels.line_cta_label", label: "Label CTA LINE" },
           { kind: "textarea", path: "contact_channels.line_message_template", label: "Template pesan LINE" },
+          { kind: "textarea", path: "contact_channels.line_description", label: "Deskripsi LINE" },
           { kind: "text", path: "contact_channels.business_email", label: "Email bisnis", inputType: "email" },
           { kind: "text", path: "contact_channels.email_subject_template", label: "Template subject email" },
+          { kind: "textarea", path: "contact_channels.email_description", label: "Deskripsi email" },
+          { kind: "text", path: "contact_channels.form_cta_label", label: "Label tombol formulir" },
+        ],
+      },
+      {
+        key: "consultation_topics",
+        title: "Topik konsultasi",
+        classification: "recommended",
+        fields: [
+          {
+            kind: "array",
+            path: "consultation_topics",
+            label: "Topik konsultasi",
+            itemLabel: "Topik",
+            addLabel: "Tambah topik",
+            defaultItem: japanEmptyIconTitleDesc,
+            sortOrderField: "sort_order",
+            fields: japanIconTitleDescSortFields,
+          },
+        ],
+      },
+      {
+        key: "inquiry_form",
+        title: "Formulir inquiry",
+        classification: "required",
+        fields: [
+          { kind: "text", path: "inquiry_form.submit_label", label: "Label tombol kirim email" },
+          { kind: "textarea", path: "inquiry_form.consent_label", label: "Teks persetujuan" },
+          { kind: "textarea", path: "inquiry_form.response_note", label: "Catatan waktu respons" },
+        ],
+      },
+      {
+        key: "preparation_items",
+        title: "Informasi yang perlu disiapkan",
+        classification: "recommended",
+        fields: [
+          {
+            kind: "string-array",
+            path: "preparation_items",
+            label: "Informasi yang perlu disiapkan",
+            itemLabel: "Informasi",
+            addLabel: "Tambah informasi",
+            defaultItem: "",
+          },
         ],
       },
       {
@@ -2846,6 +2939,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Informasi bisnis",
         classification: "required",
         fields: [
+          { kind: "textarea", path: "business_info.description", label: "Deskripsi informasi bisnis" },
           { kind: "text", path: "business_info.business_hours", label: "Jam operasional" },
           {
             kind: "string-array",
@@ -2874,6 +2968,32 @@ export const PAGE_EDITOR_DEFINITIONS = {
             defaultItem: japanEmptyIconTitleDesc,
             sortOrderField: "sort_order",
             fields: japanIconTitleDescSortFields,
+          },
+        ],
+      },
+      {
+        key: "faqs",
+        title: "FAQ",
+        classification: "recommended",
+        fields: [
+          {
+            kind: "array",
+            path: "faqs",
+            label: "FAQ",
+            itemLabel: "FAQ",
+            addLabel: "Tambah FAQ",
+            defaultItem: {
+              question: "",
+              answer: "",
+              sort_order: 0,
+              is_enabled: true,
+            },
+            sortOrderField: "sort_order",
+            fields: [
+              { kind: "text", path: "question", label: "Pertanyaan" },
+              { kind: "textarea", path: "answer", label: "Jawaban" },
+              ...japanSortableFields,
+            ],
           },
         ],
       },

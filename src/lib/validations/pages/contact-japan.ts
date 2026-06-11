@@ -31,6 +31,23 @@ const inquiryFlowSchema = z
   })
   .passthrough();
 
+const contactCardSchema = z
+  .object({
+    icon_key: iconKeySchema,
+    title: optionalString(180),
+    description: optionalString(700),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
+const contactFaqSchema = z
+  .object({
+    question: optionalString(300),
+    answer: optionalString(1200),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
 const japanFinalCtaWithDocSchema = z
   .object({
     headline: optionalString(220),
@@ -61,17 +78,38 @@ export const contactJapanSchema = z
         line_official_account_id: optionalString(120),
         line_cta_label: optionalString(120),
         line_message_template: optionalString(600),
+        line_description: optionalString(500),
         business_email: optionalString(254),
         email_subject_template: optionalString(300),
+        email_description: optionalString(500),
+        form_cta_label: optionalString(120),
       })
       .passthrough()
       .default({
         line_official_account_id: "",
         line_cta_label: "",
         line_message_template: "",
+        line_description: "",
         business_email: "",
         email_subject_template: "",
+        email_description: "",
+        form_cta_label: "",
       }),
+    trust_points: z.array(contactCardSchema).default([]),
+    consultation_topics: z.array(contactCardSchema).default([]),
+    inquiry_form: z
+      .object({
+        submit_label: optionalString(120),
+        consent_label: optionalString(500),
+        response_note: optionalString(500),
+      })
+      .passthrough()
+      .default({
+        submit_label: "",
+        consent_label: "",
+        response_note: "",
+      }),
+    preparation_items: z.array(optionalString(300)).default([]),
     partnership_pic: z
       .object({
         name: optionalString(140),
@@ -88,6 +126,7 @@ export const contactJapanSchema = z
       }),
     business_info: z
       .object({
+        description: optionalString(700),
         business_hours: optionalString(300),
         language_support: z.array(optionalString(120)).default([]),
         address: optionalString(500),
@@ -96,6 +135,7 @@ export const contactJapanSchema = z
       })
       .passthrough()
       .default({
+        description: "",
         business_hours: "",
         language_support: [],
         address: "",
@@ -103,6 +143,7 @@ export const contactJapanSchema = z
         map_embed_url: "",
       }),
     inquiry_flow: z.array(inquiryFlowSchema).default([]),
+    faqs: z.array(contactFaqSchema).default([]),
     final_cta: japanFinalCtaWithDocSchema.default({
       headline: "",
       description: "",
