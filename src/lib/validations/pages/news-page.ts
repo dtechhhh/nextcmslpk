@@ -45,11 +45,13 @@ export const newsPageSchema = z
     }),
     filter_config: z
       .object({
+        enable_content_type_filter: z.boolean().default(true),
         enable_category_filter: z.boolean().default(true),
         enable_tag_filter: z.boolean().default(true),
       })
       .passthrough()
       .default({
+        enable_content_type_filter: true,
         enable_category_filter: true,
         enable_tag_filter: true,
       }),

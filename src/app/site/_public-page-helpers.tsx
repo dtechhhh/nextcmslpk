@@ -1213,13 +1213,64 @@ export async function renderJapanDetailPage(options: JapanDetailPageOptions) {
     return <JapanSectorDetailPage {...commonProps} />;
   }
 
-  const relatedMaxItems = numberValue(item.dataJson.related_max_items) || 3;
-  const relatedItems = await resolveCollectionList(context.variantId, "news", {
+  const relatedMaxItems = Math.min(numberValue(item.dataJson.related_max_items) || 3, 10);
+  const relatedSource = stringValue(item.dataJson.related_source) || "same_category";
+  const manualIds = Array.from(
+    new Set([
+      ...flatStringList(item.dataJson.manual_news_ids),
+      ...flatStringList(item.dataJson.related_articles),
+    ]),
+  );
+  const categoryId = stringValue(item.dataJson.category_option_id);
+  const tagIds = flatStringList(item.dataJson.tag_option_ids);
+  const primaryRelated =
+    relatedSource === "manual" && manualIds.length > 0
+      ? await resolveCollectionList(context.variantId, "news", {
+          source: "manual",
+          manualIds,
+          pageSize: relatedMaxItems + 1,
+        })
+      : relatedSource === "same_tags" && tagIds.length > 0
+        ? await resolveCollectionList(context.variantId, "news", {
+            filters: { tag: tagIds[0] },
+            pageSize: relatedMaxItems + 1,
+          })
+        : categoryId
+          ? await resolveCollectionList(context.variantId, "news", {
+              filters: { category: categoryId },
+              pageSize: relatedMaxItems + 1,
+            })
+          : await resolveCollectionList(context.variantId, "news", {
+              source: "latest_published",
+              pageSize: relatedMaxItems + 1,
+            });
+  const latestRelated = await resolveCollectionList(context.variantId, "news", {
     source: "latest_published",
     pageSize: relatedMaxItems + 1,
   });
+  const manualOrder = new Map(manualIds.map((id, index) => [id, index]));
+  const relatedItems = Array.from(
+    new Map(
+      [...primaryRelated.items, ...latestRelated.items]
+        .filter((related) => related.id !== item.id)
+        .map((related) => [related.id, related]),
+    ).values(),
+  );
 
-  return <JapanNewsDetailPage {...commonProps} relatedItems={relatedItems.items} />;
+  if (relatedSource === "manual") {
+    relatedItems.sort(
+      (a, b) =>
+        (manualOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+        (manualOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+    );
+  }
+
+  return (
+    <JapanNewsDetailPage
+      {...commonProps}
+      relatedItems={relatedItems.slice(0, relatedMaxItems)}
+    />
+  );
 }
 
 export async function renderTentangKami({ searchParams }: { searchParams: PageSearchParams }) {
@@ -3666,7 +3717,7 @@ function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
       ? [
           {
             key: "sector_category",
-            label: "Kategori Sektor",
+            label: "分野カテゴリー",
             optionSetKey: "japan_sector_category",
           },
         ]
@@ -3674,17 +3725,24 @@ function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
   }
 
   return [
+    booleanValue(filterConfig.enable_content_type_filter, true)
+      ? {
+          key: "content_type",
+          label: "記事タイプ",
+          optionSetKey: "japan_news_content_type",
+        }
+      : null,
     booleanValue(filterConfig.enable_category_filter, true)
       ? {
           key: "category",
-          label: "Kategori",
+          label: "カテゴリー",
           optionSetKey: "japan_news_category",
         }
       : null,
     booleanValue(filterConfig.enable_tag_filter, true)
       ? {
           key: "tag",
-          label: "Tag",
+          label: "タグ",
           optionSetKey: "japan_news_tag",
         }
       : null,

@@ -139,13 +139,20 @@ const variantSeeds = [
     pageKeys: PAGE_KEYS_JAPAN,
     configKeys: CONFIG_KEYS_JAPAN,
     optionSets: [
+      optionSet("japan_news_content_type", "Japan News Content Type", [
+        { value: "practical-guide", label: "実務ガイド" },
+        { value: "insight", label: "解説" },
+        { value: "case-study", label: "事例" },
+        { value: "report", label: "レポート" },
+        { value: "announcement", label: "お知らせ" },
+      ]),
       optionSet("japan_news_category", "Japan News Category", [
-        { value: "news", label: "Berita Umum" },
-        { value: "event", label: "Acara Kemitraan" },
-        { value: "notice", label: "Pengumuman" },
-        { value: "partner-visit", label: "Kunjungan Mitra" },
-        { value: "training-activity", label: "Aktivitas Pelatihan" },
-        { value: "candidate-dispatch", label: "Penempatan Kandidat" },
+        { value: "partnership-guide", label: "採用・受入れガイド" },
+        { value: "candidate-readiness", label: "候補者準備" },
+        { value: "quality-assurance", label: "選考・品質管理" },
+        { value: "compliance-support", label: "在留資格・受入れ支援" },
+        { value: "case-activity", label: "事例・活動報告" },
+        { value: "industry-insight", label: "人材・業界インサイト" },
       ]),
       optionSet("japan_news_tag", "Japan News Tag", []),
       optionSet("japan_sector_category", "Japan Sector Category", [

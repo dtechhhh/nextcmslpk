@@ -43,6 +43,26 @@ const relatedArticleIdsSchema = z.preprocess(
   z.array(z.string()).default([]),
 );
 
+const newsFactSchema = z
+  .object({
+    label: optionalString(120),
+    value: optionalString(240),
+    is_enabled: z.boolean().default(true),
+    sort_order: z.coerce.number().int().min(0).default(0),
+  })
+  .passthrough();
+
+const newsEvidenceSchema = z
+  .object({
+    title: optionalString(200),
+    description: optionalString(800),
+    source_label: optionalString(160),
+    source_url: optionalString(500),
+    is_enabled: z.boolean().default(true),
+    sort_order: z.coerce.number().int().min(0).default(0),
+  })
+  .passthrough();
+
 export {
   headingBlockSchema,
   imageBlockSchema,
@@ -67,11 +87,21 @@ export const newsSchema = z
     published_at: z.string().default(""),
     reading_time_label: optionalString(60),
     sort_order: z.coerce.number().int().min(0).default(0),
+    content_type_option_id: contentIdSchema,
     category_option_id: contentIdSchema,
     tag_option_ids: z.array(z.string()).default([]),
     author_name: optionalString(200),
     author_title: optionalString(200),
     author_image_id: mediaIdSchema,
+    partner_relevance: optionalString(1600),
+    key_takeaways: z.array(optionalString(300)).default([]),
+    key_facts: z.array(newsFactSchema).default([]),
+    evidence_items: z.array(newsEvidenceSchema).default([]),
+    reviewer_name: optionalString(200),
+    reviewer_title: optionalString(200),
+    reviewed_at: z.string().default(""),
+    article_cta_label: optionalString(120),
+    article_line_message_template: optionalString(600),
     content_blocks: z.array(contentBlock).default([]),
     related_source: z
       .enum(["same_category", "same_tags", "manual"])
@@ -96,11 +126,21 @@ export const newsDefaults: NewsData = {
   published_at: "",
   reading_time_label: "",
   sort_order: 0,
+  content_type_option_id: "",
   category_option_id: "",
   tag_option_ids: [],
   author_name: "",
   author_title: "",
   author_image_id: "",
+  partner_relevance: "",
+  key_takeaways: [],
+  key_facts: [],
+  evidence_items: [],
+  reviewer_name: "",
+  reviewer_title: "",
+  reviewed_at: "",
+  article_cta_label: "",
+  article_line_message_template: "",
   content_blocks: [],
   related_source: "same_category",
   manual_news_ids: [],

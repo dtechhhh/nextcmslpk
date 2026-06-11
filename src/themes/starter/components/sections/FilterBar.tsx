@@ -26,8 +26,8 @@ interface FilterBarProps {
 function FilterBar({ filters, currentValues, onFilterChange, variant = "indonesia" }: FilterBarProps) {
   const enabledFilters = filters.filter((filter) => filter.isEnabled)
   const hasActiveFilters = Object.values(currentValues).some(Boolean)
-  const allLabel = variant === "japan" ? "Semua" : "Semua"
-  const clearLabel = variant === "japan" ? "Bersihkan" : "Clear all"
+  const allLabel = variant === "japan" ? "すべて" : "Semua"
+  const clearLabel = variant === "japan" ? "クリア" : "Clear all"
 
   function updateFilter(key: string, value: string) {
     if (onFilterChange) {

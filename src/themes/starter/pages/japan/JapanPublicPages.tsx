@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Check, Mail, MessageCircle } from "lucide-react";
+import { Check, ExternalLink, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 
 import { normalizeActionLabel } from "@/lib/display-label";
 import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
@@ -41,6 +41,7 @@ import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
 import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
 import { TeamGrid } from "@/themes/starter/components/sections/TeamGrid";
 import { Timeline } from "@/themes/starter/components/sections/Timeline";
+import { JapanContactInquiryForm } from "@/themes/starter/pages/japan/JapanContactInquiryForm";
 
 type PublicPageData = {
   title: string;
@@ -510,7 +511,7 @@ export async function JapanSectorListPage({
         finalCta={record(data.final_cta)}
         globalConfig={globalConfig}
         tenantName={tenantName}
-        defaultHeadline="Temukan sektor yang sesuai dengan rencana rekrutmen"
+        defaultHeadline="採用計画に合う分野をご確認ください"
       />
     </>
   );
@@ -583,8 +584,8 @@ export async function JapanSectorDetailPage({
       <DetailHero item={item} />
       <CollectionDetail
         breadcrumb={[
-          { label: displayText(display, "breadcrumb_home_label", "Beranda"), href: "/" },
-          { label: displayText(display, "breadcrumb_sector_label", "Sektor"), href: "/sectors" },
+          { label: displayText(display, "breadcrumb_home_label", "ホーム"), href: "/" },
+          { label: displayText(display, "breadcrumb_sector_label", "対応分野"), href: "/sectors" },
           { label: item.title },
         ]}
         mainContent={<SectorDetailMain item={item} display={display} />}
@@ -622,6 +623,10 @@ export async function JapanNewsDetailPage({
     stringValue(item.dataJson.category_option_id),
     { variantId, optionSetKey: "japan_news_category" },
   );
+  const contentTypeOption = await resolveOptionLabel(
+    stringValue(item.dataJson.content_type_option_id),
+    { variantId, optionSetKey: "japan_news_content_type" },
+  );
   const tagOptions = await Promise.all(
     arrayOfStrings(item.dataJson.tag_option_ids).map((tagId) =>
       resolveOptionLabel(tagId, { variantId, optionSetKey: "japan_news_tag" }),
@@ -632,19 +637,67 @@ export async function JapanNewsDetailPage({
   const authorName = stringValue(item.dataJson.author_name);
   const authorTitle = stringValue(item.dataJson.author_title);
   const subtitle = getCollectionSubtitle(item);
+  const partnerRelevance = stringValue(item.dataJson.partner_relevance);
+  const keyTakeaways = arrayOfStrings(item.dataJson.key_takeaways);
+  const keyFacts = sortedRecords(item.dataJson.key_facts)
+    .filter((fact) => booleanValue(fact.is_enabled, true))
+    .map((fact) => ({
+      label: stringValue(fact.label),
+      value: stringValue(fact.value),
+    }))
+    .filter((fact) => fact.label && fact.value);
+  const evidenceItems = sortedRecords(item.dataJson.evidence_items)
+    .filter((evidence) => booleanValue(evidence.is_enabled, true))
+    .map((evidence) => ({
+      title: stringValue(evidence.title),
+      description: stringValue(evidence.description),
+      sourceLabel: stringValue(evidence.source_label),
+      sourceUrl: stringValue(evidence.source_url),
+    }))
+    .filter((evidence) => evidence.title || evidence.sourceUrl);
+  const reviewerName = stringValue(item.dataJson.reviewer_name);
+  const reviewerTitle = stringValue(item.dataJson.reviewer_title);
+  const reviewedAt = stringValue(item.dataJson.reviewed_at);
+  const readingTimeLabel = getNewsReadingTimeLabel(item);
+  const articleLineHref = getLineHref(
+    globalConfig,
+    tenantName,
+    stringValue(item.dataJson.article_line_message_template),
+    { news_title: item.title },
+  );
+  const articleCtaLabel =
+    stringValue(item.dataJson.article_cta_label) || "採用について相談する";
+  const jsonLd = buildNewsArticleJsonLd({
+    item,
+    tenantName,
+    authorName,
+    categoryLabel: categoryOption?.label,
+    tagLabels,
+  });
 
   return (
     <>
       <PreviewBanner isPreview={isPreview} />
-      <DetailHero item={item} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       <CollectionDetail
         breadcrumb={[
-          { label: displayText(display, "breadcrumb_home_label", "Beranda"), href: "/" },
-          { label: displayText(display, "breadcrumb_news_label", "Berita"), href: "/news" },
+          { label: displayText(display, "breadcrumb_home_label", "ホーム"), href: "/" },
+          { label: displayText(display, "breadcrumb_news_label", "お知らせ・コラム"), href: "/news" },
           { label: item.title },
         ]}
         mainContent={
           <article>
+            <div className="flex flex-wrap gap-2">
+              {contentTypeOption?.label ? (
+                <Badge variant="new_badge">{contentTypeOption.label}</Badge>
+              ) : null}
+              {categoryOption?.label ? (
+                <Badge variant="outline">{categoryOption.label}</Badge>
+              ) : null}
+            </div>
             <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">
               {item.title}
             </h1>
@@ -655,19 +708,14 @@ export async function JapanNewsDetailPage({
             ) : null}
             <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-neutral-500">
               {item.publishedAt ? <time>{formatDate(item.publishedAt)}</time> : null}
-              {stringValue(item.dataJson.reading_time_label) ? (
-                <span>{stringValue(item.dataJson.reading_time_label)}</span>
-              ) : null}
-              {categoryOption?.label ? (
-                <Badge variant="outline">{categoryOption.label}</Badge>
-              ) : null}
+              <span>{readingTimeLabel}</span>
               {tagLabels.map((tag) => (
                 <Badge key={tag} variant="outline">
                   {tag}
                 </Badge>
               ))}
               {isNewItem(item.publishedAt) ? (
-                <Badge variant="new_badge">{displayText(display, "new_badge_label", "Baru")}</Badge>
+                <Badge variant="new_badge">{displayText(display, "new_badge_label", "新着")}</Badge>
               ) : null}
             </div>
             {authorName || authorImageUrl ? (
@@ -693,21 +741,91 @@ export async function JapanNewsDetailPage({
                 </div>
               </div>
             ) : null}
-            {item.excerpt ? (
-              <p className="mt-5 text-lg leading-8 text-neutral-600">{item.excerpt}</p>
+            {item.thumbnailSrc ? (
+              <div className="relative mt-8 aspect-video overflow-hidden rounded-lg bg-neutral-100">
+                <Image
+                  src={item.thumbnailSrc}
+                  alt={item.title}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 66vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
             ) : null}
-            <div className="mt-8">
+            {item.excerpt || partnerRelevance ? (
+              <section className="mt-8 border-l-4 border-primary-500 bg-neutral-50 px-5 py-5">
+                <h2 className="text-lg font-bold text-neutral-950">概要</h2>
+                {item.excerpt ? (
+                  <p className="mt-3 text-base leading-8 text-neutral-700">{item.excerpt}</p>
+                ) : null}
+                {partnerRelevance ? (
+                  <>
+                    <h3 className="mt-5 text-sm font-bold text-neutral-950">受入企業様へのポイント</h3>
+                    <p className="mt-2 text-sm leading-7 text-neutral-600">{partnerRelevance}</p>
+                  </>
+                ) : null}
+              </section>
+            ) : null}
+            <div className="mt-10">
               <ContentBlocks variant="japan" blocks={blocks} />
             </div>
+            {evidenceItems.length > 0 ? (
+              <section className="mt-12 border-t border-neutral-200 pt-8">
+                <h2 className="text-2xl font-bold text-neutral-950">参考資料・根拠</h2>
+                <div className="mt-5 space-y-5">
+                  {evidenceItems.map((evidence, index) => (
+                    <div key={`${evidence.title}-${index}`}>
+                      {evidence.title ? (
+                        <h3 className="font-bold text-neutral-900">{evidence.title}</h3>
+                      ) : null}
+                      {evidence.description ? (
+                        <p className="mt-2 text-sm leading-7 text-neutral-600">
+                          {evidence.description}
+                        </p>
+                      ) : null}
+                      {evidence.sourceUrl ? (
+                        <a
+                          href={evidence.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
+                        >
+                          {evidence.sourceLabel || "公式情報を確認する"}
+                          <ExternalLink aria-hidden="true" className="size-4" />
+                        </a>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+            {reviewerName || reviewedAt ? (
+              <div className="mt-10 flex items-start gap-3 border-t border-neutral-200 pt-6 text-sm text-neutral-600">
+                <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary-600" />
+                <p>
+                  内容確認: {[reviewerName, reviewerTitle].filter(Boolean).join(" / ")}
+                  {reviewedAt ? `（${formatDate(reviewedAt)}確認）` : ""}
+                </p>
+              </div>
+            ) : null}
           </article>
+        }
+        sidebar={
+          <NewsArticleSidebar
+            keyTakeaways={keyTakeaways}
+            keyFacts={keyFacts}
+            lineHref={articleLineHref}
+            ctaLabel={articleCtaLabel}
+          />
         }
       />
       <RelatedItems
-        title={displayText(display, "related_news_title", "Berita Terkait")}
+        title={displayText(display, "related_news_title", "関連記事")}
         variant="japan"
         items={relatedItems
           .filter((related) => related.slug !== item.slug)
-          .slice(0, 3)
+          .slice(0, 10)
           .map((related) => ({
             title: related.title,
             excerpt: related.excerpt,
@@ -721,10 +839,121 @@ export async function JapanNewsDetailPage({
   );
 }
 
+function NewsArticleSidebar({
+  keyTakeaways,
+  keyFacts,
+  lineHref,
+  ctaLabel,
+}: {
+  keyTakeaways: string[];
+  keyFacts: Array<{ label: string; value: string }>;
+  lineHref?: string;
+  ctaLabel: string;
+}) {
+  if (keyTakeaways.length === 0 && keyFacts.length === 0 && !lineHref) {
+    return null;
+  }
+
+  return (
+    <Card variant="japan" className="p-5">
+      <CardContent className="p-0">
+        {keyTakeaways.length > 0 ? (
+          <section>
+            <h2 className="text-lg font-bold text-neutral-950">この記事の要点</h2>
+            <ul className="mt-4 space-y-3">
+              {keyTakeaways.map((takeaway) => (
+                <li key={takeaway} className="flex gap-3 text-sm leading-6 text-neutral-700">
+                  <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-primary-600" />
+                  <span>{takeaway}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {keyFacts.length > 0 ? (
+          <dl className="mt-6 space-y-3 border-t border-neutral-200 pt-5">
+            {keyFacts.map((fact) => (
+              <div key={`${fact.label}-${fact.value}`}>
+                <dt className="text-xs font-semibold text-neutral-500">{fact.label}</dt>
+                <dd className="mt-1 text-sm font-semibold leading-6 text-neutral-900">
+                  {fact.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+
+        {lineHref ? (
+          <Button
+            render={<a href={lineHref} />}
+            variant="line"
+            className="mt-6 w-full"
+          >
+            <MessageCircle aria-hidden="true" className="size-4" />
+            {ctaLabel}
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function buildNewsArticleJsonLd({
+  item,
+  tenantName,
+  authorName,
+  categoryLabel,
+  tagLabels,
+}: {
+  item: PublicCollectionItem;
+  tenantName: string;
+  authorName: string;
+  categoryLabel?: string;
+  tagLabels: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: item.title,
+    description: item.excerpt,
+    image: item.heroSrc || item.thumbnailSrc,
+    datePublished: item.publishedAt,
+    dateModified: item.updatedAt || item.publishedAt,
+    articleSection: categoryLabel,
+    keywords: tagLabels.join(", ") || undefined,
+    author: authorName
+      ? { "@type": "Person", name: authorName }
+      : { "@type": "Organization", name: tenantName },
+    publisher: { "@type": "Organization", name: tenantName },
+    isAccessibleForFree: true,
+  };
+}
+
+function getNewsReadingTimeLabel(item: PublicCollectionItem) {
+  const configured = stringValue(item.dataJson.reading_time_label);
+
+  if (configured) {
+    return configured;
+  }
+
+  const contentLength = arrayOfRecords(item.dataJson.content_blocks).reduce(
+    (total, block) => {
+      const data = record(block.data);
+      return total + stringValue(data.text).length + stringValue(data.caption).length;
+    },
+    item.excerpt?.length ?? 0,
+  );
+  const minutes = Math.max(1, Math.ceil(contentLength / 500));
+
+  return `約${minutes}分`;
+}
+
 export async function JapanContactPage(props: JapanPageProps) {
   const data = props.page.dataJson;
   const display = record(data.display_text);
   const channels = record(data.contact_channels);
+  const inquiryForm = record(data.inquiry_form);
   const partnershipPic = record(data.partnership_pic);
   const businessInfo = record(data.business_info);
   const globalLineContact = record(props.globalConfig.line_business_contact);
@@ -752,27 +981,101 @@ export async function JapanContactPage(props: JapanPageProps) {
       : arrayOfStrings(globalBusinessInfo.language_support);
   const lineCtaLabel =
     stringValue(channels.line_cta_label) ||
-    displayText(display, "line_cta_label", "Hubungi via LINE");
+    displayText(display, "line_cta_label", "LINEで相談する");
+  const contactFaqs = sortedRecords(data.faqs).map((faq, index) => ({
+    question: stringValue(faq.question),
+    answer: stringValue(faq.answer),
+    sortOrder: numberValue(faq.sort_order) ?? index,
+    isEnabled: booleanValue(faq.is_enabled, true),
+  }));
 
   return (
     <>
       <PreviewBanner isPreview={props.isPreview} />
-      <JapanHero
+      <JapanContactHero
         hero={record(data.hero)}
         pageTitle={props.page.title}
-        globalConfig={props.globalConfig}
-        tenantName={props.tenantName}
-      />
-      <ContactChannels
         lineHref={lineHref}
         lineLabel={lineCtaLabel}
+        formLabel={stringValue(channels.form_cta_label) || "お問い合わせフォーム"}
+      />
+      <ContactTrustStrip items={sortedRecords(data.trust_points)} />
+      <ContactChannels
+        title={displayText(display, "contact_channels_title", "ご希望の方法でお問い合わせください")}
+        description={displayText(
+          display,
+          "contact_channels_description",
+          "ご相談内容やお急ぎの度合いに合わせて、LINE、メール、またはお問い合わせフォームをご利用ください。",
+        )}
+        lineHref={lineHref}
+        lineLabel={lineCtaLabel}
+        lineDescription={
+          stringValue(channels.line_description) ||
+          "お急ぎの方や、まずは簡単に相談したい方におすすめです。"
+        }
         email={contactEmail}
         emailSubject={emailSubject}
+        emailDescription={
+          stringValue(channels.email_description) ||
+          "資料の添付や、社内関係者を含むご連絡にご利用ください。"
+        }
+        formLabel={stringValue(channels.form_cta_label) || "フォームに入力する"}
+      />
+      <ContactConsultationTopics
+        title={displayText(display, "consultation_topics_title", "このようなご相談を承ります")}
+        description={displayText(
+          display,
+          "consultation_topics_description",
+          "採用条件がまだ確定していない段階でも、必要な情報を整理しながらご相談いただけます。",
+        )}
+        items={sortedRecords(data.consultation_topics)}
+      />
+      <ContactInquirySection
+        title={displayText(display, "inquiry_form_title", "採用について相談する")}
+        description={displayText(
+          display,
+          "inquiry_form_description",
+          "分かる範囲でご入力ください。入力内容をもとにメールが作成されます。",
+        )}
+        preparationTitle={displayText(
+          display,
+          "preparation_title",
+          "ご相談時にお知らせいただきたい事項",
+        )}
+        preparationDescription={displayText(
+          display,
+          "preparation_description",
+          "すべて決まっている必要はありません。現時点で分かる内容だけでご相談いただけます。",
+        )}
+        preparationItems={arrayOfStrings(data.preparation_items)}
+        email={contactEmail}
+        emailSubject={emailSubject || "インドネシア人材採用に関するお問い合わせ"}
+        submitLabel={stringValue(inquiryForm.submit_label) || "入力内容をメールで送信する"}
+        consentLabel={
+          stringValue(inquiryForm.consent_label) ||
+          "入力内容および個人情報の取り扱いに同意します。"
+        }
+        responseNote={
+          stringValue(inquiryForm.response_note) ||
+          "営業時間内に内容を確認し、担当者より順次ご連絡します。"
+        }
+      />
+      <StepFlow
+        title={displayText(display, "inquiry_flow_title", "お問い合わせからご提案まで")}
+        items={sortedRecords(data.inquiry_flow).map((item, index) => ({
+          iconKey: stringValue(item.icon_key) || "check",
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
       />
       <PartnershipPic config={partnershipPic} />
       <ContactInfo
-        headline={displayText(display, "business_info_title", "Informasi Bisnis")}
-        description={stringValue(globalContactNote.short_note)}
+        headline={displayText(display, "business_info_title", "会社・窓口情報")}
+        description={
+          stringValue(businessInfo.description) || stringValue(globalContactNote.short_note)
+        }
         phone={stringValue(globalBusinessInfo.phone_label)}
         email={contactEmail}
         emailSubject={emailSubject}
@@ -791,23 +1094,86 @@ export async function JapanContactPage(props: JapanPageProps) {
         ctaHref={lineHref}
         ctaVariant="line"
       />
-      <StepFlow
-        title={displayText(display, "inquiry_flow_title", "Alur Kontak")}
-        items={sortedRecords(data.inquiry_flow).map((item, index) => ({
-          iconKey: stringValue(item.icon_key) || "check",
-          title: stringValue(item.title),
-          description: stringValue(item.description),
-          sortOrder: numberValue(item.sort_order) ?? index,
-          isEnabled: booleanValue(item.is_enabled, true),
-        }))}
+      <FAQ
+        title={displayText(display, "faq_title", "よくあるご質問")}
+        items={contactFaqs}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Mulai percakapan kemitraan bersama tim kami"
+        defaultHeadline="インドネシア人材の採用について、まずはご相談ください"
       />
     </>
+  );
+}
+
+async function JapanContactHero({
+  hero,
+  pageTitle,
+  lineHref,
+  lineLabel,
+  formLabel,
+}: {
+  hero: PublicJson;
+  pageTitle: string;
+  lineHref?: string;
+  lineLabel: string;
+  formLabel: string;
+}) {
+  const headline =
+    stringValue(hero.headline) ||
+    "採用計画に合ったインドネシア人材をご提案します";
+  const subheadline =
+    stringValue(hero.subheadline) ||
+    "特定技能を中心に、候補者のご紹介、日本語・職業教育、面接調整、入国前準備まで一貫してサポートします。まずは貴社の採用課題をお聞かせください。";
+  const eyebrowLabel =
+    stringValue(hero.eyebrow_label) ||
+    "インドネシア人材の採用をご検討の企業様へ";
+  const mediaId = stringValue(hero.media_id);
+  const mediaSrc = await resolveMediaUrl(mediaId);
+
+  return (
+    <section className="relative flex min-h-[420px] items-center overflow-hidden bg-primary-700 py-16 text-white md:min-h-[460px] md:py-20">
+      {mediaSrc ? (
+        <>
+          <Image
+            src={mediaSrc}
+            alt={stringValue(hero.headline) || pageTitle}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-neutral-950/65" />
+        </>
+      ) : null}
+      <Container className="relative z-10">
+        <p className="text-sm font-semibold text-white/75">{eyebrowLabel}</p>
+        <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+          {headline}
+        </h1>
+        <p className="mt-5 max-w-3xl text-base leading-8 text-white/85 md:text-lg">
+          {subheadline}
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button render={<a href="#contact-inquiry" />} size="lg" className="w-full sm:w-auto">
+            {formLabel}
+          </Button>
+          {lineHref ? (
+            <Button
+              render={<a href={lineHref} />}
+              size="lg"
+              variant="line"
+              className="w-full sm:w-auto"
+            >
+              <MessageCircle aria-hidden="true" className="size-4" />
+              {lineLabel}
+            </Button>
+          ) : null}
+        </div>
+      </Container>
+    </section>
   );
 }
 
@@ -2171,7 +2537,7 @@ function JapanCollectionList({
           <FilterBar filters={filters} currentValues={currentFilters} variant="japan" />
         ) : null}
         <div className="mb-6 text-sm text-neutral-500">
-          Menampilkan {startItem}-{endItem} dari {collection.total} data
+          全{collection.total}件中 {startItem}-{endItem}件を表示
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {collection.items.map((item) => {
@@ -2275,9 +2641,9 @@ function JapanCollectionList({
 
 function getSectorCardFacts(item: PublicCollectionItem) {
   return [
-    { label: "Jalur", value: stringValue(item.dataJson.pathway_label) },
-    { label: "Bahasa", value: stringValue(item.dataJson.language_target_label) },
-    { label: "Siap interview", value: stringValue(item.dataJson.readiness_lead_time_label) },
+    { label: "在留資格", value: stringValue(item.dataJson.pathway_label) },
+    { label: "日本語", value: stringValue(item.dataJson.language_target_label) },
+    { label: "候補者提案", value: stringValue(item.dataJson.readiness_lead_time_label) },
   ].filter((fact) => fact.value);
 }
 
@@ -2287,13 +2653,15 @@ function getJapanCardLabels(
   filters: FilterBarFilter[],
 ) {
   if (kind === "news") {
+    const contentTypeId = stringValue(item.dataJson.content_type_option_id);
+    const contentTypeLabel = getFilterOptionLabel(filters, "content_type", contentTypeId);
     const categoryId = stringValue(item.dataJson.category_option_id);
     const categoryLabel = getFilterOptionLabel(filters, "category", categoryId);
     const tagLabels = arrayOfStrings(item.dataJson.tag_option_ids)
       .map((tagId) => getFilterOptionLabel(filters, "tag", tagId))
       .filter(Boolean);
 
-    return [categoryLabel, ...tagLabels].filter(Boolean).slice(0, 3);
+    return [contentTypeLabel, categoryLabel, ...tagLabels].filter(Boolean).slice(0, 3);
   }
 
   const categoryId = stringValue(item.dataJson.sector_category_option_id);
@@ -2382,50 +2750,50 @@ async function SectorDetailMain({
       <SectorPositionCompetencies items={positions} />
       <SectorCurriculumModules items={curriculumModules} />
       <SectorMediaGrid
-        title="Fasilitas dan Alat Praktik"
-        description="Media berikut menunjukkan contoh lingkungan, alat, dan simulasi yang digunakan untuk membangun kompetensi kerja."
+        title="分野・選考イメージ"
+        description="掲載画像は分野イメージです。実際の教育内容、選考方法、候補者情報は採用案件ごとにご案内します。"
         items={facilities}
       />
       <SectorCandidateSnapshots items={candidates} />
       <InlineCardSet
-        title="Quality Assurance"
+        title="選考品質の考え方"
         items={sortedRecords(data.quality_assurance_items)}
       />
       <InlineCardSet
-        title="Dukungan Penempatan"
+        title="採用・入社準備サポート"
         items={sortedRecords(data.placement_support_items)}
       />
       <SectorMediaGrid
-        title="Bukti Pelatihan"
-        description="Contoh dokumentasi aktivitas, hasil praktik, dan evaluasi yang dapat dibahas lebih lanjut bersama mitra."
+        title="教育・評価資料"
+        description="教育内容や評価資料は、求人条件と選考方針を確認したうえで個別にご案内します。"
         items={evidence}
       />
       {!hasCapabilityDossier ? (
         <>
           <InlineCardSet
-            title={displayText(display, "suitability_title", "Kesesuaian")}
+            title={displayText(display, "suitability_title", "対応方針")}
             items={sortedRecords(data.suitability_items)}
           />
           <InlineCardSet
-            title={displayText(display, "example_positions_title", "Contoh Posisi")}
+            title={displayText(display, "example_positions_title", "主な職種")}
             items={sortedRecords(data.example_positions)}
           />
           <InlineCardSet
-            title={displayText(display, "training_alignment_title", "Keterkaitan Pelatihan")}
+            title={displayText(display, "training_alignment_title", "教育内容")}
             items={sortedRecords(data.training_alignment_items)}
           />
         </>
       ) : null}
       <RequirementList
-        title={displayText(display, "requirements_title", "Kriteria Awal Kandidat")}
+        title={displayText(display, "requirements_title", "ご相談時にお知らせいただきたい事項")}
         items={arrayOfStrings(data.candidate_requirements)}
       />
       <StepFlow
-        title={displayText(display, "process_title", "Proses")}
+        title={displayText(display, "process_title", "採用支援の流れ")}
         items={sortedRecords(data.process_items).map(toStepItem)}
       />
       <FAQ
-        title={displayText(display, "faq_title", "Pertanyaan Umum")}
+        title={displayText(display, "faq_title", "よくあるご質問")}
         items={sortedRecords(data.faqs).map((faq, index) => ({
           question: stringValue(faq.question),
           answer: stringValue(faq.answer),
@@ -2447,10 +2815,10 @@ function SectorCapabilitySummary({
   data: PublicJson;
 }) {
   const summaryFacts = [
-    { label: "Jalur penempatan", value: stringValue(data.pathway_label) },
-    { label: "Target bahasa", value: stringValue(data.language_target_label) },
-    { label: "Tes keterampilan", value: stringValue(data.skill_test_label) },
-    { label: "Siap wawancara", value: stringValue(data.readiness_lead_time_label) },
+    { label: "在留資格", value: stringValue(data.pathway_label) },
+    { label: "日本語要件", value: stringValue(data.language_target_label) },
+    { label: "技能要件", value: stringValue(data.skill_test_label) },
+    { label: "候補者提案", value: stringValue(data.readiness_lead_time_label) },
   ].filter((fact) => fact.value);
   const referenceUrl = stringValue(data.reference_url);
 
@@ -2467,7 +2835,7 @@ function SectorCapabilitySummary({
         ) : null}
       </div>
       <h2 className="mt-4 text-3xl font-bold leading-tight text-neutral-950 md:text-4xl">
-        Kapabilitas Pelatihan {item.title}
+        {item.title}分野の採用・人材育成支援
       </h2>
       {item.excerpt ? (
         <p className="mt-4 text-lg leading-8 text-neutral-600">{item.excerpt}</p>
@@ -2521,7 +2889,7 @@ function SectorCapabilitySummary({
           rel="noreferrer"
           className="mt-5 inline-flex text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
-          Lihat referensi resmi bidang dan persyaratan terkait
+          出入国在留管理庁の公式情報を確認する
         </a>
       ) : null}
     </section>
@@ -2535,24 +2903,24 @@ function SectorPositionCompetencies({ items }: { items: PublicJson[] }) {
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-neutral-950">Posisi dan Standar Kompetensi</h2>
+      <h2 className="text-2xl font-bold text-neutral-950">対象業務と選考時の確認項目</h2>
       <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">
-        Setiap posisi dipecah menjadi tugas nyata, keterampilan praktik, alat kerja, keselamatan, dan standar kelulusan.
+        受入企業様の職務内容をもとに、候補者の経験、日本語力、適性、安全意識を確認します。
       </p>
       <div className="mt-6 space-y-4">
         {items.map((position, index) => {
           const details = [
-            { label: "Tugas utama", value: stringValue(position.duties) },
-            { label: "Kompetensi praktik", value: stringValue(position.practical_skills) },
-            { label: "Alat yang dikuasai", value: stringValue(position.tools_equipment) },
-            { label: "Fokus keselamatan", value: stringValue(position.safety_focus) },
-            { label: "Standar kelulusan", value: stringValue(position.pass_standard) },
+            { label: "主な業務", value: stringValue(position.duties) },
+            { label: "事前確認項目", value: stringValue(position.practical_skills) },
+            { label: "設備・職務条件", value: stringValue(position.tools_equipment) },
+            { label: "安全・品質", value: stringValue(position.safety_focus) },
+            { label: "選考基準", value: stringValue(position.pass_standard) },
           ].filter((detail) => detail.value);
 
           return (
             <div key={`${stringValue(position.title)}-${index}`} className="rounded-lg border border-neutral-200 p-5">
               <h3 className="text-lg font-bold text-neutral-950">
-                {stringValue(position.title) || `Posisi ${index + 1}`}
+                {stringValue(position.title) || `職種 ${index + 1}`}
               </h3>
               <dl className="mt-5 grid gap-5 md:grid-cols-2">
                 {details.map((detail) => (
@@ -2581,13 +2949,13 @@ function SectorCurriculumModules({ items }: { items: PublicJson[] }) {
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-neutral-950">Matriks Kurikulum Praktik</h2>
+      <h2 className="text-2xl font-bold text-neutral-950">日本語教育・入社前準備</h2>
       <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200">
         <div className="hidden grid-cols-[1.2fr_0.55fr_0.55fr_1fr] gap-4 bg-neutral-100 px-5 py-3 text-xs font-semibold uppercase tracking-normal text-neutral-500 md:grid">
-          <span>Modul</span>
-          <span>Teori</span>
-          <span>Praktik</span>
-          <span>Evaluasi</span>
+          <span>教育・確認項目</span>
+          <span>基礎</span>
+          <span>実践</span>
+          <span>確認方法</span>
         </div>
         <div className="divide-y divide-neutral-200">
           {items.map((module, index) => (
@@ -2603,9 +2971,9 @@ function SectorCurriculumModules({ items }: { items: PublicJson[] }) {
                   </p>
                 ) : null}
               </div>
-              <CurriculumValue label="Teori" value={stringValue(module.theory_hours_label)} />
-              <CurriculumValue label="Praktik" value={stringValue(module.practical_hours_label)} />
-              <CurriculumValue label="Evaluasi" value={stringValue(module.evaluation_method)} />
+              <CurriculumValue label="基礎" value={stringValue(module.theory_hours_label)} />
+              <CurriculumValue label="実践" value={stringValue(module.practical_hours_label)} />
+              <CurriculumValue label="確認方法" value={stringValue(module.evaluation_method)} />
             </div>
           ))}
         </div>
@@ -2680,9 +3048,9 @@ function SectorCandidateSnapshots({ items }: { items: SectorCandidateSnapshot[] 
 
   return (
     <section>
-      <h2 className="text-2xl font-bold text-neutral-950">Contoh Kandidat Anonim</h2>
+      <h2 className="text-2xl font-bold text-neutral-950">候補者プロフィール例</h2>
       <p className="mt-3 text-sm leading-6 text-neutral-600">
-        Profil berikut adalah contoh format shortlist yang dapat disesuaikan dengan kebutuhan lowongan mitra.
+        実際の候補者情報は、求人条件を確認したうえで個別にご案内します。
       </p>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         {items.map((candidate, index) => (
@@ -2707,10 +3075,10 @@ function SectorCandidateSnapshots({ items }: { items: SectorCandidateSnapshot[] 
               </div>
             </div>
             <dl className="mt-5 grid gap-3 text-sm">
-              <CandidateFact label="Bahasa" value={candidate.languageLabel} />
-              <CandidateFact label="Kompetensi" value={candidate.skillStatusLabel} />
-              <CandidateFact label="Pengalaman" value={candidate.experienceLabel} />
-              <CandidateFact label="Ketersediaan" value={candidate.availabilityLabel} />
+              <CandidateFact label="日本語" value={candidate.languageLabel} />
+              <CandidateFact label="技能" value={candidate.skillStatusLabel} />
+              <CandidateFact label="経験" value={candidate.experienceLabel} />
+              <CandidateFact label="選考状況" value={candidate.availabilityLabel} />
             </dl>
           </div>
         ))}
@@ -2745,22 +3113,22 @@ function SectorSidebar({
 }) {
   const data = item.dataJson;
   const quickFacts = [
-    { label: "Jalur", value: stringValue(data.pathway_label) },
-    { label: "Bahasa", value: stringValue(data.language_target_label) },
-    { label: "Kesiapan", value: stringValue(data.readiness_lead_time_label) },
+    { label: "在留資格", value: stringValue(data.pathway_label) },
+    { label: "日本語", value: stringValue(data.language_target_label) },
+    { label: "ご提案", value: stringValue(data.readiness_lead_time_label) },
   ].filter((fact) => fact.value);
 
   return (
     <Card variant="japan" className="p-5">
       <CardContent className="p-0">
         <h2 className="text-lg font-semibold text-neutral-900">
-          {displayText(display, "sidebar_title", "Kontak Kemitraan")}
+          {displayText(display, "sidebar_title", "採用に関するご相談")}
         </h2>
         <p className="mt-3 text-sm leading-6 text-neutral-600">
           {displayText(
             display,
             "sidebar_description",
-            "Konsultasikan ketersediaan kandidat, kesesuaian pelatihan, dan kebutuhan dokumen untuk sektor ini.",
+            "職種、人数、勤務地、必要な日本語力、希望時期をお知らせください。選考の進め方をご案内します。",
           )}
         </p>
         {quickFacts.length > 0 ? (
@@ -2777,7 +3145,7 @@ function SectorSidebar({
           <Button render={<a href={lineHref} />} variant="line" className="mt-6 w-full">
           <MessageCircle aria-hidden="true" className="size-4" />
           {stringValue(data.primary_cta_label) ||
-            displayText(display, "detail_primary_cta_label", "Hubungi via LINE")}
+            displayText(display, "detail_primary_cta_label", "LINEで相談する")}
           </Button>
         ) : null}
         {documentUrl ? (
@@ -2785,7 +3153,7 @@ function SectorSidebar({
             <DocumentDownload
               label={
                 stringValue(data.secondary_cta_label) ||
-                displayText(display, "detail_secondary_cta_label", "Unduh Materi")
+                displayText(display, "detail_secondary_cta_label", "資料を確認する")
               }
               fileUrl={documentUrl}
               fallbackLabel={JAPAN_DOWNLOAD_LABEL}
@@ -2850,16 +3218,65 @@ function RequirementList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
+function ContactTrustStrip({ items }: { items: PublicJson[] }) {
+  const visibleItems = items.filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) || stringValue(item.description)),
+  );
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="border-y border-neutral-200 bg-white">
+      <Container>
+        <div className="grid divide-y divide-neutral-200 md:grid-cols-3 md:divide-x md:divide-y-0">
+          {visibleItems.slice(0, 3).map((item, index) => {
+            const iconKey = stringValue(item.icon_key) || "shield_check";
+            const Icon = ICON_REGISTRY[iconKey as IconKey] ?? ShieldCheck;
+
+            return (
+              <div key={`${stringValue(item.title)}-${index}`} className="flex gap-4 py-6 md:px-6 first:md:pl-0 last:md:pr-0">
+                <Icon aria-hidden="true" className="mt-1 size-6 shrink-0 text-primary-600" />
+                <div>
+                  <h2 className="font-bold text-neutral-900">{stringValue(item.title)}</h2>
+                  {stringValue(item.description) ? (
+                    <p className="mt-1 text-sm leading-6 text-neutral-600">
+                      {stringValue(item.description)}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function ContactChannels({
+  title,
+  description,
   lineHref,
   lineLabel,
+  lineDescription,
   email,
   emailSubject,
+  emailDescription,
+  formLabel,
 }: {
+  title: string;
+  description: string;
   lineHref?: string;
   lineLabel: string;
+  lineDescription: string;
   email?: string;
   emailSubject?: string;
+  emailDescription: string;
+  formLabel: string;
 }) {
   if (!lineHref && !email) {
     return null;
@@ -2868,23 +3285,29 @@ function ContactChannels({
   return (
     <section className="bg-white py-16 md:py-20 lg:py-24">
       <Container>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">{title}</h2>
+          <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">{description}</p>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-3">
           {lineHref ? (
-            <Card variant="japan" className="p-6">
-              <CardContent className="p-0">
+            <Card variant="japan" className="h-full p-6">
+              <CardContent className="flex h-full flex-col p-0">
                 <MessageCircle aria-hidden="true" className="size-8 text-[var(--color-cta)]" />
                 <h2 className="mt-4 text-2xl font-bold text-neutral-900">LINE</h2>
-                <Button render={<a href={lineHref} />} variant="line" className="mt-6">
+                <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{lineDescription}</p>
+                <Button render={<a href={lineHref} />} variant="line" className="mt-6 w-full">
                   {lineLabel}
                 </Button>
               </CardContent>
             </Card>
           ) : null}
           {email ? (
-            <Card variant="japan" className="p-6">
-              <CardContent className="p-0">
+            <Card variant="japan" className="h-full p-6">
+              <CardContent className="flex h-full flex-col p-0">
                 <Mail aria-hidden="true" className="size-8 text-primary-500" />
-                <h2 className="mt-4 text-2xl font-bold text-neutral-900">Email</h2>
+                <h2 className="mt-4 text-2xl font-bold text-neutral-900">メール</h2>
+                <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{emailDescription}</p>
                 <Button
                   render={
                     <a
@@ -2894,13 +3317,140 @@ function ContactChannels({
                     />
                   }
                   variant="outline"
-                  className="mt-6"
+                  className="mt-6 w-full"
                 >
-                  {email}
+                  メールを送る
                 </Button>
               </CardContent>
             </Card>
           ) : null}
+          <Card variant="japan" className="h-full p-6">
+            <CardContent className="flex h-full flex-col p-0">
+              <ShieldCheck aria-hidden="true" className="size-8 text-primary-500" />
+              <h2 className="mt-4 text-2xl font-bold text-neutral-900">お問い合わせフォーム</h2>
+              <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">
+                採用条件、希望人数、採用時期などを整理してお送りいただけます。
+              </p>
+              <Button render={<a href="#contact-inquiry" />} className="mt-6 w-full">
+                {formLabel}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function ContactConsultationTopics({
+  title,
+  description,
+  items,
+}: {
+  title: string;
+  description: string;
+  items: PublicJson[];
+}) {
+  const visibleItems = items.filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) || stringValue(item.description)),
+  );
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">{title}</h2>
+          <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">{description}</p>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {visibleItems.map((item, index) => {
+            const iconKey = stringValue(item.icon_key) || "check";
+            const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+
+            return (
+              <div key={`${stringValue(item.title)}-${index}`} className="rounded-lg border border-neutral-200 bg-white p-5">
+                <Icon aria-hidden="true" className="size-6 text-primary-600" />
+                <h3 className="mt-4 text-lg font-bold text-neutral-900">{stringValue(item.title)}</h3>
+                {stringValue(item.description) ? (
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    {stringValue(item.description)}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function ContactInquirySection({
+  title,
+  description,
+  preparationTitle,
+  preparationDescription,
+  preparationItems,
+  email,
+  emailSubject,
+  submitLabel,
+  consentLabel,
+  responseNote,
+}: {
+  title: string;
+  description: string;
+  preparationTitle: string;
+  preparationDescription: string;
+  preparationItems: string[];
+  email?: string;
+  emailSubject: string;
+  submitLabel: string;
+  consentLabel: string;
+  responseNote: string;
+}) {
+  if (!email) {
+    return null;
+  }
+
+  return (
+    <section id="contact-inquiry" className="scroll-mt-28 bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)] lg:items-start">
+          <div>
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">{title}</h2>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+            <div className="mt-8">
+              <JapanContactInquiryForm
+                email={email}
+                emailSubject={emailSubject}
+                submitLabel={submitLabel}
+                consentLabel={consentLabel}
+                responseNote={responseNote}
+              />
+            </div>
+          </div>
+          <aside className="rounded-lg bg-primary-700 p-6 text-white md:p-8">
+            <h3 className="text-2xl font-bold">{preparationTitle}</h3>
+            <p className="mt-3 text-sm leading-7 text-white/75">{preparationDescription}</p>
+            {preparationItems.length > 0 ? (
+              <ul className="mt-6 space-y-4">
+                {preparationItems.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm leading-6 text-white/90">
+                    <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-red-300" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </aside>
         </div>
       </Container>
     </section>
