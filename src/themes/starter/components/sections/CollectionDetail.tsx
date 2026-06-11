@@ -48,8 +48,8 @@ function CollectionDetail({
           </nav>
         ) : null}
 
-        <div className="grid gap-10 lg:grid-cols-3">
-          <main className="min-w-0 lg:col-span-2">{mainContent}</main>
+        <div className={sidebar ? "grid gap-10 lg:grid-cols-3" : "mx-auto max-w-4xl"}>
+          <main className={sidebar ? "min-w-0 lg:col-span-2" : "min-w-0"}>{mainContent}</main>
           {sidebar ? (
             <aside className="lg:col-span-1">
               <div className="lg:sticky lg:top-8">{sidebar}</div>

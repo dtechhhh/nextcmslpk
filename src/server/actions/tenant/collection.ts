@@ -1098,6 +1098,68 @@ function validatePublishRequirements(
     }
   }
 
+  if (collectionKey === "news") {
+    const enabledRecords = (path: string) => {
+      const value = getAtPath(data, path);
+
+      return Array.isArray(value)
+        ? value.filter((item) => isRecord(item) && item.is_enabled !== false)
+        : [];
+    };
+    const contentBlocks = Array.isArray(data.content_blocks)
+      ? data.content_blocks.filter(isRecord)
+      : [];
+    const paragraphCount = contentBlocks.filter((block) => {
+      if (readString(block.type) !== "paragraph" || !isRecord(block.data)) {
+        return false;
+      }
+
+      return readString(block.data.text).length >= 80;
+    }).length;
+    const takeaways = Array.isArray(data.key_takeaways)
+      ? data.key_takeaways.filter((item) => readString(item).length > 0)
+      : [];
+    const evidence = enabledRecords("evidence_items").filter((item) =>
+      readString(item.source_url).startsWith("http"),
+    );
+
+    if (!readString(data.cover_image_id)) {
+      errors.cover_image_id = ["Gambar sampul wajib dipilih sebelum terbit."];
+    }
+
+    if (!readString(data.content_type_option_id)) {
+      errors.content_type_option_id = ["Tipe konten wajib dipilih sebelum terbit."];
+    }
+
+    if (!readString(data.category_option_id)) {
+      errors.category_option_id = ["Kategori wajib dipilih sebelum terbit."];
+    }
+
+    if (!readString(data.author_name)) {
+      errors.author_name = ["Nama penulis wajib diisi sebelum terbit."];
+    }
+
+    if (!readString(data.partner_relevance)) {
+      errors.partner_relevance = ["Jelaskan relevansi artikel bagi mitra sebelum terbit."];
+    }
+
+    if (takeaways.length < 2) {
+      errors.key_takeaways = ["Isi minimal dua poin ringkasan eksekutif."];
+    }
+
+    if (paragraphCount < 2) {
+      errors.content_blocks = ["Isi minimal dua paragraf substantif sebelum terbit."];
+    }
+
+    if (evidence.length < 1) {
+      errors.evidence_items = ["Tambahkan minimal satu sumber dengan URL publik."];
+    }
+
+    if (!readString(data.reviewer_name) || !readString(data.reviewed_at)) {
+      errors.reviewer_name = ["Nama reviewer dan tanggal review wajib diisi sebelum terbit."];
+    }
+  }
+
   if (Object.keys(errors).length > 0) {
     throw new ValidationError(errors);
   }

@@ -38,6 +38,7 @@ export type PublicCollectionItem = {
   heroSrc?: string;
   isFeatured: boolean;
   publishedAt?: string;
+  updatedAt?: string;
   startAt?: string;
   expiredAt?: string;
   sortOrder: number;
@@ -445,6 +446,7 @@ async function mapContentItem(
     heroSrc: heroSrc ?? undefined,
     isFeatured: item.isFeatured,
     publishedAt: item.publishedAt?.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
     startAt: item.startAt?.toISOString(),
     expiredAt: item.expiredAt?.toISOString(),
     sortOrder: item.sortOrder,

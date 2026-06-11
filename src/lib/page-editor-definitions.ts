@@ -1168,6 +1168,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
     defaultData: {
       hero: emptyBasicHero,
       filter_config: {
+        enable_content_type_filter: true,
         enable_category_filter: true,
         enable_tag_filter: true,
       },
@@ -1183,6 +1184,11 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Filter",
         classification: "required",
         fields: [
+          {
+            kind: "switch",
+            path: "filter_config.enable_content_type_filter",
+            label: "Filter tipe konten",
+          },
           {
             kind: "switch",
             path: "filter_config.enable_category_filter",

@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "test:task8": "tsx scripts/run-tests.ts",
-    "demo:seed-japan-sectors": "tsx scripts/seed-japan-sector-demo.ts",
+    "seed:japan-sectors": "tsx scripts/seed-japan-sectors.ts",
+    "seed:japan-news": "tsx scripts/seed-japan-news.ts",
     "maintenance:trim-summaries": "tsx scripts/trim-collection-summaries.ts",
     "lint": "eslint"
   },

@@ -212,6 +212,40 @@ const faqFields: CollectionField[] = [
   { kind: "switch", path: "is_enabled", label: "Aktif" },
 ];
 
+const newsFactItem = {
+  label: "",
+  value: "",
+  ...enabledSortFields,
+};
+
+const newsFactFields: CollectionField[] = [
+  { kind: "text", path: "label", label: "Label" },
+  { kind: "text", path: "value", label: "Nilai" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const newsEvidenceItem = {
+  title: "",
+  description: "",
+  source_label: "",
+  source_url: "",
+  ...enabledSortFields,
+};
+
+const newsEvidenceFields: CollectionField[] = [
+  { kind: "text", path: "title", label: "Judul bukti/sumber" },
+  { kind: "textarea", path: "description", label: "Keterangan" },
+  { kind: "text", path: "source_label", label: "Label sumber" },
+  { kind: "text", path: "source_url", label: "URL sumber", inputType: "url" },
+  { kind: "switch", path: "is_enabled", label: "Aktif" },
+];
+
+const relatedSourceOptions = [
+  { value: "same_category", label: "Kategori yang sama" },
+  { value: "same_tags", label: "Tag yang sama" },
+  { value: "manual", label: "Pilih manual berdasarkan ID" },
+];
+
 const sectorCapabilityStat = {
   icon_key: "",
   value: "",
@@ -860,6 +894,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
     thumbnailPath: "cover_image_id",
     descriptionPath: "excerpt",
     optionFilters: [
+      { path: "content_type_option_id", label: "Tipe konten", optionSetKey: "japan_news_content_type" },
       { path: "category_option_id", label: "Category", optionSetKey: "japan_news_category" },
       { path: "tag_option_ids", label: "Tag", optionSetKey: "japan_news_tag", isArray: true },
     ],
@@ -875,11 +910,21 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       published_at: "",
       reading_time_label: "",
       sort_order: 0,
+      content_type_option_id: "",
       category_option_id: "",
       tag_option_ids: [],
       author_name: "",
       author_title: "",
       author_image_id: "",
+      partner_relevance: "",
+      key_takeaways: [],
+      key_facts: [],
+      evidence_items: [],
+      reviewer_name: "",
+      reviewer_title: "",
+      reviewed_at: "",
+      article_cta_label: "",
+      article_line_message_template: "",
       content_blocks: [],
       related_source: "same_category",
       manual_news_ids: [],
@@ -906,6 +951,7 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
       {
         title: "Klasifikasi",
         fields: [
+          { kind: "select", path: "content_type_option_id", label: "Tipe konten", optionSetKey: "japan_news_content_type" },
           { kind: "select", path: "category_option_id", label: "Kategori", optionSetKey: "japan_news_category" },
           { kind: "multiselect", path: "tag_option_ids", label: "Tag", optionSetKey: "japan_news_tag" },
         ],
@@ -916,6 +962,14 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
           { kind: "text", path: "author_name", label: "Nama penulis" },
           { kind: "text", path: "author_title", label: "Jabatan penulis" },
           { kind: "media", path: "author_image_id", label: "Foto penulis", cropPreset: "square" },
+        ],
+      },
+      {
+        title: "Nilai untuk mitra",
+        fields: [
+          { kind: "textarea", path: "partner_relevance", label: "Mengapa penting bagi mitra" },
+          { kind: "string-array", path: "key_takeaways", label: "Ringkasan eksekutif", itemLabel: "Poin" },
+          { kind: "array", path: "key_facts", label: "Fakta utama", itemLabel: "Fakta", defaultItem: newsFactItem, sortOrderField: "sort_order", fields: newsFactFields },
         ],
       },
       {
@@ -930,8 +984,26 @@ export const COLLECTION_DEFINITIONS: Record<CollectionKey, CollectionDefinition>
         ],
       },
       {
+        title: "Bukti dan review",
+        fields: [
+          { kind: "array", path: "evidence_items", label: "Bukti dan sumber", itemLabel: "Sumber", defaultItem: newsEvidenceItem, sortOrderField: "sort_order", fields: newsEvidenceFields },
+          { kind: "text", path: "reviewer_name", label: "Nama reviewer" },
+          { kind: "text", path: "reviewer_title", label: "Jabatan reviewer" },
+          { kind: "date", path: "reviewed_at", label: "Tanggal review" },
+        ],
+      },
+      {
+        title: "CTA artikel",
+        fields: [
+          { kind: "text", path: "article_cta_label", label: "Label CTA" },
+          { kind: "textarea", path: "article_line_message_template", label: "Template pesan LINE" },
+        ],
+      },
+      {
         title: "Artikel terkait",
         fields: [
+          { kind: "select", path: "related_source", label: "Sumber artikel terkait", options: relatedSourceOptions },
+          { kind: "string-array", path: "manual_news_ids", label: "ID berita manual", itemLabel: "ID berita" },
           { kind: "number", path: "related_max_items", label: "Jumlah maksimal", min: 1, max: 10 },
         ],
       },
