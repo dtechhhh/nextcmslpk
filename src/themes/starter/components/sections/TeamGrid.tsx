@@ -4,6 +4,9 @@ import { Container } from "@/themes/starter/components/ui/Container"
 interface TeamGridMember {
   name: string
   role: string
+  organizationName?: string
+  credentials?: string
+  responsibility?: string
   bio?: string
   imageSrc?: string
   sortOrder: number
@@ -31,7 +34,7 @@ function TeamGrid({ title, subtitle, members }: TeamGridProps) {
         {title || subtitle ? (
           <div className="mx-auto mb-10 max-w-3xl text-center">
             {title ? (
-              <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              <h2 className="text-2xl font-bold leading-tight text-neutral-900 md:text-4xl">
                 {title}
               </h2>
             ) : null}
@@ -42,16 +45,19 @@ function TeamGrid({ title, subtitle, members }: TeamGridProps) {
             ) : null}
           </div>
         ) : null}
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {enabledMembers.map((member) => (
-            <article key={`${member.sortOrder}-${member.name}`}>
-              <div className="relative aspect-square overflow-hidden rounded-xl bg-neutral-100">
+            <article
+              key={`${member.sortOrder}-${member.name}`}
+              className="flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
                 {member.imageSrc ? (
                   <Image
                     src={member.imageSrc}
                     alt={member.name}
                     fill
-                    sizes="(min-width: 1024px) 25vw, 50vw"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     className="object-cover"
                   />
                 ) : (
@@ -60,13 +66,36 @@ function TeamGrid({ title, subtitle, members }: TeamGridProps) {
                   </div>
                 )}
               </div>
-              <h3 className="mt-4 font-semibold text-neutral-900">{member.name}</h3>
-              <p className="mt-1 text-sm font-medium text-primary-500">{member.role}</p>
-              {member.bio ? (
-                <p className="mt-2 line-clamp-2 text-sm leading-6 text-neutral-600">
-                  {member.bio}
-                </p>
-              ) : null}
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="break-words text-lg font-semibold leading-7 text-neutral-900">
+                  {member.name}
+                </h3>
+                {member.role ? (
+                  <p className="mt-2 break-words text-sm font-semibold leading-6 text-primary-600">
+                    {member.role}
+                  </p>
+                ) : null}
+                {member.organizationName ? (
+                  <p className="mt-1 break-words text-sm leading-6 text-neutral-500">
+                    {member.organizationName}
+                  </p>
+                ) : null}
+                {member.credentials ? (
+                  <p className="mt-4 break-words rounded-lg bg-neutral-50 px-3 py-2 text-sm font-medium leading-6 text-neutral-700">
+                    {member.credentials}
+                  </p>
+                ) : null}
+                {member.responsibility ? (
+                  <p className="mt-4 whitespace-normal break-words text-sm leading-7 text-neutral-600">
+                    {member.responsibility}
+                  </p>
+                ) : null}
+                {member.bio ? (
+                  <p className="mt-3 whitespace-normal break-words text-sm leading-7 text-neutral-600">
+                    {member.bio}
+                  </p>
+                ) : null}
+              </div>
             </article>
           ))}
         </div>

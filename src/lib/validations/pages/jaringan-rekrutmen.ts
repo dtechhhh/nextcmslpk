@@ -81,6 +81,14 @@ const networkNodeSchema = z
   })
   .passthrough();
 
+const faqSchema = z
+  .object({
+    question: optionalString(300),
+    answer: optionalString(1200),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
 const japanFinalCtaSchema = z
   .object({
     headline: optionalString(220),
@@ -127,6 +135,7 @@ export const jaringanRekrutmenSchema = z
     screening_flow: z.array(trainingStepSchema).default([]),
     network_nodes: z.array(networkNodeSchema).default([]),
     quality_control_items: z.array(iconTitleDescSchema).default([]),
+    faqs: z.array(faqSchema).default([]),
     final_cta: japanFinalCtaSchema.default({
       headline: "",
       description: "",

@@ -28,7 +28,7 @@ export function HeaderBrand({
       aria-label={lpkName}
       className={cn(
         "flex min-w-0 items-center gap-3",
-        "max-w-[58vw] sm:max-w-80 lg:max-w-60 xl:max-w-72",
+        "max-w-[calc(100vw-5.5rem)] sm:max-w-80 lg:max-w-60 xl:max-w-72",
         className,
       )}
     >

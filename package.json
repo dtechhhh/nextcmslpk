@@ -10,6 +10,9 @@
     "test:task8": "tsx scripts/run-tests.ts",
     "seed:japan-sectors": "tsx scripts/seed-japan-sectors.ts",
     "seed:japan-news": "tsx scripts/seed-japan-news.ts",
+    "content:japan-homepage": "tsx scripts/update-japan-homepage.ts",
+    "content:japan-about": "tsx scripts/update-japan-about.ts",
+    "content:japan-training": "tsx scripts/update-japan-training-method.ts",
     "maintenance:trim-summaries": "tsx scripts/trim-collection-summaries.ts",
     "lint": "eslint"
   },

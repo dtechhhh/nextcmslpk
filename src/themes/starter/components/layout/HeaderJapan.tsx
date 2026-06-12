@@ -94,7 +94,10 @@ export function HeaderJapan({
         <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <HeaderBrand lpkName={lpkName} tagline={tagline} logoSrc={logo} />
 
-          <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
+          <nav
+            className="hidden items-center gap-6 lg:flex"
+            aria-label="メインナビゲーション"
+          >
             {visibleNavItems.map((item) => (
               <a
                 key={item.key}
@@ -119,7 +122,7 @@ export function HeaderJapan({
           <Sheet>
             <SheetTrigger
               className="inline-flex size-10 items-center justify-center rounded-lg text-neutral-900 lg:hidden"
-              aria-label="Open menu"
+              aria-label="メニューを開く"
             >
               <Menu aria-hidden="true" className="size-6" />
             </SheetTrigger>

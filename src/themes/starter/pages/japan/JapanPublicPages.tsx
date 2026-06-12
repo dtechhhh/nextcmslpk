@@ -42,6 +42,15 @@ import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
 import { TeamGrid } from "@/themes/starter/components/sections/TeamGrid";
 import { Timeline } from "@/themes/starter/components/sections/Timeline";
 import { JapanContactInquiryForm } from "@/themes/starter/pages/japan/JapanContactInquiryForm";
+import {
+  TrainingEvidence,
+  TrainingPartnerReport,
+  TrainingProgramOverview,
+  TrainingQualityGates,
+  TrainingReadinessStandards,
+  TrainingRiskSection,
+  TrainingSectorModules,
+} from "@/themes/starter/pages/japan/TrainingMethodSections";
 
 type PublicPageData = {
   title: string;
@@ -126,6 +135,7 @@ export async function JapanHomepage({
   const data = page.dataJson;
   const display = record(data.display_text);
   const whyIndonesia = record(data.why_indonesia_section);
+  const partnershipFlow = record(data.partnership_flow);
 
   return (
     <>
@@ -137,9 +147,9 @@ export async function JapanHomepage({
         tenantName={tenantName}
         withLineCTA
       />
-      <StatsBar items={sortedRecords(data.stats).map(toStatItem)} />
+      <StatsBar items={sortedRecords(data.stats).map(toStatItem)} compact />
       <JapanDocumentCardGrid
-        title={displayText(display, "achievements_title", "Pencapaian")}
+        title={displayText(display, "achievements_title", "実績・取り組み")}
         items={sortedRecords(data.achievements).map((item, index) => ({
           id: `achievement-${index}`,
           title: stringValue(item.title),
@@ -159,10 +169,12 @@ export async function JapanHomepage({
         bullets={arrayOfStrings(whyIndonesia.bullet_items)}
         ctaLabel={stringValue(whyIndonesia.cta_label)}
         ctaHref={getJapanTargetPageHref(stringValue(whyIndonesia.target_page))}
+        compact
       />
       <CardGrid
-        title={displayText(display, "why_us_title", "Alasan HIT Dipilih")}
+        title={displayText(display, "why_us_title", "当社が大切にしていること")}
         variant="japan"
+        columns={2}
         items={sortedRecords(data.why_us_cards).map((item, index) => ({
           id: stringValue(item.key) || `why-us-${index}`,
           title: stringValue(item.title),
@@ -172,17 +184,20 @@ export async function JapanHomepage({
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
-      <CardGrid
-        title={displayText(display, "latest_news_title", "Berita Terbaru")}
-        variant="japan"
-        items={latestNews.map((item) =>
-          newsCard(item, { newBadgeLabel: displayText(display, "new_badge_label", "Baru") }),
-        )}
-        ctaLabel={displayText(display, "latest_news_cta_label", "Lihat Semua Berita")}
-        ctaHref="/news"
+      <StepFlow
+        title={stringValue(partnershipFlow.headline)}
+        subtitle={stringValue(partnershipFlow.description)}
+        items={sortedRecords(partnershipFlow.items).map((item, index) => ({
+          iconKey: stringValue(item.icon_key) || "check",
+          stepLabel: stringValue(item.step_label),
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
       />
       <JapanDocumentCardGrid
-        title={displayText(display, "legalities_title", "Perizinan dan Informasi Legal")}
+        title={displayText(display, "legalities_title", "法人情報・許認可")}
         items={sortedRecords(data.legalities).map((item, index) => ({
           id: `legality-${index}`,
           title: stringValue(item.title),
@@ -193,11 +208,20 @@ export async function JapanHomepage({
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
+      <CardGrid
+        title={displayText(display, "latest_news_title", "採用担当者向け情報")}
+        variant="japan"
+        items={latestNews.map((item) =>
+          newsCard(item, { newBadgeLabel: displayText(display, "new_badge_label", "新着") }),
+        )}
+        ctaLabel={displayText(display, "latest_news_cta_label", "記事一覧を見る")}
+        ctaHref="/news"
+      />
       <FinalCTA
         finalCta={record(data.final_cta)}
         globalConfig={globalConfig}
         tenantName={tenantName}
-        defaultHeadline="Konsultasikan kebutuhan rekrutmen tenaga kerja Indonesia"
+        defaultHeadline="インドネシア人材の採用についてご相談ください"
         darkVariant
       />
     </>
@@ -207,7 +231,11 @@ export async function JapanHomepage({
 export async function JapanAboutPage(props: JapanPageProps) {
   const data = props.page.dataJson;
   const display = record(data.display_text);
+  const companyStatus = record(data.company_status);
   const story = record(data.story);
+  const japanRelationship = record(data.japan_relationship);
+  const educationQuality = record(data.education_quality);
+  const operationalReadiness = record(data.operational_readiness);
   const leadershipQuote = getLeadershipQuote(data.leadership_quote);
   const visionMission = record(data.vision_mission);
 
@@ -220,14 +248,26 @@ export async function JapanAboutPage(props: JapanPageProps) {
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
       />
-      <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} />
+      <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} compact />
+      <CompanyStatusSection config={companyStatus} />
       <SplitSection
         imageId={stringValue(story.image_id)}
         eyebrowLabel={stringValue(story.eyebrow_label)}
         title={stringValue(story.headline)}
         body={stringValue(story.body)}
       />
+      <JapanRelationshipSection config={japanRelationship} />
+      <EducationQualitySection config={educationQuality} />
+      <OperationalReadinessSection config={operationalReadiness} />
       <LeadershipQuoteSection quoteData={leadershipQuote} />
+      <TeamGrid
+        title={displayText(display, "team_title", "Tim")}
+        members={await resolveTeamMembers(sortedRecords(data.team_members))}
+      />
+      <FacilityGallery
+        title={displayText(display, "facilities_title", "Fasilitas Pelatihan")}
+        items={await resolveGalleryItems(sortedRecords(data.facilities), "image_id")}
+      />
       <Timeline
         title={displayText(display, "timeline_title", "Linimasa")}
         items={sortedRecords(data.timeline).map((item, index) => ({
@@ -249,20 +289,12 @@ export async function JapanAboutPage(props: JapanPageProps) {
         variant="japan"
         items={sortedRecords(data.values).map(iconCard)}
       />
-      <FacilityGallery
-        title={displayText(display, "facilities_title", "Fasilitas Pelatihan")}
-        items={await resolveGalleryItems(sortedRecords(data.facilities), "image_id")}
-      />
-      <TeamGrid
-        title={displayText(display, "team_title", "Tim")}
-        members={await resolveTeamMembers(sortedRecords(data.team_members))}
-      />
       <JapanDocumentCardGrid
         title={displayText(display, "legal_overview_title", "Ringkasan Legalitas")}
         items={sortedRecords(data.legal_overview).map((item, index) => ({
           id: `legal-overview-${index}`,
           title: stringValue(item.title),
-          description: stringValue(item.description),
+          description: buildLegalOverviewDescription(item),
           badge: stringValue(item.type_label),
           documentLabel: stringValue(item.document_label),
           documentUrl: stringValue(item.document_url),
@@ -273,7 +305,8 @@ export async function JapanAboutPage(props: JapanPageProps) {
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Bicarakan kebutuhan kemitraan bersama tim kami"
+        defaultHeadline="採用と人材育成について、まずはご相談ください"
+        darkVariant
       />
     </>
   );
@@ -282,6 +315,16 @@ export async function JapanAboutPage(props: JapanPageProps) {
 export async function JapanTrainingMethodPage(props: JapanPageProps) {
   const data = props.page.dataJson;
   const display = record(data.display_text);
+  const programOverview = record(data.program_overview);
+  const readinessStandards = record(data.readiness_standards);
+  const faqIntro = record(data.faq_intro);
+  const hasProgramOverview =
+    Boolean(stringValue(programOverview.headline)) ||
+    sortedRecords(programOverview.stats).length > 0 ||
+    sortedRecords(programOverview.stages).length > 0;
+  const hasReadinessStandards =
+    Boolean(stringValue(readinessStandards.headline)) ||
+    sortedRecords(readinessStandards.criteria).length > 0;
 
   return (
     <>
@@ -292,35 +335,58 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
       />
-      <DocumentSection config={record(data.curriculum_download)} />
+      <TrainingRiskSection config={record(data.partner_risks)} />
       <CardGrid
         title={displayText(display, "training_pillars_title", "Pilar Pelatihan")}
         variant="japan"
         items={sortedRecords(data.training_pillars).map(iconCard)}
       />
-      <StepFlow
-        title={displayText(display, "training_flow_title", "Alur Pelatihan")}
-        items={sortedRecords(data.training_flow).map(toStepItem)}
-      />
+      {hasProgramOverview ? (
+        <TrainingProgramOverview config={programOverview} />
+      ) : (
+        <StepFlow
+          title={displayText(display, "training_flow_title", "Alur Pelatihan")}
+          items={sortedRecords(data.training_flow).map(toStepItem)}
+        />
+      )}
+      <DocumentSection config={record(data.curriculum_download)} />
       <CurriculumAreasSection
         title={displayText(display, "curriculum_areas_title", "Area Kurikulum")}
         stats={sortedRecords(data.curriculum_stats).map(toProofStatItem)}
         items={sortedRecords(data.curriculum_areas).map(iconCard)}
       />
-      <CardGrid
-        title={displayText(display, "evaluation_items_title", "Aspek Evaluasi")}
-        variant="japan"
-        items={sortedRecords(data.evaluation_items).map(iconCard)}
-      />
+      <TrainingSectorModules config={record(data.sector_modules)} />
+      {hasReadinessStandards ? (
+        <TrainingReadinessStandards config={readinessStandards} />
+      ) : (
+        <CardGrid
+          title={displayText(display, "evaluation_items_title", "Aspek Evaluasi")}
+          variant="japan"
+          items={sortedRecords(data.evaluation_items).map(iconCard)}
+        />
+      )}
+      <TrainingQualityGates config={record(data.quality_gates)} />
+      <TrainingPartnerReport config={record(data.partner_report)} />
+      <TrainingEvidence config={record(data.outcome_evidence)} />
       <FacilityGallery
         title={displayText(display, "training_gallery_title", "Galeri Pelatihan")}
         items={await resolveGalleryItems(sortedRecords(data.training_gallery), "media_id")}
+      />
+      <FAQ
+        title={stringValue(faqIntro.headline) || "企業ご担当者様からよくあるご質問"}
+        subtitle={stringValue(faqIntro.description)}
+        items={sortedRecords(data.faqs).map((item, index) => ({
+          question: stringValue(item.question),
+          answer: stringValue(item.answer),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Diskusikan kurikulum bersama tim kami"
+        defaultHeadline="採用要件に合わせた教育内容をご相談ください"
       />
     </>
   );
@@ -362,12 +428,16 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         bullets={arrayOfStrings(whyIndonesia.bullet_items)}
       />
       <CardGrid
-        title={displayText(display, "candidate_strengths_title", "Keunggulan Kandidat")}
+        title={displayText(display, "candidate_strengths_title", "候補者の特徴")}
         variant="japan"
         items={sortedRecords(data.candidate_strengths).map(iconCard)}
       />
+      <CandidateExamplesSection
+        title={displayText(display, "candidate_examples_title", "候補者プロフィール例")}
+        items={await resolveCandidateExamples(sortedRecords(data.candidate_examples))}
+      />
       <CardGrid
-        title={displayText(display, "supported_pathways_title", "Status Izin Tinggal yang Didukung")}
+        title={displayText(display, "supported_pathways_title", "対応可能な在留資格・採用ルート")}
         variant="japan"
         items={sortedRecords(data.supported_pathways).map((item, index) => ({
           id: `pathway-${index}`,
@@ -377,12 +447,41 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
-      <CandidateExamplesSection
-        title={displayText(display, "candidate_examples_title", "Contoh Kandidat")}
-        items={await resolveCandidateExamples(sortedRecords(data.candidate_examples))}
+      <CardGrid
+        title={displayText(display, "selection_assurance_title", "選考前の確認体制")}
+        subtitle={displayText(
+          display,
+          "selection_assurance_description",
+          "候補者の希望条件、職種理解、日本語学習状況を事前に確認し、企業様の採用基準に沿ってご提案します。",
+        )}
+        variant="japan"
+        items={sortedRecords(data.selection_assurance).map(iconCard)}
+      />
+      <StepFlow
+        title={displayText(display, "handoff_process_title", "ご相談から候補者提案まで")}
+        subtitle={displayText(
+          display,
+          "handoff_process_description",
+          "採用条件の確認から候補者紹介、面接調整まで、実務に合わせて段階的に進めます。",
+        )}
+        items={sortedRecords(data.handoff_process).map(toStepItem)}
+      />
+      <FAQ
+        title={displayText(display, "faq_title", "候補者紹介に関するよくあるご質問")}
+        subtitle={displayText(
+          display,
+          "faq_description",
+          "採用条件に合わせた候補者確認を進める前に、よくいただくご質問をまとめました。",
+        )}
+        items={sortedRecords(data.faqs).map((faq, index) => ({
+          question: stringValue(faq.question),
+          answer: stringValue(faq.answer),
+          sortOrder: numberValue(faq.sort_order) ?? index,
+          isEnabled: booleanValue(faq.is_enabled, true),
+        }))}
       />
       <CardGrid
-        title={displayText(display, "readiness_framework_title", "Kerangka Persiapan Kerja")}
+        title={displayText(display, "readiness_framework_title", "受け入れ前の準備項目")}
         variant="japan"
         items={sortedRecords(data.readiness_framework).map(iconCard)}
       />
@@ -395,7 +494,7 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Temui kandidat yang disiapkan untuk kebutuhan kerja"
+        defaultHeadline="採用条件に合う候補者をご提案します"
       />
     </>
   );
@@ -440,7 +539,7 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         description={stringValue(networkOverview.description)}
       />
       <CardGrid
-        title={displayText(display, "coverage_regions_title", "Area Cakupan")}
+        title={displayText(display, "coverage_regions_title", "対応エリア")}
         variant="japan"
         items={sortedRecords(data.coverage_regions).map((item, index) => ({
           id: `region-${index}`,
@@ -450,29 +549,39 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
         }))}
       />
       <CardGrid
-        title={displayText(display, "recruitment_sources_title", "Kanal Rekrutmen")}
+        title={displayText(display, "recruitment_sources_title", "候補者との接点")}
         variant="japan"
         items={sortedRecords(data.recruitment_sources).map(iconCard)}
       />
       <StepFlow
-        title={displayText(display, "screening_flow_title", "Alur Seleksi")}
+        title={displayText(display, "screening_flow_title", "選考前の確認フロー")}
         items={sortedRecords(data.screening_flow).map(toStepItem)}
       />
       <CardGrid
-        title={displayText(display, "network_nodes_title", "Titik Jaringan")}
+        title={displayText(display, "network_nodes_title", "情報共有体制")}
         variant="japan"
         items={await resolveNetworkNodeCards(sortedRecords(data.network_nodes))}
       />
       <CardGrid
-        title={displayText(display, "quality_control_title", "Kontrol Kualitas")}
+        title={displayText(display, "quality_control_title", "候補者確認の基準")}
         variant="japan"
         items={sortedRecords(data.quality_control_items).map(iconCard)}
+      />
+      <FAQ
+        title={displayText(display, "faq_title", "採用ネットワークに関するよくあるご質問")}
+        subtitle={stringValue(display.faq_description)}
+        items={sortedRecords(data.faqs).map((faq, index) => ({
+          question: stringValue(faq.question),
+          answer: stringValue(faq.answer),
+          sortOrder: numberValue(faq.sort_order) ?? index,
+          isEnabled: booleanValue(faq.is_enabled, true),
+        }))}
       />
       <FinalCTA
         finalCta={record(data.final_cta)}
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
-        defaultHeadline="Bangun kanal rekrutmen yang stabil dari Indonesia"
+        defaultHeadline="インドネシアから安定した候補者紹介を進めませんか"
       />
     </>
   );
@@ -1373,7 +1482,13 @@ async function CandidatePoolHero({
     .filter(
       (item) =>
         item.isEnabled &&
-        (item.name || item.nationalityLabel || item.targetSectorLabel || item.ageLabel),
+        (item.name ||
+          item.nationalityLabel ||
+          item.targetSectorLabel ||
+          item.ageLabel ||
+          item.japaneseLevelLabel ||
+          item.readinessLabel ||
+          item.availabilityLabel),
     )
     .sort((a, b) => a.sortOrder - b.sortOrder);
   const mediaId = stringValue(fallbackHero.media_id);
@@ -1517,7 +1632,13 @@ function CandidatePoolHeroCard({
   className?: string;
 }) {
   const displayName =
-    item.name || item.initials || item.targetSectorLabel || item.nationalityLabel || "Kandidat";
+    item.name || item.initials || item.targetSectorLabel || item.nationalityLabel || "候補者";
+  const labels = [
+    item.nationalityLabel,
+    item.japaneseLevelLabel,
+    item.readinessLabel,
+    item.availabilityLabel,
+  ].filter(Boolean);
 
   return (
     <div
@@ -1555,8 +1676,14 @@ function CandidatePoolHeroCard({
       </div>
 
       <div className="mt-4 space-y-3">
-        {item.nationalityLabel ? (
-          <Badge variant="outline">{item.nationalityLabel}</Badge>
+        {labels.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {labels.map((label) => (
+              <Badge key={label} variant="outline">
+                {label}
+              </Badge>
+            ))}
+          </div>
         ) : null}
         {item.targetSectorLabel ? (
           <p className="text-sm font-semibold leading-6 text-neutral-800">
@@ -1590,8 +1717,8 @@ async function NetworkMapHero({
   const headline = stringValue(hero.headline) || pageTitle;
   const subheadline = stringValue(hero.subheadline);
   const eyebrowLabel = stringValue(hero.eyebrow_label);
-  const panelTitle = stringValue(config.panel_title) || "Peta kanal rekrutmen";
-  const panelBadgeLabel = stringValue(config.panel_badge_label) || "Network view";
+  const panelTitle = stringValue(config.panel_title) || "採用ネットワークの全体像";
+  const panelBadgeLabel = stringValue(config.panel_badge_label) || "ネットワーク概要";
   const trustNote = stringValue(config.trust_note);
   const primaryCTA = getHeroPrimaryCTA(hero, globalConfig, tenantName);
   const secondaryCTA = getHeroSecondaryCTA(hero);
@@ -1754,7 +1881,7 @@ async function NetworkMapHero({
                   </div>
                 ) : (
                   <p className="mt-3 text-sm leading-6 text-neutral-500">
-                    Tambahkan wilayah cakupan untuk mengisi panel jaringan.
+                    対応エリアを追加すると、ネットワーク概要に表示されます。
                   </p>
                 )}
               </div>
@@ -1791,7 +1918,7 @@ async function NetworkMapHero({
                   </div>
                 ) : (
                   <p className="mt-3 text-sm leading-6 text-neutral-500">
-                    Tambahkan kanal rekrutmen untuk mengisi sumber kandidat.
+                    候補者との接点を追加すると、概要に表示されます。
                   </p>
                 )}
               </div>
@@ -1813,6 +1940,7 @@ async function SplitSection({
   bullets = [],
   ctaLabel,
   ctaHref,
+  compact = false,
 }: {
   mediaType?: string;
   mediaId?: string;
@@ -1823,6 +1951,7 @@ async function SplitSection({
   bullets?: string[];
   ctaLabel?: string;
   ctaHref?: string;
+  compact?: boolean;
 }) {
   const selectedMediaId = mediaId || imageId || "";
   const mediaSrc = await resolveMediaUrl(selectedMediaId);
@@ -1833,7 +1962,12 @@ async function SplitSection({
   }
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section
+      className={cn(
+        "bg-white",
+        compact ? "py-14 md:py-16 lg:py-20" : "py-16 md:py-20 lg:py-24",
+      )}
+    >
       <Container>
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           {mediaSrc ? (
@@ -1950,6 +2084,331 @@ async function LeadershipQuoteSection({
   );
 }
 
+function CompanyStatusSection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const facts = sortedRecords(config.facts).filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.value) || stringValue(item.label) || stringValue(item.description)),
+  );
+
+  if (!headline && !description && facts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="company-profile" className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
+          <div>
+            {stringValue(config.eyebrow_label) ? (
+              <p className="text-sm font-semibold uppercase tracking-normal text-primary-500">
+                {stringValue(config.eyebrow_label)}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {description}
+              </p>
+            ) : null}
+            {stringValue(config.status_label) || stringValue(config.last_updated_label) ? (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                {stringValue(config.status_label) ? (
+                  <Badge variant="info">{stringValue(config.status_label)}</Badge>
+                ) : null}
+                {stringValue(config.last_updated_label) ? (
+                  <span className="text-sm text-neutral-500">
+                    {stringValue(config.last_updated_label)}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
+          {facts.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {facts.map((item, index) => {
+                const iconKey = stringValue(item.icon_key) || "building_2";
+                const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+
+                return (
+                  <article
+                    key={`${stringValue(item.label)}-${index}`}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-5"
+                  >
+                    <Icon aria-hidden="true" className="size-6 text-primary-500" />
+                    {stringValue(item.value) ? (
+                      <p className="mt-4 text-2xl font-bold text-neutral-950">
+                        {stringValue(item.value)}
+                      </p>
+                    ) : null}
+                    {stringValue(item.label) ? (
+                      <h3 className="mt-1 font-semibold text-neutral-900">
+                        {stringValue(item.label)}
+                      </h3>
+                    ) : null}
+                    {stringValue(item.description) ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">
+                        {stringValue(item.description)}
+                      </p>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function JapanRelationshipSection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const people = sortedRecords(config.people).filter(
+    (item) => booleanValue(item.is_enabled, true) && stringValue(item.name),
+  );
+  const cooperationScope = arrayOfStrings(config.cooperation_scope);
+
+  if (!headline && !description && people.length === 0 && cooperationScope.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          {stringValue(config.eyebrow_label) ? (
+            <p className="text-sm font-semibold uppercase tracking-normal text-primary-500">
+              {stringValue(config.eyebrow_label)}
+            </p>
+          ) : null}
+          {headline ? (
+            <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+              {headline}
+            </h2>
+          ) : null}
+          {description ? (
+            <p className="mt-5 text-base leading-8 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        {people.length > 0 ? (
+          <div className="relative mx-auto mt-10 grid max-w-5xl gap-5 lg:grid-cols-2">
+            {people.slice(0, 2).map((person, index) => (
+              <article
+                key={`${stringValue(person.name)}-${index}`}
+                className="rounded-lg border border-neutral-200 bg-white p-6"
+              >
+                {stringValue(person.side_label) ? (
+                  <Badge variant="outline">{stringValue(person.side_label)}</Badge>
+                ) : null}
+                <h3 className="mt-4 text-xl font-bold text-neutral-950">
+                  {stringValue(person.name)}
+                </h3>
+                {[stringValue(person.role), stringValue(person.organization)]
+                  .filter(Boolean)
+                  .map((line) => (
+                    <p key={line} className="mt-1 text-sm font-medium text-primary-600">
+                      {line}
+                    </p>
+                  ))}
+                {stringValue(person.summary) ? (
+                  <p className="mt-4 text-sm leading-7 text-neutral-600">
+                    {stringValue(person.summary)}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : null}
+
+        {cooperationScope.length > 0 ? (
+          <div className="mx-auto mt-8 max-w-5xl rounded-lg border border-primary-100 bg-white p-6">
+            <div className="flex items-center gap-3">
+              {(() => {
+                const Icon = ICON_REGISTRY.handshake;
+                return <Icon aria-hidden="true" className="size-6 text-primary-500" />;
+              })()}
+              <h3 className="text-lg font-bold text-neutral-900">連携の主な領域</h3>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {cooperationScope.map((item) => (
+                <div key={item} className="flex gap-3 text-sm leading-6 text-neutral-700">
+                  <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-primary-500" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {stringValue(config.clarification_note) ? (
+          <p className="mx-auto mt-5 max-w-5xl text-sm leading-6 text-neutral-500">
+            {stringValue(config.clarification_note)}
+          </p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function EducationQualitySection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const focusItems = arrayOfStrings(config.focus_items);
+  const imageSrc = await resolveMediaUrl(stringValue(config.image_id));
+
+  if (!headline && !description && focusItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)] lg:items-center">
+          <div>
+            {stringValue(config.eyebrow_label) ? (
+              <p className="text-sm font-semibold uppercase tracking-normal text-white/70">
+                {stringValue(config.eyebrow_label)}
+              </p>
+            ) : null}
+            {stringValue(config.qualification_label) ? (
+              <div className="mt-5 inline-flex items-center gap-3 rounded-lg border border-white/20 bg-white/10 px-4 py-3">
+                {(() => {
+                  const Icon = ICON_REGISTRY.award;
+                  return <Icon aria-hidden="true" className="size-7 text-red-300" />;
+                })()}
+                <span className="text-xl font-bold">{stringValue(config.qualification_label)}</span>
+              </div>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-6 text-3xl font-bold leading-tight md:text-4xl">{headline}</h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/80">{description}</p>
+            ) : null}
+            {stringValue(config.leader_name) || stringValue(config.leader_role) ? (
+              <div className="mt-6">
+                <p className="font-bold text-white">{stringValue(config.leader_name)}</p>
+                <p className="mt-1 text-sm text-white/70">
+                  {[stringValue(config.leader_role), stringValue(config.experience_label)]
+                    .filter(Boolean)
+                    .join(" / ")}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-4">
+            {imageSrc ? (
+              <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/15 bg-white/10">
+                <Image
+                  src={imageSrc}
+                  alt={stringValue(config.leader_name) || headline}
+                  fill
+                  sizes="(min-width: 1024px) 35vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+            {focusItems.length > 0 ? (
+              <div className="rounded-lg border border-white/15 bg-white/10 p-6">
+                <h3 className="font-bold text-white">教育品質の重点項目</h3>
+                <ul className="mt-4 space-y-3">
+                  {focusItems.map((item) => (
+                    <li key={item} className="flex gap-3 text-sm leading-6 text-white/80">
+                      <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-red-300" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function OperationalReadinessSection({ config }: { config: PublicJson }) {
+  const items = sortedRecords(config.items).filter(
+    (item) => booleanValue(item.is_enabled, true) && stringValue(item.title),
+  );
+
+  if (!stringValue(config.headline) && !stringValue(config.description) && items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          {stringValue(config.headline) ? (
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              {stringValue(config.headline)}
+            </h2>
+          ) : null}
+          {stringValue(config.description) ? (
+            <p className="mt-4 text-base leading-8 text-neutral-600 md:text-lg">
+              {stringValue(config.description)}
+            </p>
+          ) : null}
+        </div>
+
+        {items.length > 0 ? (
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {items.map((item, index) => {
+              const status = stringValue(item.status);
+              const iconKey = stringValue(item.icon_key) || "circle_check";
+              const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+              const badgeVariant =
+                status === "completed" ? "success" : status === "in_progress" ? "info" : "neutral";
+
+              return (
+                <article
+                  key={`${stringValue(item.title)}-${index}`}
+                  className="rounded-lg border border-neutral-200 bg-neutral-50 p-6"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <Icon aria-hidden="true" className="size-6 shrink-0 text-primary-500" />
+                    {stringValue(item.status_label) ? (
+                      <Badge variant={badgeVariant}>{stringValue(item.status_label)}</Badge>
+                    ) : null}
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-neutral-900">
+                    {stringValue(item.title)}
+                  </h3>
+                  {stringValue(item.description) ? (
+                    <p className="mt-3 text-sm leading-7 text-neutral-600">
+                      {stringValue(item.description)}
+                    </p>
+                  ) : null}
+                  {stringValue(item.target_label) ? (
+                    <p className="mt-4 text-xs font-semibold text-neutral-500">
+                      {stringValue(item.target_label)}
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
 function VisionMission({
   visionHeadline,
   visionDescription,
@@ -1999,6 +2458,12 @@ async function DocumentSection({ config }: { config: PublicJson }) {
   const directUrl = stringValue(config.file_url);
   const legacyUrl = await resolveMediaUrl(stringValue(config.file_id));
   const fileUrl = directUrl || legacyUrl;
+  const metadata = [
+    stringValue(config.version_label),
+    stringValue(config.updated_label),
+    stringValue(config.language_label),
+    stringValue(config.scope_label),
+  ].filter(Boolean);
 
   if (!fileUrl) {
     return null;
@@ -2017,6 +2482,15 @@ async function DocumentSection({ config }: { config: PublicJson }) {
                 <p className="mt-2 leading-7 text-neutral-600">
                   {stringValue(config.description)}
                 </p>
+              ) : null}
+              {metadata.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {metadata.map((item) => (
+                    <Badge key={item} variant="outline">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
               ) : null}
             </div>
             <DocumentDownload
@@ -2157,7 +2631,9 @@ function CandidateExamplesSection({
           item.backgroundText ||
           item.targetPathText ||
           item.languageText ||
-          item.characterText),
+          item.characterText ||
+          item.screeningText ||
+          item.availabilityText),
     )
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -2166,7 +2642,7 @@ function CandidateExamplesSection({
   }
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section id="candidate-profiles" className="bg-white py-16 md:py-20 lg:py-24">
       <Container>
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
@@ -2190,6 +2666,8 @@ function CandidateExampleCard({ item }: { item: CandidateExampleCard }) {
     { label: item.targetPathLabel, value: item.targetPathText },
     { label: item.languageLabel, value: item.languageText },
     { label: item.characterLabel, value: item.characterText },
+    { label: item.screeningLabel, value: item.screeningText },
+    { label: item.availabilityLabel, value: item.availabilityText },
   ].filter((detail) => detail.value);
 
   return (
@@ -2269,6 +2747,10 @@ type CandidateExampleCard = {
   languageText: string;
   characterLabel: string;
   characterText: string;
+  screeningLabel: string;
+  screeningText: string;
+  availabilityLabel: string;
+  availabilityText: string;
   readinessLabel: string;
   readinessIsEnabled: boolean;
   highlightTags: string[];
@@ -2283,6 +2765,9 @@ type CandidatePoolHeroCardItem = {
   nationalityLabel: string;
   targetSectorLabel: string;
   ageLabel: string;
+  japaneseLevelLabel: string;
+  readinessLabel: string;
+  availabilityLabel: string;
   imageSrc?: string;
   sortOrder: number;
   isEnabled: boolean;
@@ -2339,7 +2824,12 @@ function JapanDocumentCardGrid({
         <h2 className="mb-10 text-center text-3xl font-bold text-neutral-900 md:text-4xl">
           {title}
         </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={cn(
+            "grid gap-6 sm:grid-cols-2",
+            visibleItems.length <= 2 ? "lg:grid-cols-2" : "lg:grid-cols-3",
+          )}
+        >
           {visibleItems.map((item) => (
             <Card key={item.id} variant="japan" className="p-6">
               <CardContent className="flex flex-1 flex-col p-0">
@@ -2352,7 +2842,7 @@ function JapanDocumentCardGrid({
                   <h3 className="text-lg font-semibold text-neutral-900">{item.title}</h3>
                 ) : null}
                 {item.description ? (
-                  <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">
+                  <p className="mt-3 flex-1 whitespace-pre-line text-sm leading-6 text-neutral-600">
                     {item.description}
                   </p>
                 ) : null}
@@ -2414,7 +2904,7 @@ async function FinalCTA({
       primaryCTA={
         primaryLineHref
           ? {
-        label: stringValue(finalCta.primary_cta_label) || "Hubungi via LINE",
+              label: stringValue(finalCta.primary_cta_label) || "LINEで採用相談",
               href: primaryLineHref,
               variant: "line",
             }
@@ -3644,6 +4134,9 @@ async function resolveTeamMembers(items: PublicJson[]) {
     items.map(async (item, index) => ({
       name: stringValue(item.name),
       role: stringValue(item.role),
+      organizationName: stringValue(item.organization_name),
+      credentials: stringValue(item.credentials),
+      responsibility: stringValue(item.responsibility),
       bio: stringValue(item.bio),
       imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
       sortOrder: numberValue(item.sort_order) ?? index,
@@ -3665,16 +4158,20 @@ async function resolveCandidateExamples(items: PublicJson[]) {
         initials: stringValue(item.initials) || buildCandidateInitials(name),
         name,
         ageOriginLabel: stringValue(item.age_origin_label),
-        backgroundLabel: stringValue(item.background_label) || "Latar belakang",
+        backgroundLabel: stringValue(item.background_label) || "経歴・学習状況",
         backgroundText,
-        targetPathLabel: stringValue(item.target_path_label) || "Target jalur",
+        targetPathLabel: stringValue(item.target_path_label) || "希望職種・在留資格",
         targetPathText,
-        languageLabel: stringValue(item.language_label) || "Kemampuan bahasa",
+        languageLabel: stringValue(item.language_label) || "日本語レベル",
         languageText: stringValue(item.language_text),
-        characterLabel: stringValue(item.character_label) || "Karakter",
+        characterLabel: stringValue(item.character_label) || "面接・勤務姿勢",
         characterText: stringValue(item.character_text),
+        screeningLabel: stringValue(item.screening_label) || "確認状況",
+        screeningText: stringValue(item.screening_text),
+        availabilityLabel: stringValue(item.availability_label) || "紹介可能時期",
+        availabilityText: stringValue(item.availability_text),
         readinessLabel:
-          stringValue(item.readiness_label) || "Siap seleksi perusahaan",
+          stringValue(item.readiness_label) || "面接前確認済み",
         readinessIsEnabled: booleanValue(item.readiness_is_enabled, true),
         highlightTags: arrayOfStrings(item.highlight_tags),
         imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
@@ -3696,6 +4193,9 @@ async function resolveCandidatePoolCards(items: PublicJson[]) {
         nationalityLabel: stringValue(item.nationality_label),
         targetSectorLabel: stringValue(item.target_sector_label),
         ageLabel: stringValue(item.age_label),
+        japaneseLevelLabel: stringValue(item.japanese_level_label),
+        readinessLabel: stringValue(item.readiness_label),
+        availabilityLabel: stringValue(item.availability_label),
         imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
         sortOrder: numberValue(item.sort_order) ?? index,
         isEnabled: booleanValue(item.is_enabled, true),
@@ -3802,6 +4302,17 @@ function toProofStatItem(item: PublicJson) {
     label: stringValue(item.label),
     isEnabled: booleanValue(item.is_enabled, true),
   };
+}
+
+function buildLegalOverviewDescription(item: PublicJson) {
+  const details = [
+    stringValue(item.issuing_authority),
+    stringValue(item.issued_date_label),
+    stringValue(item.status_label),
+  ].filter(Boolean);
+  const description = stringValue(item.description);
+
+  return [details.join(" / "), description].filter(Boolean).join("\n");
 }
 
 function toStepItem(item: PublicJson, index: number) {

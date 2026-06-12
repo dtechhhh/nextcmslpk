@@ -93,7 +93,7 @@ export function FooterJapan({
               </span>
             ) : null}
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-lg font-bold text-white">{lpkName}</p>
+              <p className="text-base font-bold leading-6 text-white">{lpkName}</p>
               {tagline ? (
                 <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-neutral-400">
                   {tagline}
@@ -108,7 +108,7 @@ export function FooterJapan({
           ) : null}
         </div>
 
-        <FooterColumn title="Company">
+        <FooterColumn title="企業情報">
           {company.map((item) => (
             <a key={item.href} href={item.href} className="hover:text-white">
               {item.label}
@@ -116,7 +116,7 @@ export function FooterJapan({
           ))}
         </FooterColumn>
 
-        <FooterColumn title="Resources">
+        <FooterColumn title="人材・採用情報">
           {resources.map((item, index) => {
             const label = normalizeActionLabel(
               item.label,
@@ -145,7 +145,7 @@ export function FooterJapan({
         </FooterColumn>
 
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide">Contact</h2>
+          <h2 className="text-sm font-semibold tracking-normal">お問い合わせ</h2>
           <div className="mt-4 space-y-3 text-sm leading-6 text-neutral-300">
             {contact.usedFromGlobal && lineContact?.isEnabled && lineContact.href ? (
               <a
@@ -220,7 +220,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h2 className="text-sm font-semibold uppercase tracking-wide">{title}</h2>
+      <h2 className="text-sm font-semibold tracking-normal">{title}</h2>
       <div className="mt-4 flex flex-col gap-3 text-sm text-neutral-300">
         {children}
       </div>

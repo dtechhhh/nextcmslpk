@@ -54,6 +54,16 @@ const whyUsCardSchema = z
   })
   .passthrough();
 
+const partnershipStepSchema = z
+  .object({
+    step_label: optionalString(80),
+    icon_key: iconKeySchema,
+    title: optionalString(180),
+    description: optionalString(700),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
 const legalitySchema = z
   .object({
     type_label: optionalString(140),
@@ -125,6 +135,18 @@ export const homepageJapanSchema = z
         target_page: "candidate_profile",
       }),
     why_us_cards: z.array(whyUsCardSchema).min(4).max(4).default([]),
+    partnership_flow: z
+      .object({
+        headline: optionalString(220),
+        description: optionalString(700),
+        items: z.array(partnershipStepSchema).min(3).max(6).default([]),
+      })
+      .passthrough()
+      .default({
+        headline: "",
+        description: "",
+        items: [],
+      }),
     legalities: z.array(legalitySchema).max(8).default([]),
     final_cta: japanFinalCtaSchema.default({
       headline: "",

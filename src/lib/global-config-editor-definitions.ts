@@ -138,31 +138,31 @@ const indonesiaNavbarDefault = [
 ];
 
 const japanNavbarDefault = [
-  { key: "about", label: "About", href: "/about", is_enabled: true, sort_order: 0 },
+  { key: "about", label: "企業情報", href: "/about", is_enabled: true, sort_order: 0 },
   {
     key: "training_method",
-    label: "Training Method",
+    label: "教育・研修",
     href: "/training-method",
     is_enabled: true,
     sort_order: 1,
   },
   {
     key: "candidate_profile",
-    label: "Candidate Profile",
+    label: "候補者情報",
     href: "/candidate-profile",
     is_enabled: true,
     sort_order: 2,
   },
-  { key: "news", label: "News", href: "/news", is_enabled: true, sort_order: 3 },
+  { key: "news", label: "お役立ち情報", href: "/news", is_enabled: true, sort_order: 3 },
   {
     key: "recruitment_network",
-    label: "Recruitment Network",
+    label: "採用ネットワーク",
     href: "/recruitment-network",
     is_enabled: true,
     sort_order: 4,
   },
-  { key: "sectors", label: "Sectors", href: "/sectors", is_enabled: true, sort_order: 5 },
-  { key: "contact", label: "Contact", href: "/contact", is_enabled: true, sort_order: 6 },
+  { key: "sectors", label: "対応分野", href: "/sectors", is_enabled: true, sort_order: 5 },
+  { key: "contact", label: "お問い合わせ", href: "/contact", is_enabled: true, sort_order: 6 },
 ];
 
 const indonesiaQuickLinksDefault = [
@@ -175,17 +175,17 @@ const indonesiaQuickLinksDefault = [
 ];
 
 const japanCompanyLinksDefault = [
-  { key: "about", label: "About", href: "/about", is_enabled: true, sort_order: 0 },
+  { key: "about", label: "企業情報", href: "/about", is_enabled: true, sort_order: 0 },
   {
     key: "recruitment_network",
-    label: "Recruitment Network",
+    label: "採用ネットワーク",
     href: "/recruitment-network",
     is_enabled: true,
     sort_order: 1,
   },
   {
     key: "training_method",
-    label: "Training Method",
+    label: "教育・研修",
     href: "/training-method",
     is_enabled: true,
     sort_order: 2,
@@ -195,7 +195,7 @@ const japanCompanyLinksDefault = [
 const japanResourceLinksDefault = [
   {
     key: "candidate_profile",
-    label: "Candidate Profile",
+    label: "候補者情報",
     href: "/candidate-profile",
     document_file_id: "",
     is_enabled: true,
@@ -203,7 +203,7 @@ const japanResourceLinksDefault = [
   },
   {
     key: "sectors",
-    label: "Sectors",
+    label: "対応分野",
     href: "/sectors",
     document_file_id: "",
     is_enabled: true,
@@ -211,7 +211,7 @@ const japanResourceLinksDefault = [
   },
   {
     key: "news",
-    label: "News",
+    label: "お役立ち情報",
     href: "/news",
     document_file_id: "",
     is_enabled: true,
@@ -219,7 +219,7 @@ const japanResourceLinksDefault = [
   },
   {
     key: "curriculum",
-    label: "Curriculum",
+    label: "教育内容",
     href: "",
     document_file_id: "",
     is_enabled: true,
