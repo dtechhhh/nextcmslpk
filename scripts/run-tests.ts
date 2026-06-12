@@ -647,18 +647,18 @@ async function runIndonesiaHeroRegressionTests() {
     id: "T9.1",
     group: "Test Group 9: Indonesia Hero CTA Regression",
     label: "Homepage hero headline present",
-    status: homepage.status === 200 && homepage.body.includes("Wujudkan Impianmu Bekerja di Jepang") ? "pass" : "fail",
+    status: homepage.status === 200 && homepage.body.includes("Persiapkan Langkahmu untuk Bekerja di Jepang") ? "pass" : "fail",
     responseTimeMs: homepage.responseTimeMs,
-    details: `HTTP ${homepage.status} | contains "Wujudkan Impianmu Bekerja di Jepang"=${homepage.body.includes("Wujudkan Impianmu Bekerja di Jepang")}`,
+    details: `HTTP ${homepage.status} | contains updated homepage headline=${homepage.body.includes("Persiapkan Langkahmu untuk Bekerja di Jepang")}`,
   });
 
   addResult({
     id: "T9.2",
     group: "Test Group 9: Indonesia Hero CTA Regression",
     label: "Homepage hero primary CTA (WhatsApp) present",
-    status: homepage.status === 200 && homepage.body.includes("Konsultasi Gratis via WhatsApp") ? "pass" : "fail",
+    status: homepage.status === 200 && homepage.body.includes("Konsultasi Program") ? "pass" : "fail",
     responseTimeMs: homepage.responseTimeMs,
-    details: `HTTP ${homepage.status} | contains "Konsultasi Gratis via WhatsApp"=${homepage.body.includes("Konsultasi Gratis via WhatsApp")}`,
+    details: `HTTP ${homepage.status} | contains "Konsultasi Program"=${homepage.body.includes("Konsultasi Program")}`,
     critical: true,
   });
 
@@ -666,9 +666,9 @@ async function runIndonesiaHeroRegressionTests() {
     id: "T9.3",
     group: "Test Group 9: Indonesia Hero CTA Regression",
     label: "Homepage hero secondary CTA (Lihat Program) present",
-    status: homepage.status === 200 && homepage.body.includes("Lihat Program") ? "pass" : "fail",
+    status: homepage.status === 200 && homepage.body.includes("Lihat Lowongan Aktif") ? "pass" : "fail",
     responseTimeMs: homepage.responseTimeMs,
-    details: `HTTP ${homepage.status} | contains "Lihat Program"=${homepage.body.includes("Lihat Program")}`,
+    details: `HTTP ${homepage.status} | contains "Lihat Lowongan Aktif"=${homepage.body.includes("Lihat Lowongan Aktif")}`,
   });
 
   addResult({
