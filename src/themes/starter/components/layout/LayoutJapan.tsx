@@ -44,7 +44,7 @@ export async function LayoutJapan({
   const lineAccountId = isLineEnabled ? stringValue(lineContact.line_official_account_id) : "";
   const defaultLineMessage =
     stringValue(lineContact.default_message_template) ||
-    "Hello, I would like to consult with {lpk_name}.";
+    "お世話になっております。{lpk_name}へインドネシア人材の採用について相談を希望しております。";
   const logoImageId = stringValue(brand.logo_image_id);
   const logoLightImageId = stringValue(brand.logo_light_image_id);
   const companyProfileUrl = stringValue(documents.company_profile_url);
@@ -101,7 +101,7 @@ export async function LayoutJapan({
                 label:
                   stringValue(headerPrimaryCta.label) ||
                   stringValue(lineContact.line_display_label) ||
-                  "Contact via LINE",
+                  "LINEで採用相談",
                 lineAccountId,
                 lineMessageTemplate:
                   stringValue(headerPrimaryCta.line_message_template) || defaultLineMessage,
@@ -109,7 +109,7 @@ export async function LayoutJapan({
             : undefined
         }
         secondaryCTA={{
-          label: stringValue(headerSecondaryCta.label) || "Company Profile",
+          label: stringValue(headerSecondaryCta.label) || "会社案内",
           type: headerDownloadUrl ? "document" : "internal_link",
           documentUrl: headerDownloadUrl,
           href: stringValue(headerSecondaryCta.href) || "/contact",
@@ -147,7 +147,7 @@ export async function LayoutJapan({
                 }),
                 displayLabel:
                   stringValue(lineContact.line_display_label) ||
-                  "Konsultasi via LINE",
+                  "LINEで採用相談",
                 isEnabled: true,
               }
             : undefined

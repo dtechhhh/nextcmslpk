@@ -31,6 +31,39 @@ const proofStatSchema = z
   })
   .passthrough();
 
+const companyFactSchema = z
+  .object({
+    icon_key: iconKeySchema,
+    value: optionalString(100),
+    label: optionalString(160),
+    description: optionalString(500),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
+const relationshipPersonSchema = z
+  .object({
+    side_label: optionalString(80),
+    name: optionalString(140),
+    role: optionalString(180),
+    organization: optionalString(180),
+    summary: optionalString(700),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
+const readinessItemSchema = z
+  .object({
+    status: z.enum(["completed", "in_progress", "planned"]).default("planned"),
+    status_label: optionalString(80),
+    icon_key: iconKeySchema,
+    title: optionalString(180),
+    description: optionalString(700),
+    target_label: optionalString(120),
+    ...enabledSortFields,
+  })
+  .passthrough();
+
 const timelineSchema = z
   .object({
     year_label: optionalString(80),
@@ -62,6 +95,9 @@ const teamMemberSchema = z
   .object({
     name: optionalString(140),
     role: optionalString(180),
+    organization_name: optionalString(180),
+    responsibility: optionalString(700),
+    credentials: optionalString(700),
     bio: optionalString(1000),
     image_id: mediaIdSchema,
     ...enabledSortFields,
@@ -73,6 +109,9 @@ const legalOverviewSchema = z
     type_label: optionalString(140),
     title: optionalString(180),
     description: optionalString(700),
+    issuing_authority: optionalString(180),
+    issued_date_label: optionalString(120),
+    status_label: optionalString(100),
     document_label: optionalString(140),
     document_url: emptyOrUrl("Document URL"),
     ...enabledSortFields,
@@ -114,6 +153,24 @@ export const tentangKamiJapanSchema = z
       secondary_href: "",
     }),
     proof_stats: z.array(proofStatSchema).default([]),
+    company_status: z
+      .object({
+        eyebrow_label: optionalString(120),
+        headline: optionalString(220),
+        description: optionalString(1200),
+        status_label: optionalString(140),
+        last_updated_label: optionalString(140),
+        facts: z.array(companyFactSchema).default([]),
+      })
+      .passthrough()
+      .default({
+        eyebrow_label: "",
+        headline: "",
+        description: "",
+        status_label: "",
+        last_updated_label: "",
+        facts: [],
+      }),
     story: z
       .object({
         image_id: mediaIdSchema,
@@ -127,6 +184,60 @@ export const tentangKamiJapanSchema = z
         eyebrow_label: "",
         headline: "",
         body: "",
+      }),
+    japan_relationship: z
+      .object({
+        eyebrow_label: optionalString(120),
+        headline: optionalString(220),
+        description: optionalString(1200),
+        people: z.array(relationshipPersonSchema).default([]),
+        cooperation_scope: z.array(optionalString(240)).default([]),
+        clarification_note: optionalString(700),
+      })
+      .passthrough()
+      .default({
+        eyebrow_label: "",
+        headline: "",
+        description: "",
+        people: [],
+        cooperation_scope: [],
+        clarification_note: "",
+      }),
+    education_quality: z
+      .object({
+        image_id: mediaIdSchema,
+        eyebrow_label: optionalString(120),
+        qualification_label: optionalString(120),
+        headline: optionalString(220),
+        description: optionalString(1200),
+        leader_name: optionalString(140),
+        leader_role: optionalString(180),
+        experience_label: optionalString(180),
+        focus_items: z.array(optionalString(240)).default([]),
+      })
+      .passthrough()
+      .default({
+        image_id: "",
+        eyebrow_label: "",
+        qualification_label: "",
+        headline: "",
+        description: "",
+        leader_name: "",
+        leader_role: "",
+        experience_label: "",
+        focus_items: [],
+      }),
+    operational_readiness: z
+      .object({
+        headline: optionalString(220),
+        description: optionalString(1200),
+        items: z.array(readinessItemSchema).default([]),
+      })
+      .passthrough()
+      .default({
+        headline: "",
+        description: "",
+        items: [],
       }),
     leadership_quote: leadershipQuoteSchema.default({
       is_enabled: true,

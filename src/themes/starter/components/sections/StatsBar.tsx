@@ -12,9 +12,10 @@ interface StatsBarItem {
 interface StatsBarProps {
   items: StatsBarItem[]
   variant?: "light" | "dark"
+  compact?: boolean
 }
 
-function StatsBar({ items, variant = "light" }: StatsBarProps) {
+function StatsBar({ items, variant = "light", compact = false }: StatsBarProps) {
   const enabledItems = items.filter((item) => item.isEnabled)
   const isDark = variant === "dark"
   const desktopGridClass =
@@ -33,14 +34,20 @@ function StatsBar({ items, variant = "light" }: StatsBarProps) {
   return (
     <section
       className={cn(
-        "py-16 md:py-20 lg:py-24",
+        compact ? "py-10 md:py-12 lg:py-14" : "py-16 md:py-20 lg:py-24",
         isDark
           ? "bg-primary-700 text-white"
           : "bg-neutral-50 text-neutral-900"
       )}
     >
       <Container>
-        <div className={cn("grid grid-cols-2 gap-y-10", desktopGridClass)}>
+        <div
+          className={cn(
+            "grid grid-cols-2",
+            compact ? "gap-y-8" : "gap-y-10",
+            desktopGridClass,
+          )}
+        >
           {enabledItems.map((item, index) => {
             const Icon = ICON_REGISTRY[item.iconKey as IconKey] ?? FALLBACK_ICON
 
@@ -57,11 +64,16 @@ function StatsBar({ items, variant = "light" }: StatsBarProps) {
                 <Icon
                   aria-hidden="true"
                   className={cn(
-                    "mb-4 size-8",
+                    compact ? "mb-3 size-7" : "mb-4 size-8",
                     isDark ? "text-white" : "text-[var(--color-primary)]"
                   )}
                 />
-                <p className="text-3xl font-bold leading-none md:text-4xl">
+                <p
+                  className={cn(
+                    "font-bold leading-none",
+                    compact ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl",
+                  )}
+                >
                   {item.value}
                 </p>
                 <p

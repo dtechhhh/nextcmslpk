@@ -28,6 +28,7 @@ interface HeroSliderProps {
   primaryCTA?: HeroSliderPrimaryCTA
   secondaryCTA?: HeroSliderCTA
   autoPlayMs?: number
+  locale?: "ja" | "id"
 }
 
 function HeroSlider({
@@ -37,7 +38,8 @@ function HeroSlider({
   eyebrowLabel,
   primaryCTA,
   secondaryCTA,
-  autoPlayMs = 3200,
+  autoPlayMs = 5000,
+  locale = "ja",
 }: HeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
@@ -105,7 +107,7 @@ function HeroSlider({
 
   return (
     <section
-      className="relative flex min-h-[60vh] items-center overflow-hidden bg-neutral-900 md:min-h-[80vh]"
+      className="relative flex min-h-[560px] items-center overflow-hidden bg-neutral-900 sm:min-h-[580px] md:min-h-[620px] lg:min-h-[650px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onKeyDown={(event) => {
@@ -136,25 +138,25 @@ function HeroSlider({
           />
         ))}
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/60 via-black/30 to-transparent" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
 
-      <Container className="relative z-20 py-16 md:py-20 lg:py-24">
+      <Container className="relative z-20 py-12 sm:py-14 md:py-16 lg:py-20">
         <div className="max-w-3xl">
           {eyebrowLabel ? (
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary-300">
+            <p className="mb-3 text-xs font-semibold tracking-normal text-primary-200 md:text-sm">
               {eyebrowLabel}
             </p>
           ) : null}
-          <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+          <h1 className="text-balance text-3xl font-bold leading-[1.35] text-white sm:text-4xl md:text-5xl">
             {headline}
           </h1>
           {subheadline ? (
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/90 md:text-xl">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/90 md:text-lg md:leading-8">
               {subheadline}
             </p>
           ) : null}
           {primaryCTA || secondaryCTA ? (
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               {primaryCTA ? (
                 <Button
                   render={<a href={primaryCTA.href} />}
@@ -181,12 +183,16 @@ function HeroSlider({
       </Container>
 
       {slides.length > 1 ? (
-        <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2 md:bottom-6">
           {slides.map((slide, index) => (
             <button
               key={`${slide.mediaSrc}-dot-${index}`}
               type="button"
-              aria-label={`Tampilkan slide ${index + 1}`}
+              aria-label={
+                locale === "ja"
+                  ? `スライド${index + 1}を表示`
+                  : `Tampilkan slide ${index + 1}`
+              }
               aria-current={index === activeIndex}
               onClick={() => setActiveIndex(index)}
               className={cn(

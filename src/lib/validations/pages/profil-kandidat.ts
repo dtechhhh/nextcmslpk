@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   enabledSortFields,
+  faqItemSchema,
   iconKeySchema,
   mediaIdSchema,
   optionalString,
@@ -62,6 +63,10 @@ const candidateExampleSchema = z
     language_text: optionalString(400),
     character_label: optionalString(80),
     character_text: optionalString(700),
+    screening_label: optionalString(80),
+    screening_text: optionalString(700),
+    availability_label: optionalString(80),
+    availability_text: optionalString(400),
     readiness_label: optionalString(140),
     readiness_is_enabled: z.boolean().default(true),
     highlight_tags: z.array(optionalString(80)).default([]),
@@ -80,7 +85,20 @@ const candidatePoolCandidateSchema = z
     nationality_label: optionalString(120),
     target_sector_label: optionalString(160),
     age_label: optionalString(80),
+    japanese_level_label: optionalString(120),
+    readiness_label: optionalString(140),
+    availability_label: optionalString(140),
     image_id: mediaIdSchema,
+    ...enabledSortFields,
+  })
+  .passthrough();
+
+const stepSchema = z
+  .object({
+    icon_key: iconKeySchema,
+    step_label: optionalString(80),
+    title: optionalString(180),
+    description: optionalString(700),
     ...enabledSortFields,
   })
   .passthrough();
@@ -158,6 +176,9 @@ export const profilKandidatSchema = z
     candidate_strengths: z.array(iconTitleDescSchema).default([]),
     supported_pathways: z.array(pathwaySchema).default([]),
     candidate_examples: z.array(candidateExampleSchema).default([]),
+    selection_assurance: z.array(iconTitleDescSchema).default([]),
+    handoff_process: z.array(stepSchema).default([]),
+    faqs: z.array(faqItemSchema).default([]),
     readiness_framework: z.array(iconTitleDescSchema).default([]),
     partner_perspective: z
       .object({
