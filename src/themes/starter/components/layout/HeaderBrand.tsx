@@ -33,23 +33,23 @@ export function HeaderBrand({
       )}
     >
       {logoSrc ? (
-        <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden">
+        <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden md:size-11">
           <Image
             src={logoSrc}
             alt=""
             width={logoWidth}
             height={logoHeight}
             priority
-            className="max-h-11 max-w-14 object-contain"
+            className="max-h-10 max-w-12 object-contain md:max-h-11 md:max-w-14"
           />
         </span>
       ) : null}
       <span className="min-w-0 leading-tight">
-        <span className="block truncate text-[15px] font-bold text-neutral-950 sm:text-base">
+        <span className="block truncate text-sm font-bold text-neutral-950 sm:text-base">
           {lpkName}
         </span>
         {tagline ? (
-          <span className="mt-0.5 block truncate text-[11px] font-medium leading-4 text-neutral-500 sm:text-xs">
+          <span className="mt-0.5 block truncate text-[10px] font-medium leading-4 text-neutral-500 sm:text-xs">
             {tagline}
           </span>
         ) : null}

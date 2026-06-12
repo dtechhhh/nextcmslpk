@@ -47,12 +47,17 @@ function CardGrid({
   }
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section
+      className={cn(
+        "bg-white",
+        variant === "japan" ? "py-12 md:py-16 lg:py-20" : "py-16 md:py-20 lg:py-24",
+      )}
+    >
       <Container>
         {title || subtitle ? (
-          <div className="mx-auto mb-10 max-w-3xl text-center">
+          <div className={cn("mx-auto max-w-3xl text-center", variant === "japan" ? "mb-8" : "mb-10")}>
             {title ? (
-              <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              <h2 className={cn("font-bold text-neutral-900", variant === "japan" ? "text-2xl md:text-4xl" : "text-3xl md:text-4xl")}>
                 {title}
               </h2>
             ) : null}

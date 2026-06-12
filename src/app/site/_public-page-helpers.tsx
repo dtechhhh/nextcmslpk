@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { Check } from "lucide-react";
 
 import { getSiteContext } from "@/app/site/site-context";
+import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import {
   resolveActiveOffer,
@@ -46,7 +47,6 @@ import { CTABanner } from "@/themes/starter/components/sections/CTABanner";
 import { ExpiredBadge } from "@/themes/starter/components/sections/ExpiredBadge";
 import { FAQ } from "@/themes/starter/components/sections/FAQ";
 import { DocumentDownload } from "@/themes/starter/components/sections/DocumentDownload";
-import { FacilityGallery } from "@/themes/starter/components/sections/FacilityGallery";
 import { HeroSection } from "@/themes/starter/components/sections/HeroSection";
 import { OfferBanner } from "@/themes/starter/components/sections/OfferBanner";
 import { RelatedItems } from "@/themes/starter/components/sections/RelatedItems";
@@ -54,6 +54,7 @@ import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
 import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
 import { TeamGrid } from "@/themes/starter/components/sections/TeamGrid";
 import { TestimonialCarousel } from "@/themes/starter/components/sections/TestimonialCarousel";
+import { Timeline } from "@/themes/starter/components/sections/Timeline";
 
 export type PageSearchParams = Promise<PublicPageSearchParams>;
 export type SlugParams = Promise<{ slug: string }>;
@@ -181,30 +182,56 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
   const featuredProgramsConfig = record(data.featured_programs);
   const offerSection = record(data.offer_section);
   const contactSection = record(data.contact_section);
+  const displayText = record(data.display_text);
+  const foundationSection = record(data.foundation_section);
+  const latestJobsConfig = record(data.latest_jobs);
+  const latestBlogsConfig = record(data.latest_blogs);
+  const showLatestJobs = booleanValue(latestJobsConfig.is_enabled, true);
+  const showLatestBlogs = booleanValue(latestBlogsConfig.is_enabled, true);
+  const latestJobsPageSize = numberValue(latestJobsConfig.max_items) || 5;
+  const latestBlogsPageSize = numberValue(latestBlogsConfig.max_items) || 5;
+  const homepageText = (key: string, fallback: string) =>
+    stringValue(displayText[key]) || fallback;
   const [heroImage, programs, jobs, blogs, offerPayload] = await Promise.all([
     resolveMediaUrl(heroMediaId),
     resolveFeaturedPrograms(context.variantId, featuredProgramsConfig),
-    resolveCachedCollectionList(
-      context.variantId,
-      "job",
-      {
-        source: "latest_active",
-        pageSize: numberValue(record(data.latest_jobs).max_items) || 5,
-        activeOnly: true,
-      },
-      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
-      (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:job`],
-    ),
-    resolveCachedCollectionList(
-      context.variantId,
-      "blog",
-      {
-        source: "latest_published",
-        pageSize: numberValue(record(data.latest_blogs).max_items) || 5,
-      },
-      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
-      (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:blog`],
-    ),
+    showLatestJobs
+      ? resolveCachedCollectionList(
+          context.variantId,
+          "job",
+          {
+            source: "latest_active",
+            pageSize: latestJobsPageSize,
+            activeOnly: true,
+          },
+          PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+          (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:job`],
+        )
+      : Promise.resolve({
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: latestJobsPageSize,
+          totalPages: 1,
+        }),
+    showLatestBlogs
+      ? resolveCachedCollectionList(
+          context.variantId,
+          "blog",
+          {
+            source: "latest_published",
+            pageSize: latestBlogsPageSize,
+          },
+          PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+          (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:blog`],
+        )
+      : Promise.resolve({
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: latestBlogsPageSize,
+          totalPages: 1,
+        }),
     resolveOfferSectionPayload(context.variantId, offerSection),
   ]);
   const offerItem = offerPayload.item;
@@ -224,6 +251,17 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       ),
     ),
   ]);
+  const workFieldCards = await Promise.all(
+    sortedRecords(data.work_fields).map(async (item, index) => ({
+      id: `work-field-${index}`,
+      title: stringValue(item.title),
+      description: stringValue(item.description),
+      iconKey: stringValue(item.icon_key),
+      imageSrc:
+        (await resolveMediaUrl(stringValue(item.image_id))) || undefined,
+      isEnabled: booleanValue(item.is_enabled, true),
+    })),
+  );
   const heroPrimaryCtaLabel = stringValueWithMissingFallback(
     hero,
     "primary_cta_label",
@@ -262,6 +300,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
         <PlainHero
           title={stringValue(hero.headline) || page.title}
           subtitle={stringValue(hero.subheadline)}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
           primaryCTA={heroPrimaryCTA}
           secondaryCTA={heroSecondaryCTA}
         />
@@ -282,12 +321,63 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
         }
         description={offerItem?.excerpt || stringValue(offerSection.fallback_description)}
         imageSrc={offerItem?.thumbnailSrc || offerPayload.fallbackImageSrc || undefined}
-        ctaLabel="Lihat Penawaran"
-        ctaHref={offerItem ? `/offer/${offerItem.slug}` : undefined}
+        ctaLabel={
+          offerItem
+            ? "Lihat Penawaran"
+            : stringValue(offerSection.fallback_cta_label)
+        }
+        ctaHref={
+          offerItem
+            ? `/offer/${offerItem.slug}`
+            : stringValue(offerSection.fallback_cta_href)
+        }
       />
       <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
       <CardGrid
-        title="Kenapa Memilih Kami"
+        title={homepageText("audience_paths_title", "Pilih Kebutuhanmu")}
+        subtitle={stringValue(displayText.audience_paths_description)}
+        columns={2}
+        items={sortedRecords(data.audience_paths).map((item, index) => ({
+          id: `audience-path-${index}`,
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          href: stringValue(item.href),
+          meta: stringValue(item.cta_label),
+          iconKey: stringValue(item.icon_key),
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      {showLatestJobs ? (
+        <CollectionList
+          title={homepageText("jobs_title", "Lowongan Terbaru")}
+          subtitle={stringValue(displayText.jobs_description)}
+          items={jobListItems.map((item) => ({ ...item, subtitle: undefined }))}
+          total={jobListItems.length}
+          page={1}
+          pageSize={Math.max(jobListItems.length, 1)}
+          totalPages={1}
+          detailPathPrefix="/job"
+          ctaLabel={homepageText("jobs_cta_label", "Lihat Semua Lowongan")}
+          ctaHref="/job"
+          showSummary={false}
+          showPagination={false}
+        />
+      ) : null}
+      <CardGrid
+        title={homepageText("programs_title", "Program Unggulan")}
+        subtitle={stringValue(displayText.programs_description)}
+        items={programCards}
+        ctaLabel={homepageText("programs_cta_label", "Lihat Semua Program")}
+        ctaHref="/program"
+      />
+      <CardGrid
+        title={homepageText("work_fields_title", "Bidang Kerja yang Dipersiapkan")}
+        subtitle={stringValue(displayText.work_fields_description)}
+        items={workFieldCards}
+      />
+      <CardGrid
+        title={homepageText("trust_title", "Kenapa Memilih Kami")}
+        subtitle={stringValue(displayText.trust_description)}
         items={arrayOfRecords(data.trust_cards).map((item, index) => ({
           id: String(index),
           title: stringValue(item.headline) || stringValue(item.title),
@@ -296,25 +386,18 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
-      <CardGrid
-        title="Program Unggulan"
-        items={programCards}
-        ctaLabel="Lihat Semua Program"
-        ctaHref="/program"
-      />
-      <CollectionList
-        title="Lowongan Terbaru"
-        items={jobListItems}
-        total={jobs.total}
-        page={jobs.page}
-        pageSize={jobs.pageSize}
-        totalPages={jobs.totalPages}
-        detailPathPrefix="/job"
-        ctaLabel="Lihat Semua Lowongan"
-        ctaHref="/job"
+      <HomepageFoundationSection
+        isEnabled={booleanValue(foundationSection.is_enabled, true)}
+        eyebrowLabel={stringValue(foundationSection.eyebrow_label)}
+        headline={stringValue(foundationSection.headline)}
+        description={stringValue(foundationSection.description)}
+        bulletItems={flatStringList(foundationSection.bullet_items)}
+        ctaLabel={stringValue(foundationSection.cta_label)}
+        ctaHref={stringValue(foundationSection.cta_href)}
       />
       <StepFlow
-        title="Alur Pendaftaran"
+        title={homepageText("steps_title", "Alur Pendaftaran")}
+        subtitle={stringValue(displayText.steps_description)}
         items={arrayOfRecords(data.steps).map((item, index) => ({
           iconKey: stringValue(item.icon_key) || "check",
           title: stringValue(item.title),
@@ -323,8 +406,19 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
+      <StepFlow
+        title={homepageText("applicant_steps_title", "Alur Melamar Lowongan")}
+        subtitle={stringValue(displayText.applicant_steps_description)}
+        items={arrayOfRecords(data.applicant_steps).map((item, index) => ({
+          iconKey: stringValue(item.icon_key) || "check",
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
       <TestimonialCarousel
-        title="Cerita Alumni"
+        title={homepageText("testimonials_title", "Cerita Alumni")}
         items={arrayOfRecords(data.testimonials).map((item) => ({
           name: stringValue(item.name),
           roleOrProgram: stringValue(item.role_or_program),
@@ -332,24 +426,26 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
-      <FAQ title="Pertanyaan Umum" items={arrayOfRecords(data.faqs).map(toFaqItem)} />
-      <CardGrid
-        title="Artikel Terbaru"
-        items={blogCards}
-        ctaLabel="Lihat Semua Artikel"
-        ctaHref="/blog"
+      <FAQ
+        title={homepageText("faq_title", "Pertanyaan Umum")}
+        subtitle={stringValue(displayText.faq_description)}
+        items={arrayOfRecords(data.faqs).map(toFaqItem)}
       />
+      {showLatestBlogs ? (
+        <CardGrid
+          title={homepageText("blogs_title", "Artikel Terbaru")}
+          subtitle={stringValue(displayText.blogs_description)}
+          items={blogCards.map((item) => ({ ...item, description: undefined }))}
+          ctaLabel={homepageText("blogs_cta_label", "Lihat Semua Artikel")}
+          ctaHref="/blog"
+        />
+      ) : null}
       <ContactSection
         headline={stringValue(contactSection.headline) || "Hubungi Kami"}
         description={stringValue(contactSection.description)}
         globalConfig={context.globalConfig}
         whatsappHref={whatsappHref}
         showGlobalContact={booleanValue(contactSection.use_global_contact, true)}
-      />
-      <CTABanner
-        headline="Siap mulai perjalanan kerja ke Jepang?"
-        description="Tim kami siap membantu memilih program yang sesuai."
-        primaryCTA={{ label: "Chat WhatsApp", href: whatsappHref, variant: "whatsapp" }}
       />
     </>
   );
@@ -469,6 +565,9 @@ export async function renderListPage(options: ListPageOptions) {
         />
       ) : null}
       <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
+      {options.pageKey === "program_page" ? (
+        <ProgramComparisonSection config={record(data.program_comparison)} />
+      ) : null}
       <CollectionList
         items={itemsWithLabels}
         total={collection.total}
@@ -745,6 +844,80 @@ export async function renderDetailPage(options: DetailPageOptions) {
         sidebar={<DetailSidebar item={item} globalConfig={context.globalConfig} tenantName={context.tenant.name} />}
       />
     </>
+  );
+}
+
+function ProgramComparisonSection({ config }: { config: PublicJson }) {
+  const title = stringValue(config.title);
+  const description = stringValue(config.description);
+  const items = sortedRecords(config.items).filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) ||
+        stringValue(item.best_for) ||
+        stringValue(item.preparation) ||
+        stringValue(item.note)),
+  );
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          {title ? (
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              {title}
+            </h2>
+          ) : null}
+          {description ? (
+            <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <div className="grid gap-5 lg:grid-cols-5">
+          {items.map((item, index) => (
+            <Card key={`${stringValue(item.title)}-${index}`}>
+              <CardContent className="p-5">
+                {stringValue(item.title) ? (
+                  <h3 className="text-lg font-semibold text-neutral-900">
+                    {stringValue(item.title)}
+                  </h3>
+                ) : null}
+                {stringValue(item.best_for) ? (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      Cocok untuk
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-neutral-700">
+                      {stringValue(item.best_for)}
+                    </p>
+                  </div>
+                ) : null}
+                {stringValue(item.preparation) ? (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      Yang disiapkan
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-neutral-700">
+                      {stringValue(item.preparation)}
+                    </p>
+                  </div>
+                ) : null}
+                {stringValue(item.note) ? (
+                  <p className="mt-4 rounded-lg bg-neutral-50 p-3 text-sm leading-6 text-neutral-600">
+                    {stringValue(item.note)}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
   );
 }
 
@@ -1292,27 +1465,29 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
 
   const data = page.dataJson;
   const hero = record(data.hero);
+  const companyStatus = record(data.company_status);
   const story = record(data.story);
+  const japanRelationship = record(data.japan_relationship);
+  const educationQuality = record(data.education_quality);
+  const operationalReadiness = record(data.operational_readiness);
   const visionMission = record(data.vision_mission);
   const contactSection = record(data.contact_section);
+  const finalCta = record(data.final_cta);
   const lpkName = getLpkName(context.globalConfig, context.tenant.name);
   const defaultWhatsappHref = getWhatsappHref(context.globalConfig, lpkName);
   const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
   const heroWhatsappHref = heroWhatsappMessage
     ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
     : defaultWhatsappHref;
+  const finalWhatsappMessage = stringValue(finalCta.primary_whatsapp_message);
+  const finalWhatsappHref = finalWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, finalWhatsappMessage)
+    : defaultWhatsappHref;
 
   const heroImageId = stringValue(hero.media_id) || stringValue(hero.image_id);
   const heroImage = await resolveMediaUrl(heroImageId);
 
-  const galleryMediaIds = flatStringList(record(data.gallery).media_ids);
-  const [galleryUrls, teamMembers, partnerCards] = await Promise.all([
-    galleryMediaIds.length > 0
-      ? resolveMediaUrls(galleryMediaIds)
-      : Promise.resolve(new Map<string, string>()),
-    resolveTeamMemberCards(sortedRecords(data.team_members)),
-    resolvePartnerCards(sortedRecords(data.partners)),
-  ]);
+  const teamMembers = await resolveTeamMemberCards(sortedRecords(data.team_members));
 
   return (
     <>
@@ -1322,6 +1497,7 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
           mediaType={stringValue(hero.media_type) === "video" ? "video" : "image"}
           mediaSrc={heroImage}
           mediaAlt={stringValue(hero.headline) || page.title}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
           headline={stringValue(hero.headline) || page.title}
           subheadline={stringValue(hero.subheadline)}
           primaryCTA={
@@ -1347,6 +1523,7 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
         <PlainHero
           title={stringValue(hero.headline) || page.title}
           subtitle={stringValue(hero.subheadline)}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
           primaryCTA={
             stringValue(hero.primary_cta_label)
               ? {
@@ -1369,20 +1546,19 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
       <StatsBar
         items={sortedRecords(data.proof_stats).map(toStatItem)}
       />
+      <TentangKamiCompanyStatusSection config={companyStatus} />
       <TentangKamiStorySection
         imageId={stringValue(story.image_id)}
         badgeLabel={stringValue(story.badge_label)}
         headline={stringValue(story.headline)}
         body={stringValue(story.body)}
       />
-      <TentangKamiVisionMissionSection
-        visionHeadline={stringValue(visionMission.vision_headline)}
-        visionDescription={stringValue(visionMission.vision_description)}
-        missionHeadline={stringValue(visionMission.mission_headline)}
-        missionDescription={stringValue(visionMission.mission_description)}
-      />
+      <TentangKamiJapanRelationshipSection config={japanRelationship} />
+      <TentangKamiEducationQualitySection config={educationQuality} />
+      <TentangKamiOperationalReadinessSection config={operationalReadiness} />
       <CardGrid
-        title="Nilai-Nilai Kami"
+        title="Komitmen Kami kepada Peserta"
+        subtitle="Prinsip ini diterjemahkan ke dalam cara kami memberi informasi, mengevaluasi kesiapan, dan mendampingi setiap kandidat."
         items={sortedRecords(data.values).map((item, index) => ({
           id: `value-${index}`,
           title: stringValue(item.title) || stringValue(item.headline),
@@ -1391,20 +1567,26 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
           isEnabled: booleanValue(item.is_enabled, true),
         }))}
       />
-      <TeamGrid title="Tim Kami" members={teamMembers} />
-      <CardGrid
-        title="Partner Kami"
-        items={partnerCards}
+      <TeamGrid
+        title="Orang yang Bertanggung Jawab"
+        subtitle="Kenali peran dan pengalaman orang-orang yang menjalankan operasional, pendidikan, serta kepatuhan lembaga."
+        members={teamMembers}
       />
-      <FacilityGallery
-        title="Galeri"
-        items={galleryMediaIds
-          .map((mediaId, index) => ({
-            mediaSrc: galleryUrls.get(mediaId) || "",
-            sortOrder: index,
-            isEnabled: true,
-          }))
-          .filter((item) => item.mediaSrc)}
+      <Timeline
+        title="Perjalanan yang Membentuk HIT"
+        items={sortedRecords(data.timeline).map((item, index) => ({
+          yearLabel: stringValue(item.year_label),
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <TentangKamiVisionMissionSection
+        visionHeadline={stringValue(visionMission.vision_headline)}
+        visionDescription={stringValue(visionMission.vision_description)}
+        missionHeadline={stringValue(visionMission.mission_headline)}
+        missionDescription={stringValue(visionMission.mission_description)}
       />
       <TentangKamiLegalitiesSection items={sortedRecords(data.legalities)} />
       <TentangKamiContactSection
@@ -1414,13 +1596,21 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
         whatsappHref={defaultWhatsappHref}
       />
       <CTABanner
-        headline="Siap memulai perjalanan Anda?"
-        description="Hubungi kami untuk informasi lebih lanjut dan konsultasi gratis."
+        headline={stringValue(finalCta.headline) || "Kenali jalur yang sesuai sebelum mendaftar"}
+        description={stringValue(finalCta.description)}
         primaryCTA={{
-          label: "Chat WhatsApp",
-          href: defaultWhatsappHref,
+          label: stringValue(finalCta.primary_cta_label) || "Konsultasi lewat WhatsApp",
+          href: finalWhatsappHref,
           variant: "whatsapp",
         }}
+        secondaryCTA={
+          stringValue(finalCta.secondary_cta_label)
+            ? {
+                label: stringValue(finalCta.secondary_cta_label),
+                href: stringValue(finalCta.secondary_href) || "/program",
+              }
+            : undefined
+        }
       />
     </>
   );
@@ -1476,6 +1666,323 @@ async function TentangKamiStorySection({
             ) : null}
           </div>
         </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiCompanyStatusSection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const facts = sortedRecords(config.facts).filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.value) || stringValue(item.label) || stringValue(item.description)),
+  );
+
+  if (!headline && !description && facts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="profil-lembaga" className="scroll-mt-24 bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
+          <div>
+            {stringValue(config.eyebrow_label) ? (
+              <p className="text-sm font-semibold uppercase text-primary-600">
+                {stringValue(config.eyebrow_label)}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {description}
+              </p>
+            ) : null}
+            {stringValue(config.status_label) || stringValue(config.last_updated_label) ? (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                {stringValue(config.status_label) ? (
+                  <Badge variant="info">{stringValue(config.status_label)}</Badge>
+                ) : null}
+                {stringValue(config.last_updated_label) ? (
+                  <span className="text-sm text-neutral-500">
+                    {stringValue(config.last_updated_label)}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
+          {facts.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {facts.map((item, index) => {
+                const iconKey = stringValue(item.icon_key) || "building_2";
+                const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+
+                return (
+                  <article
+                    key={`${stringValue(item.label)}-${index}`}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-5"
+                  >
+                    <Icon aria-hidden="true" className="size-6 text-primary-600" />
+                    {stringValue(item.value) ? (
+                      <p className="mt-4 text-2xl font-bold text-neutral-950">
+                        {stringValue(item.value)}
+                      </p>
+                    ) : null}
+                    {stringValue(item.label) ? (
+                      <h3 className="mt-1 font-semibold text-neutral-900">
+                        {stringValue(item.label)}
+                      </h3>
+                    ) : null}
+                    {stringValue(item.description) ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">
+                        {stringValue(item.description)}
+                      </p>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiJapanRelationshipSection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const people = sortedRecords(config.people).filter(
+    (item) => booleanValue(item.is_enabled, true) && stringValue(item.name),
+  );
+  const cooperationScope = flatStringList(config.cooperation_scope);
+
+  if (!headline && !description && people.length === 0 && cooperationScope.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          {stringValue(config.eyebrow_label) ? (
+            <p className="text-sm font-semibold uppercase text-primary-600">
+              {stringValue(config.eyebrow_label)}
+            </p>
+          ) : null}
+          {headline ? (
+            <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+              {headline}
+            </h2>
+          ) : null}
+          {description ? (
+            <p className="mt-5 text-base leading-8 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        {people.length > 0 ? (
+          <div className="mx-auto mt-10 grid max-w-5xl gap-5 lg:grid-cols-2">
+            {people.slice(0, 2).map((person, index) => (
+              <article
+                key={`${stringValue(person.name)}-${index}`}
+                className="rounded-lg border border-neutral-200 bg-white p-6"
+              >
+                {stringValue(person.side_label) ? (
+                  <Badge variant="outline">{stringValue(person.side_label)}</Badge>
+                ) : null}
+                <h3 className="mt-4 text-xl font-bold text-neutral-950">
+                  {stringValue(person.name)}
+                </h3>
+                {[stringValue(person.role), stringValue(person.organization)]
+                  .filter(Boolean)
+                  .map((line) => (
+                    <p key={line} className="mt-1 text-sm font-medium text-primary-600">
+                      {line}
+                    </p>
+                  ))}
+                {stringValue(person.summary) ? (
+                  <p className="mt-4 text-sm leading-7 text-neutral-600">
+                    {stringValue(person.summary)}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : null}
+
+        {cooperationScope.length > 0 ? (
+          <div className="mx-auto mt-8 max-w-5xl rounded-lg border border-primary-100 bg-white p-6">
+            <h3 className="text-lg font-bold text-neutral-900">
+              Pengalaman tersebut diterapkan dalam
+            </h3>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {cooperationScope.map((item) => (
+                <div key={item} className="flex gap-3 text-sm leading-6 text-neutral-700">
+                  <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-primary-600" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {stringValue(config.clarification_note) ? (
+          <p className="mx-auto mt-5 max-w-5xl text-sm leading-6 text-neutral-500">
+            {stringValue(config.clarification_note)}
+          </p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function TentangKamiEducationQualitySection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const focusItems = flatStringList(config.focus_items);
+  const imageSrc = await resolveMediaUrl(stringValue(config.image_id));
+
+  if (!headline && !description && focusItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)] lg:items-center">
+          <div>
+            {stringValue(config.eyebrow_label) ? (
+              <p className="text-sm font-semibold uppercase text-white/70">
+                {stringValue(config.eyebrow_label)}
+              </p>
+            ) : null}
+            {stringValue(config.qualification_label) ? (
+              <div className="mt-5 inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-xl font-bold">
+                {stringValue(config.qualification_label)}
+              </div>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-6 text-3xl font-bold leading-tight md:text-4xl">{headline}</h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/80">{description}</p>
+            ) : null}
+            {stringValue(config.leader_name) || stringValue(config.leader_role) ? (
+              <div className="mt-6">
+                <p className="font-bold text-white">{stringValue(config.leader_name)}</p>
+                <p className="mt-1 text-sm text-white/70">
+                  {[stringValue(config.leader_role), stringValue(config.experience_label)]
+                    .filter(Boolean)
+                    .join(" / ")}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-4">
+            {imageSrc ? (
+              <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/15 bg-white/10">
+                <Image
+                  src={imageSrc}
+                  alt={stringValue(config.leader_name) || headline}
+                  fill
+                  sizes="(min-width: 1024px) 35vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+            {focusItems.length > 0 ? (
+              <div className="rounded-lg border border-white/15 bg-white/10 p-6">
+                <h3 className="font-bold text-white">Fokus pendidikan dan evaluasi</h3>
+                <ul className="mt-4 space-y-3">
+                  {focusItems.map((item) => (
+                    <li key={item} className="flex gap-3 text-sm leading-6 text-white/80">
+                      <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-red-300" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiOperationalReadinessSection({ config }: { config: PublicJson }) {
+  const items = sortedRecords(config.items).filter(
+    (item) => booleanValue(item.is_enabled, true) && stringValue(item.title),
+  );
+
+  if (!stringValue(config.headline) && !stringValue(config.description) && items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          {stringValue(config.headline) ? (
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              {stringValue(config.headline)}
+            </h2>
+          ) : null}
+          {stringValue(config.description) ? (
+            <p className="mt-4 text-base leading-8 text-neutral-600 md:text-lg">
+              {stringValue(config.description)}
+            </p>
+          ) : null}
+        </div>
+
+        {items.length > 0 ? (
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {items.map((item, index) => {
+              const status = stringValue(item.status);
+              const iconKey = stringValue(item.icon_key) || "circle_check";
+              const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+              const badgeVariant =
+                status === "completed" ? "success" : status === "in_progress" ? "info" : "neutral";
+
+              return (
+                <article
+                  key={`${stringValue(item.title)}-${index}`}
+                  className="rounded-lg border border-neutral-200 bg-neutral-50 p-6"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <Icon aria-hidden="true" className="size-6 shrink-0 text-primary-600" />
+                    {stringValue(item.status_label) ? (
+                      <Badge variant={badgeVariant}>{stringValue(item.status_label)}</Badge>
+                    ) : null}
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-neutral-900">
+                    {stringValue(item.title)}
+                  </h3>
+                  {stringValue(item.description) ? (
+                    <p className="mt-3 text-sm leading-7 text-neutral-600">
+                      {stringValue(item.description)}
+                    </p>
+                  ) : null}
+                  {stringValue(item.target_label) ? (
+                    <p className="mt-4 text-xs font-semibold text-neutral-500">
+                      {stringValue(item.target_label)}
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
       </Container>
     </section>
   );
@@ -1546,24 +2053,41 @@ function TentangKamiLegalitiesSection({
   }
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section id="legalitas" className="scroll-mt-24 bg-white py-16 md:py-20 lg:py-24">
       <Container>
         <h2 className="mb-10 text-center text-3xl font-bold text-neutral-900 md:text-4xl">
-          Legalitas
+          Legalitas yang Dapat Diperiksa
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((item, index) => (
             <Card key={index} className="p-6">
               <CardContent className="flex flex-1 flex-col p-0">
+                {stringValue(item.type_label) ? (
+                  <div className="mb-3">
+                    <Badge variant="outline">{stringValue(item.type_label)}</Badge>
+                  </div>
+                ) : null}
                 {stringValue(item.title) ? (
                   <h3 className="text-lg font-semibold text-neutral-900">
                     {stringValue(item.title)}
                   </h3>
                 ) : null}
                 {stringValue(item.description) ? (
-                  <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">
+                  <p className="mt-3 text-sm leading-6 text-neutral-600">
                     {stringValue(item.description)}
                   </p>
+                ) : null}
+                {[stringValue(item.issuing_authority), stringValue(item.issued_date_label)]
+                  .filter(Boolean)
+                  .map((detail) => (
+                    <p key={detail} className="mt-2 text-xs leading-5 text-neutral-500">
+                      {detail}
+                    </p>
+                  ))}
+                {stringValue(item.status_label) ? (
+                  <div className="mt-4">
+                    <Badge variant="success">{stringValue(item.status_label)}</Badge>
+                  </div>
                 ) : null}
                 {stringValue(item.document_label) && stringValue(item.document_url) ? (
                   <div className="mt-6">
@@ -1627,30 +2151,15 @@ async function resolveTeamMemberCards(items: PublicJson[]) {
     items.map(async (item, index) => ({
       name: stringValue(item.name),
       role: stringValue(item.role),
+      organizationName: stringValue(item.organization_name),
+      credentials: stringValue(item.credentials),
+      responsibility: stringValue(item.responsibility),
       bio: stringValue(item.bio),
       imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
       sortOrder: numberValue(item.sort_order) ?? index,
       isEnabled: booleanValue(item.is_enabled, true),
     })),
   );
-}
-
-async function resolvePartnerCards(items: PublicJson[]) {
-  const resolved = await Promise.all(
-    items.map(async (item, index) => {
-      const logoUrl = await resolveMediaUrl(stringValue(item.logo_image_id));
-      return {
-        id: `partner-${index}`,
-        title: stringValue(item.name),
-        description: stringValue(item.description),
-        imageSrc: logoUrl || undefined,
-        imageAlt: stringValue(item.name),
-        isEnabled: booleanValue(item.is_enabled, true),
-      };
-    }),
-  );
-
-  return resolved.filter((card) => card.isEnabled && (card.title || card.imageSrc));
 }
 
 export async function generatePublicMetadata({
@@ -1966,20 +2475,95 @@ function ContactSection({
   );
 }
 
+function HomepageFoundationSection({
+  isEnabled,
+  eyebrowLabel,
+  headline,
+  description,
+  bulletItems,
+  ctaLabel,
+  ctaHref,
+}: {
+  isEnabled: boolean;
+  eyebrowLabel?: string;
+  headline?: string;
+  description?: string;
+  bulletItems: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+}) {
+  if (!isEnabled || (!headline && !description && bulletItems.length === 0)) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+          <div>
+            {eyebrowLabel ? (
+              <p className="text-sm font-semibold uppercase text-primary-600">
+                {eyebrowLabel}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {description}
+              </p>
+            ) : null}
+            {ctaLabel && ctaHref ? (
+              <Button render={<a href={ctaHref} />} size="lg" className="mt-7">
+                {ctaLabel}
+              </Button>
+            ) : null}
+          </div>
+          {bulletItems.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {bulletItems.map((item) => (
+                <div
+                  key={item}
+                  className="flex gap-3 rounded-lg border border-neutral-200 bg-white p-5"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                    <Check aria-hidden="true" className="size-4" />
+                  </span>
+                  <p className="text-sm font-medium leading-6 text-neutral-700">{item}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function PlainHero({
   title,
   subtitle,
+  eyebrowLabel,
   primaryCTA,
   secondaryCTA,
 }: {
   title: string;
   subtitle?: string;
+  eyebrowLabel?: string;
   primaryCTA?: { label: string; href: string; variant: "whatsapp" | "line" | "default" };
   secondaryCTA?: { label: string; href: string };
 }) {
   return (
     <section className="bg-neutral-950 py-20 text-white md:py-24">
       <Container>
+        {eyebrowLabel ? (
+          <p className="mb-4 text-sm font-semibold uppercase text-white/70">
+            {eyebrowLabel}
+          </p>
+        ) : null}
         <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{title}</h1>
         {subtitle ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p> : null}
         {primaryCTA || secondaryCTA ? (
@@ -3864,6 +4448,19 @@ function truncate(value: string, maxLength: number) {
 }
 
 function formatLabel(value: string) {
+  const labels: Record<string, string> = {
+    program_type: "Jenis Program",
+    gender: "Gender",
+    education_level: "Pendidikan",
+    language_level: "Level Bahasa Awal",
+    job_type: "Jenis Lowongan",
+    job_field: "Bidang Kerja",
+  };
+
+  if (labels[value]) {
+    return labels[value];
+  }
+
   return value
     .replace(/_/g, " ")
     .replace(/\b\w/g, (character) => character.toUpperCase());

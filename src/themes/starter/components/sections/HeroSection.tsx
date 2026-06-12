@@ -5,6 +5,7 @@ import { Container } from "@/themes/starter/components/ui/Container"
 interface HeroCTA {
   label: string
   href: string
+  variant?: "whatsapp" | "line" | "default" | "outline"
 }
 
 interface HeroPrimaryCTA extends HeroCTA {
@@ -37,7 +38,7 @@ function HeroSection({
   priority = false,
 }: HeroSectionProps) {
   return (
-    <section className="relative flex min-h-[60vh] items-center overflow-hidden bg-neutral-900 md:min-h-[80vh]">
+    <section className="relative flex min-h-[520px] items-center overflow-hidden bg-neutral-900 md:min-h-[620px] lg:min-h-[650px]">
       <div className="absolute inset-0 z-0">
         {mediaType === "image" ? (
           <Image
@@ -63,23 +64,23 @@ function HeroSection({
       </div>
 
       {overlay ? (
-        <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/60 via-black/30 to-transparent" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/25" />
       ) : null}
 
-      <Container className="relative z-20 py-16 md:py-20 lg:py-24">
+      <Container className="relative z-20 py-12 md:py-16 lg:py-20">
         <div className="max-w-3xl">
           {eyebrowLabel ? (
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-primary-300">
+            <p className="mb-3 text-sm font-semibold tracking-normal text-primary-200">
               {eyebrowLabel}
             </p>
           ) : null}
 
-          <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-bold leading-[1.35] text-white sm:text-4xl md:text-5xl lg:text-6xl">
             {headline}
           </h1>
 
           {subheadline ? (
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/90 md:text-xl">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/90 md:text-lg md:leading-8">
               {subheadline}
             </p>
           ) : null}
@@ -101,8 +102,12 @@ function HeroSection({
                 <Button
                   render={<a href={secondaryCTA.href} />}
                   size="lg"
-                  variant="outline"
-                  className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  variant={secondaryCTA.variant ?? "outline"}
+                  className={
+                    secondaryCTA.variant && secondaryCTA.variant !== "outline"
+                      ? "w-full sm:w-auto"
+                      : "w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  }
                 >
                   {secondaryCTA.label}
                 </Button>

@@ -147,6 +147,12 @@ export async function JapanHomepage({
         tenantName={tenantName}
         withLineCTA
       />
+      <JapanDecisionProofStrip
+        stats={sortedRecords(data.stats)}
+        legalities={sortedRecords(data.legalities)}
+        achievements={sortedRecords(data.achievements)}
+        flowItems={sortedRecords(partnershipFlow.items)}
+      />
       <StatsBar items={sortedRecords(data.stats).map(toStatItem)} compact />
       <JapanDocumentCardGrid
         title={displayText(display, "achievements_title", "実績・取り組み")}
@@ -248,6 +254,13 @@ export async function JapanAboutPage(props: JapanPageProps) {
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
       />
+      <JapanQuickNav
+        items={[
+          { label: "会社情報", href: "#company-profile" },
+          { label: "教育・研修", href: "/training-method" },
+          { label: "候補者情報", href: "/candidate-profile" },
+        ]}
+      />
       <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} compact />
       <CompanyStatusSection config={companyStatus} />
       <SplitSection
@@ -335,6 +348,13 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
         globalConfig={props.globalConfig}
         tenantName={props.tenantName}
       />
+      <JapanQuickNav
+        items={[
+          { label: "教育設計", href: "#training-program" },
+          { label: "合格基準", href: "#readiness-standards" },
+          { label: "候補者情報", href: "/candidate-profile" },
+        ]}
+      />
       <TrainingRiskSection config={record(data.partner_risks)} />
       <CardGrid
         title={displayText(display, "training_pillars_title", "Pilar Pelatihan")}
@@ -419,6 +439,13 @@ export async function JapanCandidateProfilePage(props: JapanPageProps) {
           tenantName={props.tenantName}
         />
       )}
+      <JapanQuickNav
+        items={[
+          { label: "プロフィール例", href: "#candidate-profiles" },
+          { label: "教育基準", href: "/training-method#readiness-standards" },
+          { label: "相談する", href: "/contact" },
+        ]}
+      />
       <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} />
       <SplitSection
         mediaType={stringValue(whyIndonesia.media_type)}
@@ -529,6 +556,13 @@ export async function JapanRecruitmentNetworkPage(props: JapanPageProps) {
           tenantName={props.tenantName}
         />
       )}
+      <JapanQuickNav
+        items={[
+          { label: "候補者情報", href: "/candidate-profile" },
+          { label: "対応分野", href: "/sectors" },
+          { label: "相談する", href: "/contact" },
+        ]}
+      />
       {useNetworkMapHero ? null : (
         <StatsBar items={sortedRecords(data.proof_stats).map(toProofStatItem)} />
       )}
@@ -607,6 +641,13 @@ export async function JapanSectorListPage({
         pageTitle={page.title}
         globalConfig={globalConfig}
         tenantName={tenantName}
+      />
+      <JapanQuickNav
+        items={[
+          { label: "分野一覧", href: "#collection-list" },
+          { label: "候補者情報", href: "/candidate-profile" },
+          { label: "相談する", href: "/contact" },
+        ]}
       />
       <JapanCollectionList
         kind="sector"
@@ -1108,6 +1149,13 @@ export async function JapanContactPage(props: JapanPageProps) {
         lineLabel={lineCtaLabel}
         formLabel={stringValue(channels.form_cta_label) || "お問い合わせフォーム"}
       />
+      <JapanQuickNav
+        items={[
+          { label: "フォーム", href: "#contact-inquiry" },
+          { label: "候補者情報", href: "/candidate-profile" },
+          { label: "教育・研修", href: "/training-method" },
+        ]}
+      />
       <ContactTrustStrip items={sortedRecords(data.trust_points)} />
       <ContactChannels
         title={displayText(display, "contact_channels_title", "ご希望の方法でお問い合わせください")}
@@ -1243,7 +1291,7 @@ async function JapanContactHero({
   const mediaSrc = await resolveMediaUrl(mediaId);
 
   return (
-    <section className="relative flex min-h-[420px] items-center overflow-hidden bg-primary-700 py-16 text-white md:min-h-[460px] md:py-20">
+    <section className="relative flex min-h-[420px] items-center overflow-hidden bg-primary-700 py-14 text-white md:min-h-[460px] md:py-20">
       {mediaSrc ? (
         <>
           <Image
@@ -1254,15 +1302,15 @@ async function JapanContactHero({
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-neutral-950/65" />
+          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/65 to-neutral-950/30" />
         </>
       ) : null}
       <Container className="relative z-10">
         <p className="text-sm font-semibold text-white/75">{eyebrowLabel}</p>
-        <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+        <h1 className="mt-4 max-w-4xl text-3xl font-bold leading-[1.35] tracking-normal sm:text-4xl md:text-5xl">
           {headline}
         </h1>
-        <p className="mt-5 max-w-3xl text-base leading-8 text-white/85 md:text-lg">
+        <p className="mt-5 max-w-3xl text-base leading-7 text-white/85 md:text-lg md:leading-8">
           {subheadline}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -1303,8 +1351,10 @@ async function JapanHero({
   const subheadline = stringValue(hero.subheadline);
   const eyebrowLabel = stringValue(hero.eyebrow_label);
   const mediaType = stringValue(hero.media_type);
-  const primaryCTA = getHeroPrimaryCTA(hero, globalConfig, tenantName, withLineCTA);
-  const secondaryCTA = getHeroSecondaryCTA(hero);
+  const { primaryCTA, secondaryCTA } = prioritizeJapanHeroCTAs(
+    getHeroPrimaryCTA(hero, globalConfig, tenantName, withLineCTA),
+    getHeroSecondaryCTA(hero),
+  );
 
   if (mediaType === "slider") {
     const slideIds = arrayOfStrings(hero.slider_media_ids);
@@ -1392,6 +1442,28 @@ function getHeroSecondaryCTA(hero: PublicJson): HeroCTA | undefined {
   return label && href ? { label, href } : undefined;
 }
 
+function prioritizeJapanHeroCTAs(
+  primaryCTA?: HeroPrimaryCTA,
+  secondaryCTA?: HeroCTA,
+): { primaryCTA?: HeroPrimaryCTA; secondaryCTA?: HeroCTA } {
+  if (primaryCTA?.variant === "line" && secondaryCTA) {
+    return {
+      primaryCTA: {
+        label: secondaryCTA.label,
+        href: secondaryCTA.href,
+        variant: "default",
+      },
+      secondaryCTA: {
+        label: primaryCTA.label,
+        href: primaryCTA.href,
+        variant: "line",
+      },
+    };
+  }
+
+  return { primaryCTA, secondaryCTA };
+}
+
 function hasOwnField(value: PublicJson, key: string) {
   return Object.prototype.hasOwnProperty.call(value, key);
 }
@@ -1417,8 +1489,8 @@ function PlainHero({
             {eyebrowLabel}
           </p>
         ) : null}
-        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{title}</h1>
-        {subtitle ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p> : null}
+        <h1 className="max-w-4xl text-3xl font-bold leading-[1.35] sm:text-4xl md:text-5xl">{title}</h1>
+        {subtitle ? <p className="mt-5 max-w-3xl text-base leading-7 text-white/80 md:text-lg md:leading-8">{subtitle}</p> : null}
         {primaryCTA || secondaryCTA ? (
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             {primaryCTA ? (
@@ -1435,8 +1507,12 @@ function PlainHero({
               <Button
                 render={<a href={secondaryCTA.href} />}
                 size="lg"
-                variant="outline"
-                className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                variant={secondaryCTA.variant ?? "outline"}
+                className={
+                  secondaryCTA.variant && secondaryCTA.variant !== "outline"
+                    ? "w-full sm:w-auto"
+                    : "w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                }
               >
                 {secondaryCTA.label}
               </Button>
@@ -1473,8 +1549,10 @@ async function CandidatePoolHero({
     secondary_cta_label: pick("secondary_cta_label"),
     secondary_href: pick("secondary_href"),
   };
-  const primaryCTA = getHeroPrimaryCTA(ctaSource, globalConfig, tenantName);
-  const secondaryCTA = getHeroSecondaryCTA(ctaSource);
+  const { primaryCTA, secondaryCTA } = prioritizeJapanHeroCTAs(
+    getHeroPrimaryCTA(ctaSource, globalConfig, tenantName),
+    getHeroSecondaryCTA(ctaSource),
+  );
   const stats = sortedRecords(config.stats)
     .map(toProofStatItem)
     .filter((item) => item.isEnabled && (item.value || item.label));
@@ -1496,7 +1574,7 @@ async function CandidatePoolHero({
   const isVideo = stringValue(fallbackHero.media_type) === "video";
 
   return (
-    <section className="relative overflow-hidden bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+    <section className="relative overflow-hidden bg-primary-700 py-14 text-white md:py-20 lg:py-24">
       {mediaSrc ? (
         <div className="absolute inset-0">
           {isVideo ? (
@@ -1520,7 +1598,7 @@ async function CandidatePoolHero({
               className="object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-primary-900/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/70 to-neutral-950/50" />
         </div>
       ) : null}
 
@@ -1539,11 +1617,11 @@ async function CandidatePoolHero({
                 {eyebrowLabel}
               </p>
             ) : null}
-            <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+            <h1 className="mt-4 max-w-4xl text-3xl font-bold leading-[1.35] tracking-normal sm:text-4xl md:text-5xl">
               {headline}
             </h1>
             {subheadline ? (
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">
+              <p className="mt-5 max-w-3xl text-base leading-7 text-white/85 md:text-lg md:leading-8">
                 {subheadline}
               </p>
             ) : null}
@@ -1564,8 +1642,12 @@ async function CandidatePoolHero({
                   <Button
                     render={<a href={secondaryCTA.href} />}
                     size="lg"
-                    variant="outline"
-                    className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                    variant={secondaryCTA.variant ?? "outline"}
+                    className={
+                      secondaryCTA.variant && secondaryCTA.variant !== "outline"
+                        ? "w-full sm:w-auto"
+                        : "w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                    }
                   >
                     {secondaryCTA.label}
                   </Button>
@@ -1608,7 +1690,7 @@ async function CandidatePoolHero({
           </div>
 
           {candidateCards.length > 0 ? (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="hidden gap-3 sm:grid sm:grid-cols-2">
               {candidateCards.slice(0, 4).map((item, index) => (
                 <CandidatePoolHeroCard
                   key={`${item.sortOrder}-${item.name}-${index}`}
@@ -1720,8 +1802,10 @@ async function NetworkMapHero({
   const panelTitle = stringValue(config.panel_title) || "採用ネットワークの全体像";
   const panelBadgeLabel = stringValue(config.panel_badge_label) || "ネットワーク概要";
   const trustNote = stringValue(config.trust_note);
-  const primaryCTA = getHeroPrimaryCTA(hero, globalConfig, tenantName);
-  const secondaryCTA = getHeroSecondaryCTA(hero);
+  const { primaryCTA, secondaryCTA } = prioritizeJapanHeroCTAs(
+    getHeroPrimaryCTA(hero, globalConfig, tenantName),
+    getHeroSecondaryCTA(hero),
+  );
   const stats = proofStats
     .map(toProofStatItem)
     .filter((item) => item.isEnabled && (item.value || item.label))
@@ -1752,7 +1836,7 @@ async function NetworkMapHero({
   const isVideo = stringValue(hero.media_type) === "video";
 
   return (
-    <section className="relative overflow-hidden bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+    <section className="relative overflow-hidden bg-primary-700 py-14 text-white md:py-20 lg:py-24">
       {mediaSrc ? (
         <div className="absolute inset-0">
           {isVideo ? (
@@ -1776,7 +1860,7 @@ async function NetworkMapHero({
               className="object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-primary-900/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/70 to-neutral-950/50" />
         </div>
       ) : null}
 
@@ -1788,11 +1872,11 @@ async function NetworkMapHero({
                 {eyebrowLabel}
               </p>
             ) : null}
-            <h1 className="mt-4 max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-5xl">
+            <h1 className="mt-4 max-w-4xl text-3xl font-bold leading-[1.35] tracking-normal sm:text-4xl md:text-5xl">
               {headline}
             </h1>
             {subheadline ? (
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">
+              <p className="mt-5 max-w-3xl text-base leading-7 text-white/85 md:text-lg md:leading-8">
                 {subheadline}
               </p>
             ) : null}
@@ -1813,8 +1897,12 @@ async function NetworkMapHero({
                   <Button
                     render={<a href={secondaryCTA.href} />}
                     size="lg"
-                    variant="outline"
-                    className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                    variant={secondaryCTA.variant ?? "outline"}
+                    className={
+                      secondaryCTA.variant && secondaryCTA.variant !== "outline"
+                        ? "w-full sm:w-auto"
+                        : "w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                    }
                   >
                     {secondaryCTA.label}
                   </Button>
@@ -2182,7 +2270,7 @@ function JapanRelationshipSection({ config }: { config: PublicJson }) {
   }
 
   return (
-    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+    <section id="collection-list" className="scroll-mt-28 bg-neutral-50 py-16 md:py-20 lg:py-24">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           {stringValue(config.eyebrow_label) ? (
@@ -2993,6 +3081,156 @@ function QuoteBlock({
   );
 }
 
+function JapanQuickNav({
+  items,
+}: {
+  items: Array<{ label: string; href: string }>;
+}) {
+  const enabledItems = items.filter((item) => item.label && item.href);
+
+  if (enabledItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <nav
+      aria-label="Page shortcuts"
+      className="sticky top-16 z-30 border-b border-neutral-200 bg-white/95 py-2 backdrop-blur md:top-28"
+    >
+      <Container>
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {enabledItems.map((item) => (
+            <a
+              key={`${item.href}-${item.label}`}
+              href={item.href}
+              className="shrink-0 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </Container>
+    </nav>
+  );
+}
+
+function JapanDecisionProofStrip({
+  stats,
+  legalities,
+  achievements,
+  flowItems,
+}: {
+  stats: PublicJson[];
+  legalities: PublicJson[];
+  achievements: PublicJson[];
+  flowItems: PublicJson[];
+}) {
+  const legal = legalities.find((item) => booleanValue(item.is_enabled, true));
+  const stat = stats.find((item) => booleanValue(item.is_enabled, true) && stringValue(item.value));
+  const achievement = achievements.find((item) => booleanValue(item.is_enabled, true));
+  const flow = flowItems.find((item) => booleanValue(item.is_enabled, true));
+  const legalUrl = stringValue(legal?.document_url);
+  const achievementUrl = stringValue(achievement?.document_url);
+  const cards = [
+    legal
+      ? {
+          eyebrow: "Legal",
+          title: stringValue(legal.title) || "法人情報・許認可",
+          description: stringValue(legal.description) || stringValue(legal.type_label),
+          href: legalUrl,
+          icon: <ShieldCheck aria-hidden="true" className="size-5" />,
+        }
+      : null,
+    stat
+      ? {
+          eyebrow: "Network",
+          title: [stringValue(stat.value), stringValue(stat.label)].filter(Boolean).join(" "),
+          description: "地域・教育機関・候補者接点を確認できます。",
+          href: "/recruitment-network",
+          icon: <Check aria-hidden="true" className="size-5" />,
+        }
+      : null,
+    achievement
+      ? {
+          eyebrow: "Quality",
+          title: stringValue(achievement.title),
+          description: stringValue(achievement.description),
+          href: achievementUrl,
+          icon: <ShieldCheck aria-hidden="true" className="size-5" />,
+        }
+      : null,
+    flow
+      ? {
+          eyebrow: "Process",
+          title: stringValue(flow.title),
+          description: stringValue(flow.description),
+          href: "/contact",
+          icon: <Check aria-hidden="true" className="size-5" />,
+        }
+      : null,
+  ].filter((item): item is NonNullable<typeof item> =>
+    Boolean(item?.title || item?.description),
+  );
+
+  if (cards.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="border-b border-neutral-200 bg-white py-6 md:py-8">
+      <Container>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          {cards.slice(0, 4).map((item) => {
+            const content = (
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600 ring-1 ring-primary-100">
+                    {item.icon}
+                  </span>
+                  <p className="text-xs font-bold uppercase tracking-normal text-secondary-500">
+                    {item.eyebrow}
+                  </p>
+                </div>
+                <h2 className="mt-3 text-base font-bold leading-snug text-neutral-950">
+                  {item.title}
+                </h2>
+                {item.description ? (
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-neutral-600">
+                    {item.description}
+                  </p>
+                ) : null}
+                {item.href ? (
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary-600">
+                    確認する
+                    <ExternalLink aria-hidden="true" className="size-3" />
+                  </span>
+                ) : null}
+              </>
+            );
+
+            return item.href ? (
+              <a
+                key={`${item.eyebrow}-${item.title}`}
+                href={item.href}
+                className="group rounded-lg border border-neutral-200 bg-neutral-50 p-4 transition hover:border-primary-200 hover:bg-white hover:shadow-sm"
+              >
+                {content}
+              </a>
+            ) : (
+              <div
+                key={`${item.eyebrow}-${item.title}`}
+                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+              >
+                {content}
+              </div>
+            );
+          })}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function JapanCollectionList({
   kind,
   collection,
@@ -3029,7 +3267,12 @@ function JapanCollectionList({
         <div className="mb-6 text-sm text-neutral-500">
           全{collection.total}件中 {startItem}-{endItem}件を表示
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={cn(
+            "grid md:grid-cols-2 lg:grid-cols-3",
+            kind === "sector" ? "gap-4 md:gap-6" : "gap-6",
+          )}
+        >
           {collection.items.map((item) => {
             const labels = getJapanCardLabels(kind, item, filters);
             const subtitle = getCollectionSubtitle(item);
@@ -3039,11 +3282,16 @@ function JapanCollectionList({
               <a
                 key={item.id}
                 href={`${detailPathPrefix}/${item.slug}`}
-                className="group block h-full rounded-xl"
+                className="group block h-full rounded-lg"
               >
-              <Card variant="japan" className="h-full py-0">
+              <Card variant="japan" className="h-full rounded-lg py-0">
                 {item.thumbnailSrc ? (
-                  <div className="relative aspect-video overflow-hidden">
+                  <div
+                    className={cn(
+                      "relative overflow-hidden",
+                      kind === "sector" ? "h-28 sm:h-auto sm:aspect-video" : "aspect-video",
+                    )}
+                  >
                     <Image
                       src={item.thumbnailSrc}
                       alt={item.title}
@@ -3053,7 +3301,7 @@ function JapanCollectionList({
                     />
                   </div>
                 ) : null}
-                <CardContent className="flex flex-1 flex-col p-5">
+                <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
                   <div className="mb-3 flex flex-wrap gap-2">
                     {kind === "news" && isNewItem(item.publishedAt) ? (
                       <Badge variant="new_badge">{newBadgeLabel}</Badge>
@@ -3078,7 +3326,12 @@ function JapanCollectionList({
                     </div>
                   ) : null}
                   {item.excerpt ? (
-                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-600">
+                    <p
+                      className={cn(
+                        "mt-3 text-sm leading-6 text-neutral-600",
+                        kind === "sector" ? "line-clamp-2 sm:line-clamp-3" : "line-clamp-3",
+                      )}
+                    >
                       {item.excerpt}
                     </p>
                   ) : null}
@@ -3098,8 +3351,8 @@ function JapanCollectionList({
                     </p>
                   ) : null}
                 </CardContent>
-                <CardFooter className="p-5">
-                  <Button className="w-full">{cardCtaLabel}</Button>
+                <CardFooter className="p-4 sm:p-5">
+                  <Button className="h-8 w-full text-xs sm:h-9">{cardCtaLabel}</Button>
                 </CardFooter>
               </Card>
               </a>

@@ -34,10 +34,13 @@ interface CollectionListProps {
   currentFilters?: Record<string, string>
   filters?: FilterBarFilter[]
   title?: string
+  subtitle?: string
   emptyMessage?: string
   detailPathPrefix: string
   ctaLabel?: string
   ctaHref?: string
+  showSummary?: boolean
+  showPagination?: boolean
   onPageChange?: (page: number) => void
 }
 
@@ -61,10 +64,13 @@ function CollectionList({
   currentFilters = {},
   filters,
   title,
+  subtitle,
   emptyMessage,
   detailPathPrefix,
   ctaLabel,
   ctaHref,
+  showSummary = true,
+  showPagination = true,
   onPageChange,
 }: CollectionListProps) {
   const safePage = Math.min(Math.max(page, 1), Math.max(totalPages, 1))
@@ -75,11 +81,20 @@ function CollectionList({
   return (
     <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
       <Container>
-        {title ? (
+        {title || subtitle ? (
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
-              {title}
-            </h2>
+            <div className="max-w-3xl">
+              {title ? (
+                <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+                  {title}
+                </h2>
+              ) : null}
+              {subtitle ? (
+                <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">
+                  {subtitle}
+                </p>
+              ) : null}
+            </div>
             {ctaLabel && ctaHref ? (
               <Button render={<a href={ctaHref} />} variant="outline">
                 {ctaLabel}
@@ -100,9 +115,11 @@ function CollectionList({
           />
         ) : (
           <>
-            <div className="mb-6 text-sm text-neutral-500">
-              Menampilkan {startItem}-{endItem} dari {total} data
-            </div>
+            {showSummary ? (
+              <div className="mb-6 text-sm text-neutral-500">
+                Menampilkan {startItem}-{endItem} dari {total} data
+              </div>
+            ) : null}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {items.map((item) => {
                 const href = `${detailPathPrefix}/${item.slug}`
@@ -169,7 +186,7 @@ function CollectionList({
               })}
             </div>
 
-            {totalPages > 1 ? (
+            {showPagination && totalPages > 1 ? (
               <nav
                 aria-label="Pagination"
                 className="mt-10 flex flex-wrap items-center justify-center gap-2"

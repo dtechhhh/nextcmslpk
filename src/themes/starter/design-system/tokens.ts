@@ -33,11 +33,11 @@ export const indonesia = {
 
 export const japan = {
   primary: {
-    50: "#eef2ff",
-    100: "#e0e7ff",
-    200: "#c7d2fe",
-    300: "#a5b4fc",
-    400: "#818cf8",
+    50: "#eef8fd",
+    100: "#d8eef8",
+    200: "#acd9ef",
+    300: "#73c2e4",
+    400: "#2e9fd6",
     500: "#1e3a5f",
     600: "#162d4a",
     700: "#0f2035",

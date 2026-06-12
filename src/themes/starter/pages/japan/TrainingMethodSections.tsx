@@ -19,7 +19,7 @@ export function TrainingRiskSection({ config }: SectionProps) {
   if (!hasHeader(config) && items.length === 0) return null;
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section className="bg-white py-12 md:py-16 lg:py-20">
       <Container>
         <SectionHeader config={config} />
         {items.length > 0 ? (
@@ -59,7 +59,7 @@ export function TrainingProgramOverview({ config }: SectionProps) {
   if (!hasHeader(config) && stats.length === 0 && stages.length === 0) return null;
 
   return (
-    <section id="training-program" className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+    <section id="training-program" className="bg-neutral-50 py-12 md:py-16 lg:py-20">
       <Container>
         <SectionHeader config={config} />
         {stats.length > 0 ? (
@@ -121,7 +121,7 @@ export function TrainingSectorModules({ config }: SectionProps) {
   if (!hasHeader(config) && items.length === 0) return null;
 
   return (
-    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+    <section className="bg-neutral-50 py-12 md:py-16 lg:py-20">
       <Container>
         <SectionHeader config={config} />
         {items.length > 0 ? (
@@ -174,7 +174,7 @@ export function TrainingReadinessStandards({ config }: SectionProps) {
   if (!hasHeader(config) && criteria.length === 0) return null;
 
   return (
-    <section id="readiness-standards" className="bg-white py-16 md:py-20 lg:py-24">
+    <section id="readiness-standards" className="bg-white py-12 md:py-16 lg:py-20">
       <Container>
         <SectionHeader config={config} />
         {criteria.length > 0 ? (
@@ -220,7 +220,7 @@ export function TrainingQualityGates({ config }: SectionProps) {
   if (!hasHeader(config) && items.length === 0 && !text(config.governance_note)) return null;
 
   return (
-    <section className="bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+    <section className="bg-primary-700 py-12 text-white md:py-16 lg:py-20">
       <Container>
         <SectionHeader config={config} inverse />
         {items.length > 0 ? (
@@ -264,7 +264,7 @@ export async function TrainingPartnerReport({ config }: SectionProps) {
   if (!hasHeader(config) && deliverables.length === 0 && !imageSrc && !documentUrl) return null;
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section className="bg-white py-12 md:py-16 lg:py-20">
       <Container>
         <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] lg:items-center">
           <div>
@@ -338,7 +338,7 @@ export function TrainingEvidence({ config }: SectionProps) {
   if (!hasHeader(config) && stats.length === 0 && !text(config.methodology_note)) return null;
 
   return (
-    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+    <section className="bg-neutral-50 py-12 md:py-16 lg:py-20">
       <Container>
         <SectionHeader config={config} />
         {stats.length > 0 ? (
@@ -395,7 +395,7 @@ function SectionHeader({
       {text(config.headline) ? (
         <h2
           className={cn(
-            "mt-3 text-3xl font-bold leading-tight md:text-4xl",
+            "mt-3 text-2xl font-bold leading-[1.35] md:text-4xl",
             inverse ? "text-white" : "text-neutral-950",
           )}
         >
@@ -405,7 +405,7 @@ function SectionHeader({
       {text(config.description) ? (
         <p
           className={cn(
-            "mt-5 text-base leading-8 md:text-lg",
+            "mt-4 text-base leading-7 md:text-lg md:leading-8",
             inverse ? "text-white/75" : "text-neutral-600",
           )}
         >

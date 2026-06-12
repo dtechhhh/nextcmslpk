@@ -58,6 +58,7 @@ export const mediaHeroSchema = z
   .object({
     media_type: z.enum(["image", "video"]).default("image"),
     media_id: mediaIdSchema,
+    eyebrow_label: optionalString(120),
     headline: optionalString(220),
     subheadline: optionalString(600),
     primary_cta_label: optionalString(120),
@@ -70,6 +71,7 @@ export const mediaHeroSchema = z
 export const defaultMediaHero = {
   media_type: "image" as const,
   media_id: "",
+  eyebrow_label: "",
   headline: "",
   subheadline: "",
   primary_cta_label: "",

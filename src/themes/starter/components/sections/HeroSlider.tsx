@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 interface HeroSliderCTA {
   label: string
   href: string
+  variant?: "line" | "whatsapp" | "default" | "outline"
 }
 
 interface HeroSliderPrimaryCTA extends HeroSliderCTA {
@@ -74,8 +75,8 @@ function HeroSlider({
               {eyebrowLabel}
             </p>
           ) : null}
-          <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{headline}</h1>
-          {subheadline ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subheadline}</p> : null}
+          <h1 className="max-w-4xl text-3xl font-bold leading-[1.35] sm:text-4xl md:text-5xl">{headline}</h1>
+          {subheadline ? <p className="mt-5 max-w-3xl text-base leading-7 text-white/80 md:text-lg md:leading-8">{subheadline}</p> : null}
           {primaryCTA || secondaryCTA ? (
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               {primaryCTA ? (
@@ -92,8 +93,12 @@ function HeroSlider({
                 <Button
                   render={<a href={secondaryCTA.href} />}
                   size="lg"
-                  variant="outline"
-                  className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  variant={secondaryCTA.variant ?? "outline"}
+                  className={
+                    secondaryCTA.variant && secondaryCTA.variant !== "outline"
+                      ? "w-full sm:w-auto"
+                      : "w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  }
                 >
                   {secondaryCTA.label}
                 </Button>
@@ -107,7 +112,7 @@ function HeroSlider({
 
   return (
     <section
-      className="relative flex min-h-[560px] items-center overflow-hidden bg-neutral-900 sm:min-h-[580px] md:min-h-[620px] lg:min-h-[650px]"
+      className="relative flex min-h-[520px] items-center overflow-hidden bg-neutral-900 sm:min-h-[560px] md:min-h-[620px] lg:min-h-[650px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onKeyDown={(event) => {
@@ -138,7 +143,7 @@ function HeroSlider({
           />
         ))}
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/75 via-black/45 to-black/10" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/25" />
 
       <Container className="relative z-20 py-12 sm:py-14 md:py-16 lg:py-20">
         <div className="max-w-3xl">
@@ -171,8 +176,12 @@ function HeroSlider({
                 <Button
                   render={<a href={secondaryCTA.href} />}
                   size="lg"
-                  variant="outline"
-                  className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  variant={secondaryCTA.variant ?? "outline"}
+                  className={
+                    secondaryCTA.variant && secondaryCTA.variant !== "outline"
+                      ? "w-full sm:w-auto"
+                      : "w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+                  }
                 >
                   {secondaryCTA.label}
                 </Button>

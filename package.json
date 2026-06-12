@@ -13,6 +13,9 @@
     "content:japan-homepage": "tsx scripts/update-japan-homepage.ts",
     "content:japan-about": "tsx scripts/update-japan-about.ts",
     "content:japan-training": "tsx scripts/update-japan-training-method.ts",
+    "content:indonesia-homepage": "tsx scripts/update-indonesia-homepage.ts",
+    "content:indonesia-about": "tsx scripts/update-indonesia-about.ts",
+    "content:indonesia-programs": "tsx scripts/update-indonesia-programs.ts",
     "maintenance:trim-summaries": "tsx scripts/trim-collection-summaries.ts",
     "lint": "eslint"
   },
