@@ -1,5 +1,5 @@
-import Image from "next/image"
 import { Button } from "@/themes/starter/components/ui/Button"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { Container } from "@/themes/starter/components/ui/Container"
 
 interface OfferBannerProps {
@@ -28,18 +28,19 @@ function OfferBanner({
   }
 
   return (
-    <section className="py-16 md:py-20 lg:py-24">
+    <section className="py-10 md:py-14 lg:py-16">
       <Container>
-        <div className="overflow-hidden rounded-xl bg-gradient-to-br from-secondary-500 to-secondary-600">
+        <div className="overflow-hidden rounded-lg bg-gradient-to-br from-secondary-500 to-secondary-600">
           <div className="grid gap-8 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
             {imageSrc ? (
-              <div className="relative aspect-video overflow-hidden rounded-xl bg-white/10 lg:order-2">
-                <Image
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-white/10 lg:order-2">
+                <CmsImage
                   src={imageSrc}
                   alt={headline}
                   fill
                   sizes="(min-width: 1024px) 360px, 100vw"
                   className="object-cover"
+                  fallbackLabel={headline}
                 />
               </div>
             ) : null}

@@ -5,16 +5,17 @@
 
 /* --- Brand Color Palette: Indonesia --- */
 :root {
-  --color-brand-primary: #2e9fd6;
-  --color-brand-primary-hover: #2184b8;
-  --color-brand-primary-50: #eef7fc;
-  --color-brand-primary-100: #d4ecf9;
-  --color-brand-primary-200: #a9d9f3;
-  --color-brand-primary-300: #72c2eb;
-  --color-brand-primary-400: #4fb5e5;
-  --color-brand-primary-500: #2e9fd6;
-  --color-brand-primary-600: #2184b8;
-  --color-brand-primary-700: #186a96;
+  --color-brand-primary: #123b57;
+  --color-brand-primary-hover: #0b2b40;
+  --color-brand-primary-50: #eef7fb;
+  --color-brand-primary-100: #d9edf6;
+  --color-brand-primary-200: #b6ddeb;
+  --color-brand-primary-300: #7fbed5;
+  --color-brand-primary-400: #3c91b5;
+  --color-brand-primary-500: #123b57;
+  --color-brand-primary-600: #0b2b40;
+  --color-brand-primary-700: #071f30;
+  --color-brand-accent-blue: #2e9fd6;
 
   --color-brand-secondary: #e53935;
   --color-brand-secondary-400: #ef5350;
@@ -113,7 +114,7 @@
 
 /* ==========================================================================
    Variant: Indonesia
-   Primary #2e9fd6, Accent #e53935, CTA WhatsApp #25D366
+   Primary #123b57, Accent #e53935, CTA WhatsApp #25D366
    ========================================================================== */
 .theme-indonesia {
   --color-primary: #2e9fd6;
@@ -143,7 +144,7 @@
 
   /* Background & text for light theme */
   --color-background: #ffffff;
-  --color-section-alt: #eef7fc;
+  --color-section-alt: #eef7fb;
   --color-heading: #0f172a;
   --color-body: #475569;
 }

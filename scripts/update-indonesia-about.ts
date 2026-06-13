@@ -82,51 +82,51 @@ function updateAboutData(value: unknown, japanValue: unknown) {
       ...currentHero,
       media_id: stringValue(currentHero.media_id) || stringValue(japanHero.media_id),
       eyebrow_label: "Tentang PT Hashimoto Indo Trust",
-      headline: "Persiapan kerja Jepang yang dibangun dari pengalaman nyata",
+      headline: "Persiapkan Dirimu untuk Tumbuh dan Bekerja di Jepang",
       subheadline:
-        "Berbasis di Sragen, HIT menggabungkan pengalaman 17 tahun bekerja di Jepang, pendidikan bahasa yang dipimpin pengajar JLPT N1, dan pendampingan kesiapan kerja bagi calon kandidat Indonesia.",
-      primary_cta_label: "Konsultasikan Profil Saya",
+        "Bersama tim yang memiliki pengalaman kerja nyata di Jepang dan kompetensi pendidikan JLPT N1, HIT membantu kamu membangun kemampuan bahasa, kesiapan interview, dan pemahaman budaya kerja Jepang.",
+      primary_cta_label: "Konsultasi Program",
       primary_cta_whatsapp_message:
         "Halo Hashimoto Indo Trust, saya ingin berkonsultasi tentang kesiapan dan jalur program kerja Jepang yang sesuai dengan profil saya.",
-      secondary_cta_label: "Periksa Legalitas",
-      secondary_cta_href: "#legalitas",
+      secondary_cta_label: "Lihat Pilihan Program",
+      secondary_cta_href: "/program",
     },
     proof_stats: [
-      {
-        icon_key: "calendar_days",
-        value: "2025",
-        label: "Tahun pendirian badan usaha",
-        sort_order: 0,
-        is_enabled: true,
-      },
       {
         icon_key: "briefcase",
         value: "17 Tahun",
         label: "Pengalaman kerja pendiri di Jepang",
-        sort_order: 1,
+        sort_order: 0,
         is_enabled: true,
       },
       {
         icon_key: "award",
         value: "JLPT N1",
         label: "Kualifikasi penanggung jawab pendidikan",
-        sort_order: 2,
+        sort_order: 1,
         is_enabled: true,
       },
       {
         icon_key: "graduation_cap",
         value: "7+ Tahun",
         label: "Pengalaman mengajar bahasa Jepang",
+        sort_order: 2,
+        is_enabled: true,
+      },
+      {
+        icon_key: "network",
+        value: "25+",
+        label: "Jaringan rekrutmen regional",
         sort_order: 3,
         is_enabled: true,
       },
     ],
     company_status: {
-      eyebrow_label: "HIT dalam fakta",
-      headline: "Lembaga baru dengan fondasi pengalaman dan pendidikan yang jelas",
+      eyebrow_label: "Fondasi Hashimoto Indo Trust",
+      headline: "Pengalaman Jepang dan Pendidikan Terarah dalam Satu Pendampingan",
       description:
-        "PT Hashimoto Indo Trust didirikan pada Juli 2025 dan beroperasi dari Sragen, Jawa Tengah. Kami tidak menggunakan usia lembaga, jumlah alumni, atau tingkat penempatan yang belum kami miliki sebagai bahan promosi.\n\nFondasi HIT berasal dari pengalaman pendiri bekerja di Jepang selama 17 tahun, penanggung jawab pendidikan berkualifikasi JLPT N1, serta jaringan rekrutmen regional yang sedang dikembangkan secara bertahap.",
-      status_label: "Pendidikan dan kemitraan sedang dikembangkan",
+        "PT Hashimoto Indo Trust hadir di Sragen untuk membantu generasi muda Indonesia mempersiapkan diri menghadapi peluang kerja di Jepang. Pendampingan kami menggabungkan pengalaman 17 tahun bekerja di Jepang, pendidikan bahasa yang dipimpin pengajar JLPT N1, serta pembinaan komunikasi dan budaya kerja.\n\nSetiap kandidat diarahkan berdasarkan kemampuan awal, latar belakang, dan bidang kerja yang dituju agar proses persiapannya lebih relevan dan terukur.",
+      status_label: "Persiapan bahasa dan kesiapan kerja Jepang",
       last_updated_label: "Diperbarui Juni 2026",
       facts: [
         {
@@ -141,16 +141,16 @@ function updateAboutData(value: unknown, japanValue: unknown) {
         {
           icon_key: "map_pin",
           value: "Sragen",
-          label: "Lokasi operasional",
+          label: "Pusat persiapan kandidat",
           description:
-            "Kegiatan konsultasi, rekrutmen awal, dan pendidikan kandidat dikembangkan dari Kabupaten Sragen, Jawa Tengah.",
+            "Konsultasi, pembelajaran, dan persiapan kandidat dilaksanakan dari Kabupaten Sragen, Jawa Tengah.",
           sort_order: 1,
           is_enabled: true,
         },
         {
           icon_key: "award",
           value: "JLPT N1",
-          label: "Tanggung jawab mutu pendidikan",
+          label: "Pendidikan yang terarah",
           description:
             "Arah pembelajaran dan evaluasi bahasa berada di bawah penanggung jawab pendidikan dengan kualifikasi JLPT N1.",
           sort_order: 2,
@@ -161,7 +161,7 @@ function updateAboutData(value: unknown, japanValue: unknown) {
           value: "25+",
           label: "Jaringan rekrutmen regional",
           description:
-            "HIT membangun titik kontak dengan calon kandidat di wilayah Jawa Tengah untuk mendukung rekrutmen dan pembinaan awal.",
+            "Jaringan regional membantu HIT menjangkau calon kandidat dan memperluas akses terhadap konsultasi serta pembinaan awal.",
           sort_order: 3,
           is_enabled: true,
         },
@@ -173,11 +173,11 @@ function updateAboutData(value: unknown, japanValue: unknown) {
       badge_label: "Latar belakang pendirian",
       headline: "Pengalaman bekerja di Jepang menjadi dasar cara kami mempersiapkan kandidat",
       body:
-        "Aris Supriyadi, Direktur Utama PT Hashimoto Indo Trust, bekerja di Jepang selama 17 tahun. Dari pengalaman tersebut, ia memahami bahwa kesiapan kerja tidak hanya ditentukan oleh kemampuan bahasa, tetapi juga oleh disiplin, ketepatan waktu, pemahaman instruksi, komunikasi, keselamatan, dan kemampuan bekerja bersama orang lain.\n\nSelama bekerja di Jepang, Aris berada di bawah kepemimpinan Hashimoto Shigeto, pendiri HAP JAPAN. Hubungan profesional dan kepercayaan yang dibangun selama bertahun-tahun kemudian menjadi salah satu fondasi berdirinya HIT di Indonesia.\n\nHIT dibangun untuk membantu calon kandidat memahami tuntutan tersebut sejak masa persiapan. Tujuannya bukan menjanjikan keberangkatan, melainkan meningkatkan kesiapan kandidat untuk mengikuti pendidikan, seleksi perusahaan, dan proses kerja di Jepang secara bertanggung jawab.",
+        "Aris Supriyadi, Direktur Utama PT Hashimoto Indo Trust, bekerja di Jepang selama 17 tahun. Dari pengalaman tersebut, ia memahami bahwa kesiapan kerja tidak hanya ditentukan oleh kemampuan bahasa, tetapi juga oleh disiplin, ketepatan waktu, pemahaman instruksi, komunikasi, keselamatan, dan kemampuan bekerja bersama orang lain.\n\nSelama bekerja di Jepang, Aris berada di bawah kepemimpinan Hashimoto Shigeto, pendiri HAP JAPAN. Hubungan profesional dan kepercayaan yang dibangun selama bertahun-tahun kemudian menjadi salah satu fondasi berdirinya HIT di Indonesia.\n\nPengalaman tersebut kini diterapkan dalam pendampingan kandidat, mulai dari pembelajaran bahasa dan budaya kerja hingga persiapan interview serta komunikasi di lingkungan kerja Jepang.",
     },
     japan_relationship: {
       eyebrow_label: "Fondasi hubungan dengan Jepang",
-      headline: "Bukan sekadar mengenal Jepang, tetapi pernah menjalani lingkungan kerjanya",
+      headline: "Pengalaman Langsung di Jepang yang Membentuk Pendampingan HIT",
       description:
         "Hubungan HIT dengan Jepang lahir dari pengalaman kerja nyata dan kepercayaan profesional yang dibangun dalam jangka panjang. Pengalaman tersebut digunakan untuk membantu kandidat memahami ekspektasi tempat kerja Jepang secara lebih konkret.",
       people: [
@@ -209,13 +209,13 @@ function updateAboutData(value: unknown, japanValue: unknown) {
         "Komunikasi mengenai perkembangan dan kesiapan kandidat",
       ],
       clarification_note:
-        "Peran setiap pihak, perusahaan penerima, serta mitra proses keberangkatan dapat berbeda menurut program dan lowongan. HIT akan menjelaskan pihak yang terlibat sebelum kandidat mengambil keputusan.",
+        "Setiap jalur memiliki tahapan dan pihak yang berbeda. Tim HIT membantu kandidat memahami alurnya sesuai program dan peluang kerja yang dipilih.",
     },
     education_quality: {
       image_id: imageIdFrom(japanTeam, "Sarif Hidayatulloh"),
       eyebrow_label: "Penanggung jawab pendidikan",
       qualification_label: "JLPT N1",
-      headline: "Pembelajaran dipimpin pengajar dengan kualifikasi dan pengalaman yang dapat dijelaskan",
+      headline: "Pembelajaran Dipimpin Pengajar JLPT N1 yang Berpengalaman",
       description:
         "Sarif Hidayatulloh memegang kualifikasi JLPT N1 dan memiliki pengalaman lebih dari tujuh tahun dalam pengajaran bahasa Jepang di lembaga pelatihan kerja. Ia bertanggung jawab atas arah pembelajaran, evaluasi perkembangan, serta persiapan komunikasi yang dibutuhkan kandidat di lingkungan kerja Jepang.",
       leader_name: "Sarif Hidayatulloh",
@@ -229,51 +229,51 @@ function updateAboutData(value: unknown, japanValue: unknown) {
       ],
     },
     operational_readiness: {
-      headline: "Apa yang sudah tersedia dan apa yang masih dikembangkan",
+      headline: "Pendampingan yang Dirancang untuk Kesiapan Kandidat",
       description:
-        "Kami ingin calon peserta dan orang tua mengetahui kondisi HIT secara jujur. Status berikut menjelaskan kemampuan yang sudah berjalan serta pekerjaan yang masih terus kami bangun.",
+        "HIT menghubungkan pendidikan bahasa, pemahaman budaya kerja, evaluasi perkembangan, dan perluasan akses peluang dalam satu proses persiapan yang saling mendukung.",
       items: [
         {
           status: "completed",
-          status_label: "Sudah tersedia",
+          status_label: "Fondasi resmi",
           icon_key: "building_2",
-          title: "Pendirian badan usaha dan registrasi dasar",
+          title: "Lembaga berbadan usaha Indonesia",
           description:
-            "PT Hashimoto Indo Trust telah memiliki Nomor Induk Berusaha dan persetujuan pendirian badan hukum sebagai dasar menjalankan kegiatan perusahaan di Indonesia.",
-          target_label: "Dokumen dapat diperiksa pada bagian legalitas",
+            "PT Hashimoto Indo Trust memiliki Nomor Induk Berusaha dan persetujuan pendirian badan hukum sebagai fondasi operasional perusahaan di Indonesia.",
+          target_label: "Informasi legalitas tersedia pada halaman ini",
           sort_order: 0,
           is_enabled: true,
         },
         {
           status: "completed",
-          status_label: "Sudah tersedia",
+          status_label: "Dipimpin tenaga berpengalaman",
           icon_key: "graduation_cap",
-          title: "Penanggung jawab dan arah pendidikan",
+          title: "Pendidikan bahasa dan komunikasi kerja",
           description:
             "Pendidikan dipimpin pengajar JLPT N1 dengan pengalaman mengajar lebih dari tujuh tahun. Materi mencakup bahasa dan kesiapan komunikasi kerja.",
-          target_label: "Evaluasi pembelajaran dilakukan secara bertahap",
+          target_label: "Perkembangan kandidat dievaluasi secara bertahap",
           sort_order: 1,
           is_enabled: true,
         },
         {
           status: "in_progress",
-          status_label: "Terus dikembangkan",
+          status_label: "Akses regional",
           icon_key: "network",
-          title: "Jaringan kandidat dan mitra regional",
+          title: "Jaringan kandidat di berbagai wilayah",
           description:
-            "HIT mengembangkan jaringan dengan pihak daerah dan calon kandidat di Jawa Tengah untuk memperluas akses konsultasi, seleksi awal, dan pendidikan.",
-          target_label: "Jaringan aktif diperluas sesuai kebutuhan program",
+            "HIT membangun jaringan regional untuk memperluas akses konsultasi, pemeriksaan profil, dan pembinaan awal bagi calon kandidat.",
+          target_label: "Jaringan diperluas mengikuti kebutuhan program",
           sort_order: 2,
           is_enabled: true,
         },
         {
           status: "in_progress",
-          status_label: "Sedang dibangun",
+          status_label: "Terus diperluas",
           icon_key: "handshake",
-          title: "Kemitraan perusahaan dan peluang kerja Jepang",
+          title: "Akses terhadap kebutuhan tenaga kerja Jepang",
           description:
-            "HIT sedang membangun kerja sama dan menerima pembahasan kebutuhan kandidat dari perusahaan Jepang. Ketersediaan lowongan akan diinformasikan berdasarkan kebutuhan nyata.",
-          target_label: "Tidak ada jaminan lowongan atau keberangkatan tanpa proses seleksi",
+            "HIT memperluas komunikasi dan kerja sama untuk menghubungkan persiapan kandidat dengan kebutuhan tenaga kerja Jepang yang relevan.",
+          target_label: "Peluang disesuaikan dengan profil dan hasil seleksi kandidat",
           sort_order: 3,
           is_enabled: true,
         },
@@ -282,33 +282,33 @@ function updateAboutData(value: unknown, japanValue: unknown) {
     values: [
       {
         icon_key: "shield_check",
-        headline: "Informasi harus dapat diperiksa",
+        headline: "Informasi yang Jelas",
         description:
-          "Kami menjelaskan status lembaga, pihak yang terlibat, tahapan, persyaratan, dan komponen biaya sebelum peserta mengambil keputusan.",
+          "Tim membantu kandidat memahami pilihan program, tahapan, persyaratan, dan persiapan yang dibutuhkan sejak awal.",
         sort_order: 0,
         is_enabled: true,
       },
       {
         icon_key: "clipboard_check",
-        headline: "Perkembangan dinilai secara nyata",
+        headline: "Perkembangan yang Terukur",
         description:
-          "Peserta mendapat evaluasi kemampuan dan kesiapan. Penilaian digunakan untuk menentukan hal yang perlu diperbaiki, bukan sekadar formalitas kelulusan.",
+          "Kemampuan bahasa dan kesiapan kerja dievaluasi secara bertahap agar kandidat mengetahui perkembangan serta fokus perbaikannya.",
         sort_order: 1,
         is_enabled: true,
       },
       {
         icon_key: "message_circle",
-        headline: "Tidak menjanjikan keberangkatan",
+        headline: "Persiapan yang Menyeluruh",
         description:
-          "Kelulusan interview, penerimaan perusahaan, dokumen, kesehatan, dan keputusan pihak berwenang tetap menentukan hasil akhir setiap kandidat.",
+          "Pendampingan mencakup bahasa, interview, komunikasi kerja, disiplin, serta pemahaman proses menuju kesempatan kerja di Jepang.",
         sort_order: 2,
         is_enabled: true,
       },
       {
         icon_key: "user_check",
-        headline: "Kesesuaian lebih penting daripada jumlah",
+        headline: "Pendekatan Sesuai Profil",
         description:
-          "Program dan lowongan harus dipertimbangkan berdasarkan usia, pendidikan, kemampuan, kondisi kesehatan, serta kesiapan belajar masing-masing kandidat.",
+          "Arahan program mempertimbangkan usia, pendidikan, kemampuan, pengalaman, kondisi kesehatan, dan kesiapan belajar setiap kandidat.",
         sort_order: 3,
         is_enabled: true,
       },
@@ -424,10 +424,10 @@ function updateAboutData(value: unknown, japanValue: unknown) {
     vision_mission: {
       vision_headline: "Tujuan Kami",
       vision_description:
-        "Menjadi lembaga persiapan kerja Jepang yang dipercaya karena kejujuran informasi, mutu pendidikan, dan perhatian terhadap kesiapan setiap kandidat.",
+        "Menjadi lembaga persiapan kerja Jepang yang dipercaya melalui pendidikan berkualitas, pendampingan yang relevan, dan perhatian terhadap perkembangan setiap kandidat.",
       mission_headline: "Peran Kami",
       mission_description:
-        "Membantu kandidat memahami jalur yang sesuai, meningkatkan kemampuan bahasa dan komunikasi kerja, mempersiapkan interview, serta menjelaskan proses dan pihak yang terlibat secara transparan. Keputusan penerimaan tetap berada pada perusahaan dan pihak berwenang terkait.",
+        "Membantu kandidat memilih jalur yang sesuai, meningkatkan kemampuan bahasa dan komunikasi kerja, mempersiapkan interview, serta membangun sikap yang dibutuhkan untuk tumbuh di lingkungan kerja Jepang.",
     },
     gallery: { media_ids: [] },
     partners: [],
@@ -462,16 +462,16 @@ function updateAboutData(value: unknown, japanValue: unknown) {
       },
     ],
     contact_section: {
-      headline: "Bicarakan rencana bersama tim dan orang tua",
+      headline: "Temukan Jalur Persiapan yang Sesuai untukmu",
       description:
-        "Sampaikan usia, pendidikan, kemampuan bahasa Jepang, pengalaman, dan tujuanmu. Kamu juga dapat menjadwalkan kunjungan ke lokasi HIT agar informasi program, proses, dan legalitas dapat dibahas sebelum mendaftar.",
+        "Ceritakan usia, pendidikan, kemampuan bahasa Jepang, pengalaman, dan bidang kerja yang diminati. Tim HIT akan membantu memberikan arahan awal dan menjelaskan pilihan program yang relevan.",
       use_global_contact: true,
     },
     final_cta: {
-      headline: "Kenali jalur dan prosesnya sebelum mengambil keputusan",
+      headline: "Mulai Persiapanmu Bersama HIT",
       description:
-        "Konsultasi awal digunakan untuk memeriksa kecocokan profil dan menjelaskan tahapan secara terbuka. Mengikuti konsultasi tidak mewajibkan kamu langsung mendaftar.",
-      primary_cta_label: "Konsultasi lewat WhatsApp",
+        "Konsultasikan profil dan tujuanmu untuk mengetahui jalur program serta langkah persiapan yang paling sesuai.",
+      primary_cta_label: "Konsultasi Program",
       primary_whatsapp_message:
         "Halo Hashimoto Indo Trust, saya ingin berkonsultasi bersama tim mengenai profil, program, biaya, dan tahapan persiapan kerja Jepang.",
       secondary_cta_label: "Lihat Pilihan Program",

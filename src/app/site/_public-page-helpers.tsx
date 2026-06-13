@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import type { CSSProperties } from "react";
 import { unstable_cache, unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { Check } from "lucide-react";
+import { CalendarClock, Check, GraduationCap } from "lucide-react";
 
 import { getSiteContext } from "@/app/site/site-context";
 import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
@@ -37,6 +37,7 @@ import {
 import { Badge } from "@/themes/starter/components/ui/Badge";
 import { Button } from "@/themes/starter/components/ui/Button";
 import { Container } from "@/themes/starter/components/ui/Container";
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage";
 import { Card, CardContent } from "@/themes/starter/components/ui/Card";
 import { CardGrid } from "@/themes/starter/components/sections/CardGrid";
 import { CollectionDetail } from "@/themes/starter/components/sections/CollectionDetail";
@@ -96,6 +97,7 @@ type PublicCollectionListOptions = NonNullable<
 type PublicCollectionSource = PublicCollectionListOptions["source"];
 
 const PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS = 300;
+const PUBLIC_CONTENT_CACHE_VERSION = "2026-06-13-public-content-v2";
 
 function normalizePublicCollectionSource(value: string): PublicCollectionSource {
   return value === "featured" ||
@@ -121,7 +123,7 @@ export async function loadPublicPage(options: PageLoadOptions) {
 
   const page = await unstable_cache(
     () => resolvePageData(context.variantId, options.pageKey),
-    ["public-page", context.variantId, options.pageKey],
+    ["public-page", PUBLIC_CONTENT_CACHE_VERSION, context.variantId, options.pageKey],
     {
       revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
       tags: resolveTags(options.cacheTags, context.variantId),
@@ -193,7 +195,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
   const homepageText = (key: string, fallback: string) =>
     stringValue(displayText[key]) || fallback;
   const [heroImage, programs, jobs, blogs, offerPayload] = await Promise.all([
-    resolveMediaUrl(heroMediaId),
+    Promise.resolve(mediaProxySrc(heroMediaId) ?? null),
     resolveFeaturedPrograms(context.variantId, featuredProgramsConfig),
     showLatestJobs
       ? resolveCachedCollectionList(
@@ -258,10 +260,11 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       description: stringValue(item.description),
       iconKey: stringValue(item.icon_key),
       imageSrc:
-        (await resolveMediaUrl(stringValue(item.image_id))) || undefined,
+        mediaProxySrc(stringValue(item.image_id)),
       isEnabled: booleanValue(item.is_enabled, true),
     })),
   );
+  const audiencePathCards = buildAudiencePathCards(data);
   const heroPrimaryCtaLabel = stringValueWithMissingFallback(
     hero,
     "primary_cta_label",
@@ -320,7 +323,9 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           "Promo Program"
         }
         description={offerItem?.excerpt || stringValue(offerSection.fallback_description)}
-        imageSrc={offerItem?.thumbnailSrc || offerPayload.fallbackImageSrc || undefined}
+        imageSrc={
+          getOfferCmsImageSrc(offerItem) || offerPayload.fallbackImageSrc || undefined
+        }
         ctaLabel={
           offerItem
             ? "Lihat Penawaran"
@@ -336,16 +341,8 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
       <CardGrid
         title={homepageText("audience_paths_title", "Pilih Kebutuhanmu")}
         subtitle={stringValue(displayText.audience_paths_description)}
-        columns={2}
-        items={sortedRecords(data.audience_paths).map((item, index) => ({
-          id: `audience-path-${index}`,
-          title: stringValue(item.title),
-          description: stringValue(item.description),
-          href: stringValue(item.href),
-          meta: stringValue(item.cta_label),
-          iconKey: stringValue(item.icon_key),
-          isEnabled: booleanValue(item.is_enabled, true),
-        }))}
+        columns={audiencePathCards.length > 2 ? 3 : 2}
+        items={audiencePathCards}
       />
       {showLatestJobs ? (
         <CollectionList
@@ -485,7 +482,7 @@ export async function renderListPage(options: ListPageOptions) {
     options.pageKey === "blog_page" &&
     booleanValue(listOfferSection.is_enabled, stringValue(listOfferSection.source) !== "disabled");
   const [resolvedHeroImage, collection, filterDefs, offerPayload] = await Promise.all([
-    heroMediaId ? resolveMediaUrl(heroMediaId) : Promise.resolve(null),
+    Promise.resolve(heroMediaId ? getMediaProxyUrl(heroMediaId) : null),
     unstable_cache(
       () =>
         resolveCollectionList(context.variantId, options.collectionKey, {
@@ -494,7 +491,14 @@ export async function renderListPage(options: ListPageOptions) {
           pageSize: 12,
           activeOnly: options.activeOnly,
         }),
-      ["public-collection", context.variantId, options.collectionKey, JSON.stringify(filters), String(currentPage)],
+      [
+        "public-collection",
+        PUBLIC_CONTENT_CACHE_VERSION,
+        context.variantId,
+        options.collectionKey,
+        JSON.stringify(filters),
+        String(currentPage),
+      ],
       {
         revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
         tags: resolveTags(options.cacheTags, context.variantId),
@@ -559,10 +563,13 @@ export async function renderListPage(options: ListPageOptions) {
           badgeLabel={offerBadgeLabel}
           headline={offerItem?.title || "Promo Program"}
           description={offerItem?.excerpt || stringValue(offerData.short_description)}
-          imageSrc={offerItem?.thumbnailSrc}
+          imageSrc={getOfferCmsImageSrc(offerItem)}
           ctaLabel="Lihat Penawaran"
           ctaHref={offerItem ? `/offer/${offerItem.slug}` : undefined}
         />
+      ) : null}
+      {options.pageKey === "job_page" ? (
+        <JobPageInformationNotice config={record(data.information_notice)} />
       ) : null}
       <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
       {options.pageKey === "program_page" ? (
@@ -602,6 +609,36 @@ export async function renderListPage(options: ListPageOptions) {
   );
 }
 
+function JobPageInformationNotice({ config }: { config: PublicJson }) {
+  const eyebrow = stringValue(config.eyebrow);
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+
+  if (!eyebrow && !headline && !description) {
+    return null;
+  }
+
+  return (
+    <section className="border-y border-amber-200 bg-amber-50/70 py-8">
+      <Container>
+        <div className="max-w-5xl rounded-lg border border-amber-200 bg-white/70 p-5">
+          {eyebrow ? (
+            <p className="text-sm font-semibold uppercase text-amber-800">{eyebrow}</p>
+          ) : null}
+          {headline ? (
+            <h2 className="mt-2 text-xl font-bold text-neutral-900 md:text-2xl">{headline}</h2>
+          ) : null}
+          {description ? (
+            <p className="mt-4 whitespace-pre-line text-sm leading-6 text-neutral-700 md:text-base md:leading-7">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 export async function renderDetailPage(options: DetailPageOptions) {
   const context = await getOkContext();
   const params = options.searchParams ? await options.searchParams : {};
@@ -614,7 +651,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
       })
     : await unstable_cache(
         () => resolveCollectionItem(context.variantId, options.collectionKey, options.slug),
-        ["public-item", context.variantId, options.collectionKey, options.slug],
+        ["public-item", PUBLIC_CONTENT_CACHE_VERSION, context.variantId, options.collectionKey, options.slug],
         { revalidate: options.revalidate, tags: resolveTags(options.cacheTags, context.variantId) },
       )();
 
@@ -665,6 +702,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
               brochureUrl={brochureUrl}
             />
           }
+          sidebarFirstOnMobile
         />
       </>
     );
@@ -695,6 +733,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
             />
           }
           sidebar={<JobDetailSidebar item={item} />}
+          sidebarFirstOnMobile
         />
       </>
     );
@@ -725,12 +764,8 @@ export async function renderDetailPage(options: DetailPageOptions) {
     const tagLabels = tagOptions
       .map((opt) => opt?.label ?? "")
       .filter(Boolean);
-    const coverImageUrl = await resolveMediaUrl(
-      stringValue(item.dataJson.cover_image_id),
-    );
-    const authorImageUrl = await resolveMediaUrl(
-      stringValue(item.dataJson.author_image_id),
-    );
+    const coverImageUrl = mediaProxySrc(stringValue(item.dataJson.cover_image_id));
+    const authorImageUrl = mediaProxySrc(stringValue(item.dataJson.author_image_id));
 
     return (
       <>
@@ -803,7 +838,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
     return (
       <>
         <PreviewBanner isPreview={preview.isPreview} />
-        <OfferDetailHero item={item} />
+        <OfferDetailHero item={item} whatsappHref={whatsappHref} />
         <CollectionDetail
           breadcrumb={[
             { label: "Beranda", href: "/" },
@@ -811,7 +846,11 @@ export async function renderDetailPage(options: DetailPageOptions) {
             { label: item.title },
           ]}
           mainContent={
-            <OfferDetailMain item={item} variantId={context.variantId} />
+            <OfferDetailMain
+              item={item}
+              variantId={context.variantId}
+              whatsappHref={whatsappHref}
+            />
           }
           sidebar={
             <OfferDetailSidebar
@@ -819,6 +858,7 @@ export async function renderDetailPage(options: DetailPageOptions) {
               whatsappHref={whatsappHref}
             />
           }
+          sidebarFirstOnMobile
         />
       </>
     );
@@ -864,11 +904,11 @@ function ProgramComparisonSection({ config }: { config: PublicJson }) {
   }
 
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section className="bg-white py-12 md:py-16 lg:py-20">
       <Container>
-        <div className="mx-auto mb-10 max-w-3xl text-center">
+        <div className="mx-auto mb-8 max-w-3xl text-center">
           {title ? (
-            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+            <h2 className="text-2xl font-bold text-neutral-900 md:text-4xl">
               {title}
             </h2>
           ) : null}
@@ -878,46 +918,104 @@ function ProgramComparisonSection({ config }: { config: PublicJson }) {
             </p>
           ) : null}
         </div>
-        <div className="grid gap-5 lg:grid-cols-5">
+
+        <div className="grid gap-3 md:hidden">
           {items.map((item, index) => (
-            <Card key={`${stringValue(item.title)}-${index}`}>
-              <CardContent className="p-5">
-                {stringValue(item.title) ? (
-                  <h3 className="text-lg font-semibold text-neutral-900">
-                    {stringValue(item.title)}
-                  </h3>
-                ) : null}
-                {stringValue(item.best_for) ? (
-                  <div className="mt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Cocok untuk
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-neutral-700">
-                      {stringValue(item.best_for)}
-                    </p>
-                  </div>
-                ) : null}
-                {stringValue(item.preparation) ? (
-                  <div className="mt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Yang disiapkan
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-neutral-700">
-                      {stringValue(item.preparation)}
-                    </p>
-                  </div>
-                ) : null}
-                {stringValue(item.note) ? (
-                  <p className="mt-4 rounded-lg bg-neutral-50 p-3 text-sm leading-6 text-neutral-600">
-                    {stringValue(item.note)}
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
+            <details
+              key={`${stringValue(item.title)}-${index}`}
+              className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm"
+              open={index === 0}
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-neutral-900">
+                <span>{stringValue(item.title)}</span>
+                <span className="text-sm text-primary-600 transition group-open:rotate-45">+</span>
+              </summary>
+              <div className="mt-4 space-y-4">
+                <ComparisonField label="Cocok untuk" value={stringValue(item.best_for)} />
+                <ComparisonField label="Yang disiapkan" value={stringValue(item.preparation)} />
+                <ComparisonField label="Catatan" value={stringValue(item.note)} emphasis />
+              </div>
+            </details>
           ))}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded-lg border border-neutral-200 bg-white shadow-sm md:block">
+          <div
+            className="grid min-w-[980px]"
+            style={{
+              gridTemplateColumns: `180px repeat(${items.length}, minmax(160px, 1fr))`,
+            } as CSSProperties}
+          >
+            <div className="border-b border-neutral-200 bg-neutral-50 p-4 text-sm font-semibold text-neutral-500">
+              Jalur
+            </div>
+            {items.map((item, index) => (
+              <div
+                key={`title-${stringValue(item.title)}-${index}`}
+                className="border-b border-l border-neutral-200 bg-neutral-50 p-4 font-bold text-neutral-900"
+              >
+                {stringValue(item.title)}
+              </div>
+            ))}
+
+            <ComparisonRow label="Cocok untuk" items={items} field="best_for" />
+            <ComparisonRow label="Yang disiapkan" items={items} field="preparation" />
+            <ComparisonRow label="Catatan sebelum memilih" items={items} field="note" muted />
+          </div>
         </div>
       </Container>
     </section>
+  );
+}
+
+function ComparisonField({
+  label,
+  value,
+  emphasis = false,
+}: {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+}) {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <div className={emphasis ? "rounded-lg bg-primary-50 p-3" : undefined}>
+      <p className="text-xs font-semibold uppercase text-neutral-500">{label}</p>
+      <p className="mt-1 text-sm leading-6 text-neutral-700">{value}</p>
+    </div>
+  );
+}
+
+function ComparisonRow({
+  label,
+  items,
+  field,
+  muted = false,
+}: {
+  label: string;
+  items: PublicJson[];
+  field: "best_for" | "preparation" | "note";
+  muted?: boolean;
+}) {
+  return (
+    <>
+      <div className="border-b border-neutral-200 bg-neutral-50 p-4 text-sm font-semibold text-neutral-700">
+        {label}
+      </div>
+      {items.map((item, index) => (
+        <div
+          key={`${field}-${index}`}
+          className="border-b border-l border-neutral-200 p-4 text-sm leading-6 text-neutral-700"
+        >
+          <span className={muted ? "block rounded-lg bg-primary-50 p-3" : undefined}>
+            {stringValue(item[field]) || "-"}
+          </span>
+        </div>
+      ))}
+    </>
   );
 }
 
@@ -935,7 +1033,7 @@ async function resolveIndonesiaContentBlocks(
       const sortOrder = numberValue(block.sort_order) ?? index;
 
       if (type === "image") {
-        const src = await resolveMediaUrl(stringValue(data.image_id));
+        const src = mediaProxySrc(stringValue(data.image_id));
         return src
           ? {
               type,
@@ -1046,12 +1144,13 @@ function BlogDetailHero({
     <section>
       {imageSrc ? (
         <div className="relative aspect-[21/9] overflow-hidden bg-neutral-200">
-          <Image
+          <CmsImage
             src={imageSrc}
             alt={item.title}
             fill
             className="object-cover"
             priority
+            fallbackLabel={item.title}
           />
         </div>
       ) : null}
@@ -1080,11 +1179,12 @@ function BlogDetailHero({
           <div className="mt-6 flex items-center gap-4">
             {authorImageUrl ? (
               <div className="relative size-12 shrink-0 overflow-hidden rounded-full">
-                <Image
+                <CmsImage
                   src={authorImageUrl}
                   alt={authorName || ""}
                   fill
                   className="object-cover"
+                  fallbackLabel={authorName}
                 />
               </div>
             ) : null}
@@ -1112,6 +1212,16 @@ function BlogDetailContent({
   item: PublicCollectionItem;
   blocks: ContentBlock[];
 }) {
+  const takeaways = flatStringList(item.dataJson.key_takeaways);
+  const sources = sortedRecords(item.dataJson.source_items).filter(
+    (source) =>
+      booleanValue(source.is_enabled, true) &&
+      (stringValue(source.title) ||
+        stringValue(source.description) ||
+        stringValue(source.source_label) ||
+        stringValue(source.source_url)),
+  );
+
   return (
     <article>
       <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">
@@ -1122,12 +1232,82 @@ function BlogDetailContent({
           {item.excerpt}
         </p>
       ) : null}
+      <BlogTakeaways items={takeaways} />
       {blocks.length > 0 ? (
         <div className="mt-8">
           <ContentBlocks variant="indonesia" blocks={blocks} />
         </div>
       ) : null}
+      <BlogSourceList items={sources} />
     </article>
+  );
+}
+
+function BlogTakeaways({ items }: { items: string[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mt-8 rounded-lg border border-primary-100 bg-primary-50 p-5">
+      <h2 className="text-lg font-semibold text-neutral-900">
+        Ringkasan untuk calon peserta
+      </h2>
+      <ul className="mt-4 space-y-3 text-sm leading-6 text-neutral-700">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3">
+            <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary-600" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function BlogSourceList({ items }: { items: PublicJson[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mt-10 border-t border-neutral-200 pt-6">
+      <h2 className="text-xl font-semibold text-neutral-900">
+        Sumber dan catatan rujukan
+      </h2>
+      <div className="mt-4 space-y-4">
+        {items.map((item, index) => {
+          const title = stringValue(item.title);
+          const description = stringValue(item.description);
+          const sourceLabel = stringValue(item.source_label);
+          const sourceUrl = stringValue(item.source_url);
+          const label = sourceLabel || title || sourceUrl;
+
+          return (
+            <article key={`${label}-${index}`} className="text-sm leading-6">
+              {title ? (
+                <h3 className="font-semibold text-neutral-900">{title}</h3>
+              ) : null}
+              {description ? (
+                <p className="mt-1 text-neutral-600">{description}</p>
+              ) : null}
+              {sourceUrl ? (
+                <a
+                  href={sourceUrl}
+                  className="mt-1 inline-block break-all font-medium text-primary-600 hover:text-primary-700"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {label}
+                </a>
+              ) : sourceLabel ? (
+                <p className="mt-1 font-medium text-neutral-700">{sourceLabel}</p>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -1151,6 +1331,9 @@ function BlogDetailSidebar({
   const authorTitle = stringValue(item.dataJson.author_title);
   const authorBio = stringValue(item.dataJson.author_bio);
   const readingTimeLabel = stringValue(item.dataJson.reading_time_label);
+  const reviewerName = stringValue(item.dataJson.reviewer_name);
+  const reviewerTitle = stringValue(item.dataJson.reviewer_title);
+  const reviewedAt = stringValue(item.dataJson.reviewed_at);
 
   return (
     <Card>
@@ -1178,6 +1361,15 @@ function BlogDetailSidebar({
           ) : null}
           {authorTitle ? (
             <MetaRow label="Jabatan" value={authorTitle} />
+          ) : null}
+          {reviewerName ? (
+            <MetaRow label="Ditinjau oleh" value={reviewerName} />
+          ) : null}
+          {reviewerTitle ? (
+            <MetaRow label="Peran reviewer" value={reviewerTitle} />
+          ) : null}
+          {reviewedAt ? (
+            <MetaRow label="Terakhir ditinjau" value={formatDate(reviewedAt)} />
           ) : null}
         </dl>
         {authorBio ? (
@@ -1290,6 +1482,7 @@ export async function renderJapanListPage(options: JapanListPageOptions) {
         }),
       [
         "public-japan-collection",
+        PUBLIC_CONTENT_CACHE_VERSION,
         context.variantId,
         options.collectionKey,
         JSON.stringify(filters),
@@ -1346,7 +1539,7 @@ export async function renderJapanDetailPage(options: JapanDetailPageOptions) {
       })
     : await unstable_cache(
         () => resolveCollectionItem(context.variantId, options.collectionKey, options.slug),
-        ["public-japan-item", context.variantId, options.collectionKey, options.slug],
+        ["public-japan-item", PUBLIC_CONTENT_CACHE_VERSION, context.variantId, options.collectionKey, options.slug],
         {
           revalidate: options.revalidate,
           tags: resolveTags(options.cacheTags, context.variantId),
@@ -1485,7 +1678,7 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
     : defaultWhatsappHref;
 
   const heroImageId = stringValue(hero.media_id) || stringValue(hero.image_id);
-  const heroImage = await resolveMediaUrl(heroImageId);
+  const heroImage = mediaProxySrc(heroImageId) ?? null;
 
   const teamMembers = await resolveTeamMemberCards(sortedRecords(data.team_members));
 
@@ -1557,8 +1750,8 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
       <TentangKamiEducationQualitySection config={educationQuality} />
       <TentangKamiOperationalReadinessSection config={operationalReadiness} />
       <CardGrid
-        title="Komitmen Kami kepada Peserta"
-        subtitle="Prinsip ini diterjemahkan ke dalam cara kami memberi informasi, mengevaluasi kesiapan, dan mendampingi setiap kandidat."
+        title="Pendampingan yang Berfokus pada Perkembanganmu"
+        subtitle="Setiap bagian dari proses persiapan dirancang untuk membantu kandidat belajar lebih terarah dan menghadapi tahapan berikutnya dengan lebih siap."
         items={sortedRecords(data.values).map((item, index) => ({
           id: `value-${index}`,
           title: stringValue(item.title) || stringValue(item.headline),
@@ -1568,12 +1761,12 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
         }))}
       />
       <TeamGrid
-        title="Orang yang Bertanggung Jawab"
-        subtitle="Kenali peran dan pengalaman orang-orang yang menjalankan operasional, pendidikan, serta kepatuhan lembaga."
+        title="Tim di Balik Persiapanmu"
+        subtitle="Pengalaman kerja di Jepang, kompetensi pendidikan bahasa, dan dukungan profesional dipadukan untuk mendampingi perkembangan kandidat."
         members={teamMembers}
       />
       <Timeline
-        title="Perjalanan yang Membentuk HIT"
+        title="Pengalaman yang Membentuk HIT"
         items={sortedRecords(data.timeline).map((item, index) => ({
           yearLabel: stringValue(item.year_label),
           title: stringValue(item.title),
@@ -1596,7 +1789,7 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
         whatsappHref={defaultWhatsappHref}
       />
       <CTABanner
-        headline={stringValue(finalCta.headline) || "Kenali jalur yang sesuai sebelum mendaftar"}
+        headline={stringValue(finalCta.headline) || "Mulai persiapanmu bersama HIT"}
         description={stringValue(finalCta.description)}
         primaryCTA={{
           label: stringValue(finalCta.primary_cta_label) || "Konsultasi lewat WhatsApp",
@@ -1627,7 +1820,7 @@ async function TentangKamiStorySection({
   headline: string;
   body: string;
 }) {
-  const imageSrc = await resolveMediaUrl(imageId);
+  const imageSrc = mediaProxySrc(imageId);
 
   if (!headline && !body) {
     return null;
@@ -1639,12 +1832,13 @@ async function TentangKamiStorySection({
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           {imageSrc ? (
             <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-100">
-              <Image
+              <CmsImage
                 src={imageSrc}
                 alt={headline || "Cerita Kami"}
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
+                fallbackLabel={headline || "Cerita Kami"}
               />
             </div>
           ) : null}
@@ -1849,7 +2043,7 @@ async function TentangKamiEducationQualitySection({ config }: { config: PublicJs
   const headline = stringValue(config.headline);
   const description = stringValue(config.description);
   const focusItems = flatStringList(config.focus_items);
-  const imageSrc = await resolveMediaUrl(stringValue(config.image_id));
+  const imageSrc = mediaProxySrc(stringValue(config.image_id));
 
   if (!headline && !description && focusItems.length === 0) {
     return null;
@@ -1891,12 +2085,13 @@ async function TentangKamiEducationQualitySection({ config }: { config: PublicJs
           <div className="space-y-4">
             {imageSrc ? (
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/15 bg-white/10">
-                <Image
+                <CmsImage
                   src={imageSrc}
                   alt={stringValue(config.leader_name) || headline}
                   fill
                   sizes="(min-width: 1024px) 35vw, 100vw"
                   className="object-cover"
+                  fallbackLabel={stringValue(config.leader_name) || headline}
                 />
               </div>
             ) : null}
@@ -2056,7 +2251,7 @@ function TentangKamiLegalitiesSection({
     <section id="legalitas" className="scroll-mt-24 bg-white py-16 md:py-20 lg:py-24">
       <Container>
         <h2 className="mb-10 text-center text-3xl font-bold text-neutral-900 md:text-4xl">
-          Legalitas yang Dapat Diperiksa
+          Legalitas dan Identitas Perusahaan
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((item, index) => (
@@ -2155,7 +2350,7 @@ async function resolveTeamMemberCards(items: PublicJson[]) {
       credentials: stringValue(item.credentials),
       responsibility: stringValue(item.responsibility),
       bio: stringValue(item.bio),
-      imageSrc: (await resolveMediaUrl(stringValue(item.image_id))) ?? undefined,
+      imageSrc: mediaProxySrc(stringValue(item.image_id)),
       sortOrder: numberValue(item.sort_order) ?? index,
       isEnabled: booleanValue(item.is_enabled, true),
     })),
@@ -2183,7 +2378,7 @@ export async function generatePublicMetadata({
     stringValue(hero.image_id) ||
     stringValue(hero.media_id) ||
     firstString(hero.slider_media_ids);
-  const imageUrl = await resolveMediaUrl(heroImageId);
+  const imageUrl = mediaProxySrc(heroImageId) ?? null;
   const fallbackImageUrl = await resolveDefaultOgImage(context.globalConfig);
 
   return buildMetadata({
@@ -2301,7 +2496,7 @@ async function resolveDefaultOgImage(globalConfig: Record<string, PublicJson>) {
   ].filter(Boolean);
 
   for (const mediaId of candidateIds) {
-    const mediaUrl = await resolveMediaUrl(mediaId);
+    const mediaUrl = mediaProxySrc(mediaId) ?? null;
 
     if (mediaUrl) {
       return mediaUrl;
@@ -2755,6 +2950,16 @@ async function ProgramDetailMain({
             {stringValue(data.overview)}
           </div>
         ) : null}
+        {whatsappHref !== "#" ? (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button render={<a href={whatsappHref} />} variant="whatsapp">
+              {stringValue(data.primary_cta_label) || "Konsultasi Program Ini"}
+            </Button>
+            <Button render={<a href="/job" />} variant="outline">
+              Lihat Lowongan Terkait
+            </Button>
+          </div>
+        ) : null}
       </section>
 
       <NormalizedCardSet
@@ -2818,7 +3023,7 @@ async function ProgramDetailMain({
         items={normalizeMixedList(data.career_opportunity_items)}
       />
       <NormalizedCardSet
-        title="Legalitas &amp; Partner"
+        title="Legalitas & Partner"
         items={normalizeMixedList(data.legality_partner_items)}
       />
 
@@ -2996,24 +3201,45 @@ async function JobDetailMain({
     const index = optionRequests.findIndex((option) => option.id === id);
     return index >= 0 ? options[index]?.label ?? "" : "";
   };
+  const jobTypeLabel = optLabel(stringValue(data.job_type_option_id));
+  const jobFieldLabel = optLabel(stringValue(data.job_field_option_id));
+  const genderLabel = optLabel(stringValue(data.gender_option_id));
+  const languageLabel = optLabel(stringValue(data.language_level_option_id));
+  const educationLabel = optLabel(stringValue(data.education_level_option_id));
   const salaryLabel = stringValue(data.salary_range_label) || stringValue(data.salary_label);
+  const isSampleListing = booleanValue(data.is_sample_listing, false);
 
   const classificationLabels = [
-    optLabel(stringValue(data.job_type_option_id)),
-    optLabel(stringValue(data.job_field_option_id)),
-    optLabel(stringValue(data.gender_option_id)),
-    optLabel(stringValue(data.language_level_option_id)),
-    optLabel(stringValue(data.education_level_option_id)),
-    salaryLabel,
-    stringValue(data.contract_label),
+    jobTypeLabel,
+    jobFieldLabel,
+    genderLabel,
+    languageLabel,
+    educationLabel,
   ].filter(Boolean);
 
   const subtitle = stringValue(data.subtitle);
   const shortDescription = stringValue(data.short_description);
   const overview = stringValue(data.overview);
   const jobDescription = stringValue(data.job_description);
+  const listingNoticeTitle = stringValue(data.listing_notice_title);
+  const listingNoticeDescription = stringValue(data.listing_notice_description);
+  const primaryCtaLabel = stringValue(data.primary_cta_label) ||
+    (isSampleListing ? "Kirim Profil untuk Peluang Sejenis" : "Ajukan Screening");
+  const preparationCtaLabel = stringValue(data.preparation_cta_label);
+  const preparationCtaHref = stringValue(data.preparation_cta_href) || "/program";
 
   const whatsappHref = getJobWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  const decisionItems = [
+    { label: "Status informasi", value: listingNoticeTitle },
+    { label: "Jalur visa", value: stringValue(data.visa_path_label) },
+    { label: "Lokasi", value: stringValue(data.location_label) },
+    { label: "Gaji", value: salaryLabel, detail: stringValue(data.salary_basis_label) },
+    { label: "Bahasa minimum", value: languageLabel },
+    { label: "Pendidikan", value: educationLabel },
+    { label: "Batas pengajuan", value: stringValue(data.deadline_label) },
+    { label: "Verifikasi", value: stringValue(data.verification_label) },
+  ].filter((entry) => entry.value);
 
   const galleryMediaIds = flatStringList(data.gallery_media_ids);
   const galleryUrls = galleryMediaIds.length > 0
@@ -3023,7 +3249,7 @@ async function JobDetailMain({
   return (
     <article className="space-y-12">
       <section>
-        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+        <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">Ringkasan Keputusan</h2>
         {subtitle ? (
           <p className="mt-2 text-lg font-medium text-primary-500">{subtitle}</p>
         ) : null}
@@ -3035,7 +3261,19 @@ async function JobDetailMain({
           </div>
         ) : null}
         {item.isExpired ? (
-          <ExpiredBadge type="job" ctaLabel={stringValue(data.primary_cta_label)} />
+          <ExpiredBadge type="job" ctaLabel={primaryCtaLabel} />
+        ) : null}
+        {listingNoticeTitle || listingNoticeDescription ? (
+          <div className="mt-6 border-l-4 border-amber-500 bg-amber-50 px-5 py-4">
+            {listingNoticeTitle ? (
+              <p className="font-semibold text-amber-950">{listingNoticeTitle}</p>
+            ) : null}
+            {listingNoticeDescription ? (
+              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-amber-950/80">
+                {listingNoticeDescription}
+              </p>
+            ) : null}
+          </div>
         ) : null}
         {shortDescription ? (
           <p className="mt-4 text-lg leading-8 text-neutral-600">{shortDescription}</p>
@@ -3043,30 +3281,54 @@ async function JobDetailMain({
         {overview ? (
           <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
         ) : null}
+        {decisionItems.length > 0 ? (
+          <dl className="mt-8 grid gap-x-8 gap-y-5 border-y border-neutral-200 py-6 sm:grid-cols-2">
+            {decisionItems.map((entry) => (
+              <div key={entry.label}>
+                <dt className="text-sm font-medium text-neutral-500">{entry.label}</dt>
+                <dd className="mt-1 font-semibold text-neutral-900">{entry.value}</dd>
+                {entry.detail ? (
+                  <dd className="mt-1 text-sm leading-6 text-neutral-600">{entry.detail}</dd>
+                ) : null}
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {!item.isExpired && whatsappHref !== "#" ? (
+          <div className="mt-8 border-y border-neutral-200 py-6">
+            <h3 className="text-xl font-semibold text-neutral-900">
+              {isSampleListing ? "Sudah memiliki kualifikasi untuk bidang ini?" : "Memenuhi syarat utama?"}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
+              {isSampleListing
+                ? "Entri ini tidak menerima lamaran. Kamu dapat mengirim profil untuk pemeriksaan awal dan peluang aktif yang sejenis. Pengiriman profil tidak menjamin lolos seleksi atau penempatan."
+                : "Kirim profil untuk pemeriksaan awal. Tim HIT akan menjelaskan pihak yang terlibat, tahapan, dan biaya sebelum kamu menyetujui proses berikutnya."}
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button render={<a href={whatsappHref} />} variant="whatsapp">
+                {primaryCtaLabel}
+              </Button>
+              {preparationCtaLabel ? (
+                <Button render={<a href={preparationCtaHref} />} variant="outline">
+                  {preparationCtaLabel}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </section>
 
-      {arrayOfRecords(data.overview_items).filter((v) => stringValue(v.title) || stringValue(v.description)).length >
-      0 ? (
-        <section>
-          <h2 className="text-2xl font-bold text-neutral-900">Sekilas Lowongan</h2>
-          <dl className="mt-5 grid gap-4 md:grid-cols-2">
-            {sortedRecords(data.overview_items)
-              .filter((v) => stringValue(v.title) || stringValue(v.description))
-              .map((item, index) => (
-                <Card key={index}>
-                  <CardContent className="p-5">
-                    <dt className="font-semibold text-neutral-900">{stringValue(item.title)}</dt>
-                    {stringValue(item.description) ? (
-                      <dd className="mt-1 text-sm leading-6 text-neutral-600">
-                        {stringValue(item.description)}
-                      </dd>
-                    ) : null}
-                  </CardContent>
-                </Card>
-              ))}
-          </dl>
-        </section>
-      ) : null}
+      {renderRequirementList(data.candidate_fit_items, "Cek Kecocokan Awal")}
+
+      <NormalizedCardSet
+        title="Hal Penting Sebelum Melamar"
+        items={normalizeMixedList(data.overview_items)}
+      />
+
+      <NormalizedCardSet
+        title="Kondisi Kerja"
+        items={normalizeMixedList(data.work_condition_items)}
+      />
 
       {jobDescription ? (
         <section>
@@ -3077,6 +3339,21 @@ async function JobDetailMain({
 
       {renderRequirementList(data.responsibilities, "Tanggung Jawab")}
 
+      <NormalizedCardSet
+        title="Penghasilan dan Potongan"
+        items={normalizeMixedList(data.compensation_items)}
+      />
+
+      <NormalizedCardSet
+        title="Benefit dari Pemberi Kerja"
+        items={normalizeMixedList(data.employer_benefit_items)}
+      />
+
+      <NormalizedCardSet
+        title="Siapa Melakukan Apa"
+        items={normalizeMixedList(data.process_role_items)}
+      />
+
       {renderRequirementList(data.requirements)}
 
       <NormalizedCardSet
@@ -3084,24 +3361,41 @@ async function JobDetailMain({
         items={normalizeMixedList(data.qualification_items)}
       />
 
-      {renderCheckedCardSet("Manfaat", data.benefits, data.benefit_items)}
+      <NormalizedCardSet
+        title="Biaya dan Komitmen Kandidat"
+        items={normalizeMixedList(data.cost_transparency_items)}
+      />
 
       {(() => {
         const steps = parseTimelineItems(data.recruitment_steps);
         if (steps.length === 0) return null;
         return (
-          <StepFlow
-            title="Alur Rekrutmen"
-            items={steps.map((step) => ({
-              iconKey: step.iconKey || "check",
-              title: step.title,
-              description: step.description,
-              sortOrder: step.sortOrder,
-              isEnabled: step.isEnabled,
-            }))}
-          />
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Alur Rekrutmen</h2>
+            <p className="mt-3 text-sm leading-6 text-neutral-600">
+              Tahap aktual dapat berbeda pada setiap perusahaan. Kandidat harus menerima penjelasan sebelum proses berlanjut.
+            </p>
+            <ol className="mt-6 grid gap-x-8 md:grid-cols-2">
+              {steps
+                .filter((step) => step.isEnabled)
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((step, index) => (
+                  <li key={`${step.sortOrder}-${step.title}`} className="flex gap-4 border-t border-neutral-200 py-5">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-sm font-bold text-white">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-neutral-900">{step.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{step.description}</p>
+                    </div>
+                  </li>
+                ))}
+            </ol>
+          </section>
         );
       })()}
+
+      {renderCheckedCardSet("Pendampingan dari HIT", data.benefits, data.benefit_items)}
 
       {galleryMediaIds.length > 0 ? (
         <section>
@@ -3111,7 +3405,7 @@ async function JobDetailMain({
               const src = galleryUrls.get(mediaId);
               return src ? (
                 <div key={mediaId} className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                  <Image
+                  <CmsImage
                     src={src}
                     alt=""
                     fill
@@ -3139,10 +3433,12 @@ async function JobDetailMain({
 
       {!item.isExpired && whatsappHref !== "#" ? (
         <CTABanner
-          headline={stringValue(data.primary_cta_label) || "Tertarik dengan lowongan ini?"}
-          description="Hubungi kami untuk informasi lebih lanjut dan pendaftaran."
+          headline={isSampleListing ? "Kirim profil untuk peluang aktif yang sejenis" : "Ajukan pemeriksaan awal"}
+          description={isSampleListing
+            ? "Contoh informasi ini tidak menerima lamaran. Tim HIT dapat memeriksa profilmu dan menghubungi jika ada peluang aktif yang relevan."
+            : "Pengajuan profil bukan jaminan diterima. Pastikan kamu menerima penjelasan tertulis mengenai pihak, kondisi kerja, tahapan, dan biaya sebelum melanjutkan."}
           primaryCTA={{
-            label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
+            label: primaryCtaLabel,
             href: whatsappHref,
             variant: "whatsapp",
           }}
@@ -3167,12 +3463,26 @@ function JobDetailSidebar({
     <Card>
       <CardContent className="p-5">
         <h2 className="text-lg font-semibold text-neutral-900">Informasi Lowongan</h2>
+        {booleanValue(data.is_sample_listing, false) ? (
+          <p className="mt-3 border-l-4 border-amber-500 bg-amber-50 px-3 py-2 text-sm font-medium leading-6 text-amber-950">
+            Contoh informasi, bukan lowongan aktif
+          </p>
+        ) : null}
         <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.visa_path_label) ? (
+            <MetaRow label="Jalur Visa" value={stringValue(data.visa_path_label)} />
+          ) : null}
           {stringValue(data.location_label) ? (
             <MetaRow label="Lokasi" value={stringValue(data.location_label)} />
           ) : null}
           {salaryLabel ? (
             <MetaRow label="Gaji" value={salaryLabel} />
+          ) : null}
+          {stringValue(data.salary_basis_label) ? (
+            <MetaRow label="Dasar Gaji" value={stringValue(data.salary_basis_label)} />
+          ) : null}
+          {stringValue(data.estimated_take_home_label) ? (
+            <MetaRow label="Take-home Pay" value={stringValue(data.estimated_take_home_label)} />
           ) : null}
           {stringValue(data.contract_label) ? (
             <MetaRow label="Jenis Kontrak" value={stringValue(data.contract_label)} />
@@ -3199,7 +3509,21 @@ function JobDetailSidebar({
           {item.publishedAt ? (
             <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
           ) : null}
+          {stringValue(data.verification_label) ? (
+            <MetaRow label="Verifikasi" value={stringValue(data.verification_label)} />
+          ) : null}
         </dl>
+
+        {stringValue(data.employer_disclosure_label) || stringValue(data.hit_role_label) ? (
+          <div className="mt-4 border-t border-neutral-200 pt-4 text-sm leading-6 text-neutral-600">
+            {stringValue(data.employer_disclosure_label) ? (
+              <p><strong className="text-neutral-900">Pemberi kerja:</strong> {stringValue(data.employer_disclosure_label)}</p>
+            ) : null}
+            {stringValue(data.hit_role_label) ? (
+              <p className="mt-2"><strong className="text-neutral-900">Peran HIT:</strong> {stringValue(data.hit_role_label)}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         {flatStringList(data.required_documents).length > 0 ? (
           <div className="mt-4 border-t border-neutral-200 pt-4">
@@ -3543,10 +3867,18 @@ function KarirDetailSidebar({
   );
 }
 
-function OfferDetailHero({ item }: { item: PublicCollectionItem }) {
-  const imageSrc = getDetailHeroSrc(item);
+function OfferDetailHero({
+  item,
+  whatsappHref,
+}: {
+  item: PublicCollectionItem;
+  whatsappHref: string;
+}) {
+  const imageSrc = getOfferCmsImageSrc(item);
   const data = item.dataJson;
   const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+  const ctaLabel = stringValue(data.primary_cta_label) || "Daftar Gratis via WhatsApp";
+  const canRegister = !item.isExpired && whatsappHref !== "#";
 
   return imageSrc ? (
     <HeroSection
@@ -3555,6 +3887,8 @@ function OfferDetailHero({ item }: { item: PublicCollectionItem }) {
       mediaAlt={item.title}
       headline={item.title}
       subheadline={subtitle}
+      eyebrowLabel={stringValue(data.hero_eyebrow_label)}
+      primaryCTA={canRegister ? { label: ctaLabel, href: whatsappHref, variant: "whatsapp" } : undefined}
       priority
     />
   ) : (
@@ -3564,6 +3898,11 @@ function OfferDetailHero({ item }: { item: PublicCollectionItem }) {
         {subtitle ? (
           <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
         ) : null}
+        {canRegister ? (
+          <Button render={<a href={whatsappHref} />} variant="whatsapp" size="lg" className="mt-8">
+            {ctaLabel}
+          </Button>
+        ) : null}
       </Container>
     </section>
   );
@@ -3572,9 +3911,11 @@ function OfferDetailHero({ item }: { item: PublicCollectionItem }) {
 async function OfferDetailMain({
   item,
   variantId,
+  whatsappHref,
 }: {
   item: PublicCollectionItem;
   variantId: string;
+  whatsappHref: string;
 }) {
   const data = item.dataJson;
 
@@ -3604,14 +3945,27 @@ async function OfferDetailMain({
   const overview = stringValue(data.overview);
   const detailDescription = stringValue(data.detail_description);
   const termsConditions = stringValue(data.terms_conditions);
+  const agendaItems = sortedRecords(data.agenda_items).filter(
+    (agenda) => stringValue(agenda.title) || stringValue(agenda.description),
+  );
+  const instructorImageId = stringValue(data.instructor_image_id);
+  const instructorImageSrc = instructorImageId
+    ? getMediaProxyUrl(instructorImageId)
+    : null;
+  const instructorName = stringValue(data.instructor_name);
+  const hasInstructor = Boolean(
+    instructorName ||
+      stringValue(data.instructor_role) ||
+      stringValue(data.instructor_qualification) ||
+      stringValue(data.instructor_description),
+  );
 
   return (
     <article className="space-y-12">
-      <section>
-        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
-        {stringValue(data.subtitle) ? (
-          <p className="mt-2 text-lg font-medium text-primary-500">{stringValue(data.subtitle)}</p>
-        ) : null}
+      <section id="offer-detail" className="scroll-mt-24">
+        <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+          {stringValue(data.intro_heading) || "Mulai dengan Arah yang Lebih Jelas"}
+        </h2>
         {classificationLabels.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-2">
             {classificationLabels.map((label) => (
@@ -3628,9 +3982,79 @@ async function OfferDetailMain({
         ) : null}
       </section>
 
-      {renderCheckedCardSet("Keuntungan", data.benefit_items)}
+      {renderCheckedCardSet("Hasil yang Kamu Bawa Setelah Kelas", data.benefit_items)}
 
-      {renderRequirementList(data.detail_checklist, "Detail Penawaran")}
+      {agendaItems.length > 0 ? (
+        <section>
+          <div className="flex items-center gap-3">
+            <CalendarClock aria-hidden="true" className="size-6 text-primary-500" />
+            <h2 className="text-2xl font-bold text-neutral-900">Agenda Kelas 2 Jam</h2>
+          </div>
+          <ol className="mt-6 border-y border-neutral-200">
+            {agendaItems.map((agenda, index) => (
+              <li
+                key={`${stringValue(agenda.title)}-${index}`}
+                className="grid gap-2 border-b border-neutral-200 py-5 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
+              >
+                <p className="font-semibold text-primary-600">{stringValue(agenda.title)}</p>
+                <p className="text-sm leading-6 text-neutral-600">{stringValue(agenda.description)}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
+      {hasInstructor ? (
+        <section className="overflow-hidden rounded-lg bg-primary-700 text-white">
+          <div
+            className={
+              instructorImageSrc
+                ? "grid lg:grid-cols-[280px_minmax(0,1fr)]"
+                : "grid"
+            }
+          >
+            {instructorImageSrc ? (
+              <div className="relative min-h-72 bg-primary-800 lg:min-h-full">
+                <CmsImage
+                  src={instructorImageSrc}
+                  alt={instructorName || "Pengajar kelas HIT"}
+                  fill
+                  sizes="(min-width: 1024px) 280px, 100vw"
+                  className="object-cover"
+                  fallbackLabel={instructorName || "Pengajar kelas HIT"}
+                />
+              </div>
+            ) : null}
+            <div className="p-6 md:p-8">
+              <div className="flex items-center gap-3 text-primary-100">
+                <GraduationCap aria-hidden="true" className="size-6" />
+                <p className="text-sm font-semibold uppercase">Pengarah Materi Kelas</p>
+              </div>
+              {instructorName ? <h2 className="mt-4 text-3xl font-bold">{instructorName}</h2> : null}
+              {stringValue(data.instructor_role) ? (
+                <p className="mt-2 font-medium text-white/80">{stringValue(data.instructor_role)}</p>
+              ) : null}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {[stringValue(data.instructor_qualification), stringValue(data.instructor_experience)]
+                  .filter(Boolean)
+                  .map((label) => (
+                    <span key={label} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm">
+                      {label}
+                    </span>
+                  ))}
+              </div>
+              {stringValue(data.instructor_description) ? (
+                <p className="mt-6 leading-7 text-white/80">{stringValue(data.instructor_description)}</p>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {renderRequirementList(
+        data.detail_checklist,
+        stringValue(data.detail_checklist_title) || "Sebelum Kelas, Siapkan Ini",
+      )}
 
       {detailDescription ? (
         <section>
@@ -3692,6 +4116,18 @@ async function OfferDetailMain({
           <div className="mt-5 whitespace-pre-line text-sm leading-6 text-neutral-600">{termsConditions}</div>
         </section>
       ) : null}
+
+      {!item.isExpired && whatsappHref !== "#" ? (
+        <CTABanner
+          headline="Siap Menentukan Langkah Pertamamu?"
+          description="Pilih batch yang tersedia melalui WhatsApp. Tim HIT akan mengirimkan konfirmasi jadwal dan petunjuk mengikuti kelas Zoom."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Pilih Batch & Daftar Gratis",
+            href: whatsappHref,
+            variant: "whatsapp",
+          }}
+        />
+      ) : null}
     </article>
   );
 }
@@ -3708,7 +4144,7 @@ function OfferDetailSidebar({
   return (
     <Card>
       <CardContent className="p-5">
-        <h2 className="text-lg font-semibold text-neutral-900">Informasi Penawaran</h2>
+        <h2 className="text-lg font-semibold text-neutral-900">Jadwal dan Pendaftaran</h2>
         <dl className="mt-4 space-y-3 text-sm text-neutral-600">
           {stringValue(data.price_label) ? (
             <MetaRow label="Harga" value={stringValue(data.price_label)} />
@@ -3718,6 +4154,9 @@ function OfferDetailSidebar({
           ) : null}
           {stringValue(data.urgency_label) ? (
             <MetaRow label="Ketersediaan" value={stringValue(data.urgency_label)} />
+          ) : null}
+          {stringValue(data.batch_label) ? (
+            <MetaRow label="Pilihan Batch" value={stringValue(data.batch_label)} />
           ) : null}
           {stringValue(data.schedule_label) ? (
             <MetaRow label="Jadwal" value={stringValue(data.schedule_label)} />
@@ -3858,7 +4297,7 @@ async function toCollectionListItem(
     return toListItem(item, {
       labels: await resolveJobLabels(item, variantId),
       metaKeys: ["location_label", "salary_range_label", "deadline_label"],
-      badge: null,
+      badge: booleanValue(item.dataJson.is_sample_listing, false) ? "Contoh informasi" : null,
       usePublishedAtFallback: false,
     });
   }
@@ -4074,6 +4513,15 @@ function getDetailHeroSrc(item: PublicCollectionItem, fallbackImageSrc?: string)
   return item.heroSrc || item.thumbnailSrc || fallbackImageSrc;
 }
 
+function getOfferCmsImageSrc(item?: PublicCollectionItem | null) {
+  if (!item) {
+    return undefined;
+  }
+
+  const mediaId = item.heroImageId || item.thumbnailImageId;
+  return mediaId ? getMediaProxyUrl(mediaId) : item.heroSrc || item.thumbnailSrc;
+}
+
 function getListPageFallbackHeroImage(pageKey: string, items: PublicCollectionItem[]) {
   if (pageKey !== "program_page") {
     return null;
@@ -4089,7 +4537,7 @@ async function resolveDetailPageHeroSrc(variantId: string, pageKey: string) {
   const hero = record(page?.dataJson.hero);
   const mediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
 
-  return mediaId ? resolveMediaUrl(mediaId) : null;
+  return Promise.resolve(mediaProxySrc(mediaId) ?? null);
 }
 
 async function resolveFeaturedPrograms(variantId: string, config: PublicJson) {
@@ -4142,7 +4590,7 @@ async function resolveFeaturedPrograms(variantId: string, config: PublicJson) {
 
 async function resolveOfferSectionPayload(variantId: string, config: PublicJson) {
   const source = stringValue(config.source) || "active_featured_offer";
-  const fallbackImageSrc = await resolveMediaUrl(stringValue(config.fallback_image_id));
+  const fallbackImageSrc = mediaProxySrc(stringValue(config.fallback_image_id)) ?? null;
 
   if (source === "disabled") {
     return { item: null, fallbackImageSrc, isDisabled: true };
@@ -4181,7 +4629,7 @@ async function resolveOfferSectionPayload(variantId: string, config: PublicJson)
 function resolveCachedActiveOffer(variantId: string) {
   return unstable_cache(
     () => resolveActiveOffer(variantId),
-    ["public-active-offer", variantId],
+    ["public-active-offer", PUBLIC_CONTENT_CACHE_VERSION, variantId],
     {
       revalidate: PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
       tags: resolveTags((id) => [`collection:${id}:offer`], variantId),
@@ -4200,6 +4648,7 @@ function resolveCachedCollectionList(
     () => resolveCollectionList(variantId, collectionKey, opts),
     [
       "public-cached-collection",
+      PUBLIC_CONTENT_CACHE_VERSION,
       variantId,
       collectionKey,
       stableCollectionOptionsKey(opts),
@@ -4236,6 +4685,37 @@ function stableFilterRecord(filters: PublicCollectionListOptions["filters"]) {
         Array.isArray(value) ? [...value].sort() : value,
       ]),
   );
+}
+
+function buildAudiencePathCards(data: PublicJson) {
+  const cards = sortedRecords(data.audience_paths).map((item, index) => ({
+    id: `audience-path-${index}`,
+    title: stringValue(item.title),
+    description: stringValue(item.description),
+    href: stringValue(item.href),
+    meta: stringValue(item.cta_label),
+    iconKey: stringValue(item.icon_key),
+    isEnabled: booleanValue(item.is_enabled, true),
+  }));
+  const hasFamilyPath = cards.some((item) => {
+    const text = `${item.title} ${item.description}`.toLowerCase();
+    return text.includes("orang tua") || text.includes("keluarga") || text.includes("legal");
+  });
+
+  if (!hasFamilyPath) {
+    cards.push({
+      id: "audience-path-family",
+      title: "Orang Tua atau Keluarga",
+      description:
+        "Cek legalitas, biaya, tahapan, dan risiko sebelum mendukung keputusan anak atau anggota keluarga.",
+      href: "/tentang-kami#profil-lembaga",
+      meta: "Cek Legalitas dan Biaya",
+      iconKey: "shield_check",
+      isEnabled: true,
+    });
+  }
+
+  return cards;
 }
 
 function toStatItem(item: PublicJson) {
@@ -4595,6 +5075,10 @@ function parseCostItems(value: unknown): CostItem[] {
 
 function getMediaProxyUrl(mediaId: string) {
   return `/api/media/${encodeURIComponent(mediaId)}`;
+}
+
+function mediaProxySrc(mediaId: string) {
+  return mediaId ? getMediaProxyUrl(mediaId) : undefined;
 }
 
 function renderRequirementList(value: unknown, title = "Persyaratan") {

@@ -51,17 +51,17 @@ const optionSets = {
     {
       key: "education_level",
       label: "Education Level",
-      values: ["SMA/SMK", "D3", "S1"],
+      values: ["SMA/SMK", "D3", "S1", "Belum dikonfirmasi"],
     },
     {
       key: "language_level",
       label: "Language Level",
-      values: ["N5", "N4", "N3", "N2", "N1"],
+      values: ["N5", "N4", "N3", "N2", "N1", "Belum dikonfirmasi"],
     },
     {
       key: "job_type",
       label: "Job Type",
-      values: ["Full-time", "Part-time", "Kontrak"],
+      values: ["Full-time", "Part-time", "Kontrak", "Magang"],
     },
     {
       key: "job_field",
@@ -74,6 +74,8 @@ const optionSets = {
         "Makanan",
         "Perhotelan",
         "Perawatan",
+        "Engineering/CAD",
+        "Teknik Besi/Welding",
       ],
     },
     {

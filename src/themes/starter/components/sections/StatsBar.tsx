@@ -34,7 +34,7 @@ function StatsBar({ items, variant = "light", compact = false }: StatsBarProps) 
   return (
     <section
       className={cn(
-        compact ? "py-10 md:py-12 lg:py-14" : "py-16 md:py-20 lg:py-24",
+        compact ? "py-8 md:py-10 lg:py-12" : "py-10 md:py-14 lg:py-16",
         isDark
           ? "bg-primary-700 text-white"
           : "bg-neutral-50 text-neutral-900"

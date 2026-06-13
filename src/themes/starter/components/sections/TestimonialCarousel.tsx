@@ -1,8 +1,8 @@
 "use client"
 
-import Image from "next/image"
 import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent } from "@/themes/starter/components/ui/Card"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { Container } from "@/themes/starter/components/ui/Container"
 import { cn } from "@/lib/utils"
 
@@ -81,12 +81,13 @@ function TestimonialCarousel({ items, title }: TestimonialCarouselProps) {
                 </p>
                 <div className="mt-6 flex items-center gap-3">
                   {item.imageSrc ? (
-                    <Image
+                    <CmsImage
                       src={item.imageSrc}
                       alt={item.name}
                       width={48}
                       height={48}
                       className="size-12 rounded-full object-cover"
+                      fallbackLabel={getInitials(item.name)}
                     />
                   ) : (
                     <div className="flex size-12 items-center justify-center rounded-full bg-primary-100 text-sm font-semibold text-primary-700">

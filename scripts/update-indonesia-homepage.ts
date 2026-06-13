@@ -545,10 +545,9 @@ async function main() {
       collectionKey: "job",
       slug: {
         in: [
-          "demo-job-operator-manufaktur-otomotif",
-          "demo-job-pengolahan-makanan-beku",
-          "demo-job-pertanian-rumah-kaca",
-          "demo-job-asisten-perawatan-lansia-kaigo",
+          "operator-produksi-komponen-otomotif-aichi",
+          "staf-pengolahan-makanan-gifu",
+          "care-worker-perawatan-lansia-fukuoka",
         ],
       },
     },
@@ -558,10 +557,10 @@ async function main() {
     jobImages.map((item) => [item.slug, item.thumbnailImageId || undefined]),
   );
   const workFieldImages: WorkFieldImages = {
-    manufacturing: imageByJobSlug.get("demo-job-operator-manufaktur-otomotif"),
-    foodProcessing: imageByJobSlug.get("demo-job-pengolahan-makanan-beku"),
-    agriculture: imageByJobSlug.get("demo-job-pertanian-rumah-kaca"),
-    elderlyCare: imageByJobSlug.get("demo-job-asisten-perawatan-lansia-kaigo"),
+    manufacturing: imageByJobSlug.get("operator-produksi-komponen-otomotif-aichi"),
+    foodProcessing: imageByJobSlug.get("staf-pengolahan-makanan-gifu"),
+    agriculture: undefined,
+    elderlyCare: imageByJobSlug.get("care-worker-perawatan-lansia-fukuoka"),
   };
 
   const updatedDraft = updateHomepageData(page.dataJson, workFieldImages);

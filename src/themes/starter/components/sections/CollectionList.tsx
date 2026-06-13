@@ -1,10 +1,10 @@
 "use client"
 
-import Image from "next/image"
 import { Badge } from "@/themes/starter/components/ui/Badge"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Card, CardContent, CardFooter } from "@/themes/starter/components/ui/Card"
 import { Container } from "@/themes/starter/components/ui/Container"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { EmptyState } from "@/themes/starter/components/sections/EmptyState"
 import { ExpiredBadge } from "@/themes/starter/components/sections/ExpiredBadge"
 import { FilterBar, type FilterBarFilter } from "@/themes/starter/components/sections/FilterBar"
@@ -79,13 +79,13 @@ function CollectionList({
   const endItem = Math.min(safePage * pageSize, total)
 
   return (
-    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+    <section className="bg-neutral-50 py-12 md:py-16 lg:py-20">
       <Container>
         {title || subtitle ? (
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-3xl">
               {title ? (
-                <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+                <h2 className="text-2xl font-bold text-neutral-900 md:text-4xl">
                   {title}
                 </h2>
               ) : null}
@@ -120,21 +120,22 @@ function CollectionList({
                 Menampilkan {startItem}-{endItem} dari {total} data
               </div>
             ) : null}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {items.map((item) => {
                 const href = `${detailPathPrefix}/${item.slug}`
                 const isExpired = item.isExpired || item.status === "CLOSED"
 
                 return (
-                  <Card key={item.id} className="h-full py-0">
+                  <Card key={item.id} className="h-full border border-neutral-200 py-0 shadow-sm transition-shadow hover:shadow-lg">
                     {item.thumbnailSrc ? (
-                      <div className="relative aspect-video overflow-hidden">
-                        <Image
+                      <div className="relative aspect-[16/9] overflow-hidden bg-primary-50">
+                        <CmsImage
                           src={item.thumbnailSrc}
                           alt={item.title}
                           fill
                           sizes="(min-width: 1024px) 33vw, 100vw"
                           className="object-cover"
+                          fallbackLabel={item.title}
                         />
                       </div>
                     ) : null}
@@ -152,22 +153,22 @@ function CollectionList({
                             </Badge>
                           ))}
                       </div>
-                      <h3 className="text-lg font-semibold leading-snug text-neutral-900">
+                      <h3 className="text-base font-semibold leading-snug text-neutral-900 md:text-lg">
                         {item.title}
                       </h3>
                       {isExpired ? <ExpiredBadge type="job" /> : null}
                       {item.subtitle ? (
-                        <p className="mt-3 line-clamp-2 text-sm leading-6 text-neutral-600">
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-600">
                           {item.subtitle}
                         </p>
                       ) : null}
                       {item.meta || item.expiredAt ? (
-                        <p className="mt-4 text-sm text-neutral-500">
+                        <p className="mt-4 line-clamp-3 text-sm leading-6 text-neutral-500">
                           {[item.meta, item.expiredAt].filter(Boolean).join(" - ")}
                         </p>
                       ) : null}
                     </CardContent>
-                    <CardFooter className="p-5">
+                    <CardFooter className="mt-auto p-5">
                       {isExpired ? (
                         <Button
                           disabled
@@ -204,7 +205,7 @@ function CollectionList({
                     safePage === 1 && "pointer-events-none opacity-50"
                   )}
                 >
-                  Previous
+                  Sebelumnya
                 </a>
                 {pages.map((pageNumber) => (
                   <a
@@ -241,7 +242,7 @@ function CollectionList({
                     safePage === totalPages && "pointer-events-none opacity-50"
                   )}
                 >
-                  Next
+                  Berikutnya
                 </a>
               </nav>
             ) : null}

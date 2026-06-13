@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage";
 
 type HeaderBrandProps = {
   lpkName: string;
@@ -33,8 +33,8 @@ export function HeaderBrand({
       )}
     >
       {logoSrc ? (
-        <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden md:size-11">
-          <Image
+        <span className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden md:size-11">
+          <CmsImage
             src={logoSrc}
             alt=""
             width={logoWidth}

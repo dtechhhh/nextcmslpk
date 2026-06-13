@@ -38,7 +38,7 @@ function CTABanner({
       <Container>
         <div
           className={cn(
-            "flex flex-col gap-8 rounded-2xl p-6 md:p-8 lg:flex-row lg:items-center lg:justify-between",
+        "flex flex-col gap-8 rounded-lg p-6 md:p-8 lg:flex-row lg:items-center lg:justify-between",
             darkVariant
               ? "bg-white/10"
               : "bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]"

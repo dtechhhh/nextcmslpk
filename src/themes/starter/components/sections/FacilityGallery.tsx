@@ -1,8 +1,8 @@
 "use client"
 
-import Image from "next/image"
 import { X } from "lucide-react"
 import { useMemo, useState } from "react"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { Container } from "@/themes/starter/components/ui/Container"
 
 interface FacilityGalleryItem {
@@ -48,12 +48,13 @@ function FacilityGallery({ title, items }: FacilityGalleryProps) {
               className="group relative aspect-video overflow-hidden rounded-xl bg-neutral-100 text-left"
               onClick={() => setActiveItem(item)}
             >
-              <Image
+              <CmsImage
                 src={item.mediaSrc}
                 alt={item.title || "Galeri fasilitas"}
                 fill
                 sizes="(min-width: 1024px) 33vw, 50vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
+                fallbackLabel={item.title || "Galeri fasilitas"}
               />
               {item.title || item.description ? (
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
@@ -88,12 +89,13 @@ function FacilityGallery({ title, items }: FacilityGalleryProps) {
           </button>
           <div className="w-full max-w-5xl">
             <div className="relative aspect-video overflow-hidden rounded-xl">
-              <Image
+              <CmsImage
                 src={activeItem.mediaSrc}
                 alt={activeItem.title || "Galeri fasilitas"}
                 fill
                 sizes="100vw"
                 className="object-contain"
+                fallbackLabel={activeItem.title || "Galeri fasilitas"}
               />
             </div>
             {activeItem.title || activeItem.description ? (

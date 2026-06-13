@@ -11,12 +11,14 @@ interface CollectionDetailProps {
   mainContent: ReactNode
   sidebar?: ReactNode
   breadcrumb?: CollectionDetailBreadcrumbItem[]
+  sidebarFirstOnMobile?: boolean
 }
 
 function CollectionDetail({
   mainContent,
   sidebar,
   breadcrumb,
+  sidebarFirstOnMobile = false,
 }: CollectionDetailProps) {
   return (
     <section className="bg-white py-16 md:py-20 lg:py-24">
@@ -49,10 +51,18 @@ function CollectionDetail({
         ) : null}
 
         <div className={sidebar ? "grid gap-10 lg:grid-cols-3" : "mx-auto max-w-4xl"}>
-          <main className={sidebar ? "min-w-0 lg:col-span-2" : "min-w-0"}>{mainContent}</main>
+          <main
+            className={
+              sidebar
+                ? `min-w-0 lg:col-span-2 ${sidebarFirstOnMobile ? "order-2 lg:order-1" : ""}`
+                : "min-w-0"
+            }
+          >
+            {mainContent}
+          </main>
           {sidebar ? (
-            <aside className="lg:col-span-1">
-              <div className="lg:sticky lg:top-8">{sidebar}</div>
+            <aside className={`lg:col-span-1 ${sidebarFirstOnMobile ? "order-1 lg:order-2" : ""}`}>
+              <div className="lg:sticky lg:top-24">{sidebar}</div>
             </aside>
           ) : null}
         </div>
