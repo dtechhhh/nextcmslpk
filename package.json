@@ -15,7 +15,11 @@
     "content:japan-training": "tsx scripts/update-japan-training-method.ts",
     "content:indonesia-homepage": "tsx scripts/update-indonesia-homepage.ts",
     "content:indonesia-about": "tsx scripts/update-indonesia-about.ts",
+    "content:indonesia-offer": "tsx scripts/update-indonesia-offer.ts",
+    "content:indonesia-blogs": "tsx scripts/update-indonesia-blogs.ts",
+    "content:indonesia-job-hero": "tsx scripts/update-indonesia-job-hero.ts",
     "content:indonesia-programs": "tsx scripts/update-indonesia-programs.ts",
+    "content:indonesia-jobs": "tsx scripts/update-indonesia-jobs.ts",
     "maintenance:trim-summaries": "tsx scripts/trim-collection-summaries.ts",
     "lint": "eslint"
   },

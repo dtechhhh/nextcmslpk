@@ -1,5 +1,5 @@
-import Image from "next/image"
 import { Card, CardContent } from "@/themes/starter/components/ui/Card"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { Container } from "@/themes/starter/components/ui/Container"
 
 interface RelatedItem {
@@ -43,12 +43,13 @@ function RelatedItems({
               >
                 {item.thumbnailSrc ? (
                   <div className="relative aspect-video overflow-hidden">
-                    <Image
+                    <CmsImage
                       src={item.thumbnailSrc}
                       alt={item.title}
                       fill
                       sizes="(min-width: 1024px) 33vw, 100vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      fallbackLabel={item.title}
                     />
                   </div>
                 ) : null}

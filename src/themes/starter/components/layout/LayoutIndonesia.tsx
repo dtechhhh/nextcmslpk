@@ -75,7 +75,7 @@ export async function LayoutIndonesia({
         logoLightSrc={logoLightSrc ?? undefined}
         navItems={arrayOfRecords(brandHeader.navbar).map((item) => ({
           key: stringValue(item.key),
-          label: stringValue(item.label),
+          label: normalizeIndonesiaLabel(stringValue(item.label)),
           href: stringValue(item.href) || "/",
           isEnabled: booleanValue(item.is_enabled, true),
           sortOrder: numberValue(item.sort_order),
@@ -106,7 +106,7 @@ export async function LayoutIndonesia({
         logoSrc={footerLogoSrc ?? logoSrc ?? undefined}
         shortDescription={stringValue(footerBrand.short_description)}
         quickLinks={arrayOfRecords(footer.quick_links).map((item) => ({
-          label: stringValue(item.label),
+          label: normalizeIndonesiaLabel(stringValue(item.label)),
           href: stringValue(item.href) || "/",
           isEnabled: booleanValue(item.is_enabled, true),
           sortOrder: numberValue(item.sort_order),
@@ -183,7 +183,23 @@ async function resolveFooterProgramLinks(variantId: string, maxItems: number) {
 }
 
 function mediaUrl(mediaUrls: Map<string, string>, mediaId: string) {
-  return mediaId ? mediaUrls.get(mediaId) : undefined;
+  return mediaId && mediaUrls.has(mediaId)
+    ? `/api/media/${encodeURIComponent(mediaId)}`
+    : undefined;
+}
+
+function normalizeIndonesiaLabel(label: string) {
+  const normalized = label.trim().toLowerCase();
+
+  if (normalized === "info job" || normalized === "job") {
+    return "Lowongan Jepang";
+  }
+
+  if (normalized === "quick links") {
+    return "Tautan Cepat";
+  }
+
+  return label;
 }
 
 function record(value: unknown): PublicJson {

@@ -11,6 +11,14 @@ import {
 export const jobPageSchema = z
   .object({
     hero: basicHeroSchema.default(defaultBasicHero),
+    information_notice: z
+      .object({
+        eyebrow: z.string().default(""),
+        headline: z.string().default(""),
+        description: z.string().default(""),
+      })
+      .passthrough()
+      .default({ eyebrow: "", headline: "", description: "" }),
     filter_config: z
       .object({
         enable_job_type_filter: z.boolean().default(true),

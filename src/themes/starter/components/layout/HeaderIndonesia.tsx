@@ -1,6 +1,7 @@
 "use client";
 
-import { Globe2, Menu } from "lucide-react";
+import { Globe2, Menu, MessageCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
 import {
@@ -44,6 +45,7 @@ export function HeaderIndonesia({
   headerCTA,
   sticky,
 }: HeaderIndonesiaProps) {
+  const pathname = usePathname() || "/";
   const visibleNavItems = useMemo(
     () =>
       navItems
@@ -52,6 +54,13 @@ export function HeaderIndonesia({
     [navItems],
   );
   const logo = logoSrc || logoLightSrc;
+  const isActiveHref = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header
@@ -68,7 +77,12 @@ export function HeaderIndonesia({
             <a
               key={item.key}
               href={item.href}
-              className="text-sm font-medium transition hover:text-primary-500"
+              aria-current={isActiveHref(item.href) ? "page" : undefined}
+              className={cn(
+                "relative text-sm font-medium transition hover:text-primary-500",
+                isActiveHref(item.href) &&
+                  "text-primary-700 after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-primary-500",
+              )}
             >
               {item.label}
             </a>
@@ -90,7 +104,15 @@ export function HeaderIndonesia({
           </Button>
         </div>
 
-        <Sheet>
+        <div className="flex items-center gap-2 lg:hidden">
+          <a
+            href={headerCTA.whatsappHref}
+            aria-label={headerCTA.label}
+            className="inline-flex size-10 items-center justify-center rounded-lg bg-[var(--color-cta)] text-white shadow-sm transition hover:brightness-95"
+          >
+            <MessageCircle aria-hidden="true" className="size-5" />
+          </a>
+          <Sheet>
           <SheetTrigger
             className="inline-flex size-10 items-center justify-center rounded-lg text-neutral-900 lg:hidden"
             aria-label="Buka menu"
@@ -128,7 +150,8 @@ export function HeaderIndonesia({
               </Button>
             </div>
           </SheetContent>
-        </Sheet>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

@@ -1,6 +1,6 @@
-import Image from "next/image"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Container } from "@/themes/starter/components/ui/Container"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 
 interface HeroCTA {
   label: string
@@ -38,16 +38,17 @@ function HeroSection({
   priority = false,
 }: HeroSectionProps) {
   return (
-    <section className="relative flex min-h-[520px] items-center overflow-hidden bg-neutral-900 md:min-h-[620px] lg:min-h-[650px]">
+    <section className="relative flex min-h-[460px] items-center overflow-hidden bg-neutral-900 sm:min-h-[540px] md:min-h-[620px] lg:min-h-[650px]">
       <div className="absolute inset-0 z-0">
         {mediaType === "image" ? (
-          <Image
+          <CmsImage
             src={mediaSrc}
             alt={mediaAlt}
             fill
             priority={priority}
             sizes="100vw"
             className="object-cover"
+            fallbackLabel={headline}
           />
         ) : (
           <video

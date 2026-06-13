@@ -38,6 +38,17 @@ const contentBlock = z.discriminatedUnion("type", [
   whatsappCtaBlockSchema,
 ]);
 
+const blogSourceSchema = z
+  .object({
+    title: optionalString(200),
+    description: optionalString(800),
+    source_label: optionalString(160),
+    source_url: optionalString(500),
+    is_enabled: z.boolean().default(true),
+    sort_order: z.coerce.number().int().min(0).default(0),
+  })
+  .passthrough();
+
 export {
   headingBlockSchema,
   imageBlockSchema,
@@ -68,6 +79,11 @@ export const blogSchema = z
     author_title: optionalString(200),
     author_bio: optionalString(1000),
     author_image_id: mediaIdSchema,
+    key_takeaways: z.array(optionalString(300)).default([]),
+    reviewer_name: optionalString(200),
+    reviewer_title: optionalString(200),
+    reviewed_at: z.string().default(""),
+    source_items: z.array(blogSourceSchema).default([]),
     content_blocks: z.array(contentBlock).default([]),
     related_source: z
       .enum(["same_category", "same_tags", "manual"])
@@ -97,6 +113,11 @@ export const blogDefaults: BlogData = {
   author_title: "",
   author_bio: "",
   author_image_id: "",
+  key_takeaways: [],
+  reviewer_name: "",
+  reviewer_title: "",
+  reviewed_at: "",
+  source_items: [],
   content_blocks: [],
   related_source: "same_category",
   manual_blog_ids: [],

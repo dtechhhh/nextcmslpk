@@ -1,10 +1,10 @@
 "use client"
 
-import Image from "next/image"
 import { useEffect, useState } from "react"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Container } from "@/themes/starter/components/ui/Container"
 import { cn } from "@/lib/utils"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 
 interface HeroSliderCTA {
   label: string
@@ -112,7 +112,7 @@ function HeroSlider({
 
   return (
     <section
-      className="relative flex min-h-[520px] items-center overflow-hidden bg-neutral-900 sm:min-h-[560px] md:min-h-[620px] lg:min-h-[650px]"
+      className="relative flex min-h-[460px] items-center overflow-hidden bg-neutral-900 sm:min-h-[540px] md:min-h-[620px] lg:min-h-[650px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onKeyDown={(event) => {
@@ -129,7 +129,7 @@ function HeroSlider({
     >
       <div className="absolute inset-0 z-0">
         {slides.map((slide, index) => (
-          <Image
+          <CmsImage
             key={`${slide.mediaSrc}-${index}`}
             src={slide.mediaSrc}
             alt={slide.mediaAlt || ""}
@@ -140,6 +140,7 @@ function HeroSlider({
               "object-cover transition-opacity duration-500 ease-in-out",
               index === activeIndex ? "opacity-100" : "opacity-0"
             )}
+            fallbackLabel={slide.mediaAlt || headline}
           />
         ))}
       </div>

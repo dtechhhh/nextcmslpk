@@ -1388,6 +1388,11 @@ export const PAGE_EDITOR_DEFINITIONS = {
     publicPath: "/job",
     defaultData: {
       hero: emptyBasicHero,
+      information_notice: {
+        eyebrow: "",
+        headline: "",
+        description: "",
+      },
       filter_config: {
         enable_job_type_filter: true,
         enable_job_field_filter: true,
@@ -1399,6 +1404,16 @@ export const PAGE_EDITOR_DEFINITIONS = {
     },
     sections: [
       simpleBasicHeroSection(),
+      {
+        key: "information_notice",
+        title: "Information notice",
+        classification: "required",
+        fields: [
+          { kind: "text", path: "information_notice.eyebrow", label: "Eyebrow" },
+          { kind: "text", path: "information_notice.headline", label: "Headline" },
+          { kind: "textarea", path: "information_notice.description", label: "Description" },
+        ],
+      },
       {
         key: "filter_config",
         title: "Filter",

@@ -128,22 +128,43 @@ async function runPublicRenderingIndonesiaTests() {
       label: "Job listing renders",
       url: `${INDONESIA_BASE}/job`,
       expectedStatus: 200,
-      checks: [contains("Lowongan")],
+      checks: [
+        contains("Info Job dan Jalur Kerja Jepang"),
+        contains("Engineer CAD Konstruksi - Osaka"),
+        contains("Magang Teknik Besi dan Welding - Osaka"),
+        contains("Pintu masuk screening job"),
+      ],
     },
     {
       id: "T1.5",
       group: "Test Group 1: Public Rendering Indonesia",
-      label: "Job detail renders and CTA is enabled",
-      url: `${INDONESIA_BASE}/job/operator-produksi-pabrik-otomotif-aichi`,
+      label: "Real job detail renders with confidential employer disclosure",
+      url: `${INDONESIA_BASE}/job/engineer-cad-konstruksi-osaka-gijinkoku`,
       expectedStatus: 200,
       checks: [
-        contains("Operator Produksi"),
-        contains("Aichi"),
+        contains("Engineer CAD Konstruksi - Osaka"),
+        contains("nama perusahaan dirahasiakan"),
+        contains("Estimasi JPY 250.000/bulan bruto"),
         {
-          label: "CTA not disabled",
+          label: "Screening CTA is enabled",
           test: (body) =>
             !body.includes("Pendaftaran ditutup") &&
-            /Daftar via WhatsApp|Lamar.*WhatsApp|wa\.me/i.test(body),
+            /Kirim Profil|wa\.me/i.test(body),
+        },
+      ],
+    },
+    {
+      id: "T1.5.1",
+      group: "Test Group 1: Public Rendering Indonesia",
+      label: "Internship detail hides public compensation figures",
+      url: `${INDONESIA_BASE}/job/magang-teknik-besi-welding-osaka`,
+      expectedStatus: 200,
+      checks: [
+        contains("Magang Teknik Besi dan Welding - Osaka"),
+        contains("Estimasi kompensasi dijelaskan saat screening"),
+        {
+          label: "Confidential Japan party names are absent",
+          test: (body) => !/HAPJAPN|有限会社松風|matsukaze\.co\.jp/i.test(body),
         },
       ],
     },

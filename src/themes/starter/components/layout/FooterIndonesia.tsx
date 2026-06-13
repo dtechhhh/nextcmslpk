@@ -1,7 +1,7 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { SocialIcon } from "@/themes/starter/components/icons/SocialIcon";
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage";
 
 type FooterIndonesiaProps = {
   lpkName: string;
@@ -51,7 +51,7 @@ export function FooterIndonesia({
           <div className="flex min-w-0 items-center gap-3">
             {logoSrc ? (
               <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden">
-                <Image
+                <CmsImage
                   src={logoSrc}
                   alt=""
                   width={56}
@@ -76,7 +76,7 @@ export function FooterIndonesia({
           ) : null}
         </div>
 
-        <FooterColumn title="Quick Links">
+        <FooterColumn title="Tautan Cepat">
           {links.map((item) => (
             <a key={item.href} href={item.href} className="hover:text-white">
               {item.label}
@@ -134,7 +134,7 @@ export function FooterIndonesia({
         </div>
       </div>
 
-      <div className="border-t border-neutral-800 px-4 py-5 text-center text-xs text-neutral-400">
+      <div className="border-t border-neutral-800 px-4 pb-20 pt-5 text-center text-xs text-neutral-400 sm:py-5">
         <span>{legal.copyrightText}</span>
         {legal.showPoweredBy ? <span> Powered by NextCMS LPK.</span> : null}
       </div>

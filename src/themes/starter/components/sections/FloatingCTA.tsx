@@ -55,17 +55,19 @@ function FloatingCTA({
       rel="noreferrer"
       aria-label={isExpanded ? labelAfterScroll : iconOnlyLabel}
       className={cn(
-        "fixed bottom-6 z-50 flex h-14 items-center justify-center overflow-hidden rounded-full px-4 text-white shadow-lg transition-all duration-300",
-        position === "bottom-right" ? "right-6" : "left-6",
+        "fixed z-50 flex h-12 items-center justify-center overflow-hidden rounded-full px-4 text-white shadow-lg transition-all duration-300 sm:bottom-6 sm:h-14",
+        "bottom-4 w-auto gap-2",
+        position === "bottom-right" ? "right-4 sm:right-6" : "left-4 sm:left-6",
         variant === "whatsapp" ? "bg-brand-whatsapp" : "bg-jp-line",
-        isExpanded ? "w-56 gap-2" : "w-14 gap-0"
+        isExpanded ? "sm:w-56 sm:gap-2" : "sm:w-14 sm:gap-0"
       )}
     >
       <Icon aria-hidden="true" className="size-5 shrink-0" />
       <span
         className={cn(
           "whitespace-nowrap text-sm font-semibold transition-all duration-200",
-          isExpanded ? "max-w-44 opacity-100" : "max-w-0 opacity-0"
+          "max-w-52 opacity-100 sm:max-w-0 sm:opacity-0",
+          isExpanded && "sm:max-w-44 sm:opacity-100"
         )}
       >
         {labelAfterScroll}

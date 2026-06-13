@@ -1,6 +1,6 @@
-import Image from "next/image"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Card, CardContent } from "@/themes/starter/components/ui/Card"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 
 type ContentBlockType =
   | "heading"
@@ -91,12 +91,13 @@ function ContentBlocks({ blocks, variant }: ContentBlocksProps) {
           return src ? (
             <figure key={key} className="my-8">
               <div className="relative aspect-video overflow-hidden rounded-xl">
-                <Image
+                <CmsImage
                   src={src}
                   alt={alt}
                   fill
                   sizes="100vw"
                   className="object-cover"
+                  fallbackLabel={alt}
                 />
               </div>
               {caption ? (

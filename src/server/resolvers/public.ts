@@ -441,9 +441,9 @@ async function mapContentItem(
     status: item.status,
     excerpt: item.excerpt ?? undefined,
     thumbnailImageId: item.thumbnailImageId ?? undefined,
-    thumbnailSrc: thumbnailSrc ?? undefined,
+    thumbnailSrc: toMediaProxyUrl(item.thumbnailImageId, thumbnailSrc),
     heroImageId: item.heroImageId ?? undefined,
-    heroSrc: heroSrc ?? undefined,
+    heroSrc: toMediaProxyUrl(item.heroImageId, heroSrc),
     isFeatured: item.isFeatured,
     publishedAt: item.publishedAt?.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
@@ -453,6 +453,14 @@ async function mapContentItem(
     dataJson: normalizeJson(dataJson),
     isExpired: Boolean(item.expiredAt && item.expiredAt <= new Date()),
   };
+}
+
+function toMediaProxyUrl(mediaId: string | null | undefined, resolvedUrl: string | null) {
+  if (!resolvedUrl) {
+    return undefined;
+  }
+
+  return mediaId ? `/api/media/${encodeURIComponent(mediaId)}` : resolvedUrl;
 }
 
 function buildCollectionListWhere({

@@ -1,9 +1,9 @@
-import Image from "next/image"
 import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry"
 import { Badge } from "@/themes/starter/components/ui/Badge"
 import { Button } from "@/themes/starter/components/ui/Button"
 import { Card, CardContent, CardFooter } from "@/themes/starter/components/ui/Card"
 import { Container } from "@/themes/starter/components/ui/Container"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { cn } from "@/lib/utils"
 
 interface CardGridItem {
@@ -50,14 +50,14 @@ function CardGrid({
     <section
       className={cn(
         "bg-white",
-        variant === "japan" ? "py-12 md:py-16 lg:py-20" : "py-16 md:py-20 lg:py-24",
+        variant === "japan" ? "py-12 md:py-16 lg:py-20" : "py-12 md:py-16 lg:py-20",
       )}
     >
       <Container>
         {title || subtitle ? (
-          <div className={cn("mx-auto max-w-3xl text-center", variant === "japan" ? "mb-8" : "mb-10")}>
+          <div className={cn("mx-auto max-w-3xl text-center", variant === "japan" ? "mb-8" : "mb-8")}>
             {title ? (
-              <h2 className={cn("font-bold text-neutral-900", variant === "japan" ? "text-2xl md:text-4xl" : "text-3xl md:text-4xl")}>
+              <h2 className={cn("font-bold text-neutral-900", variant === "japan" ? "text-2xl md:text-4xl" : "text-2xl md:text-4xl")}>
                 {title}
               </h2>
             ) : null}
@@ -106,18 +106,19 @@ function CardGridCard({
     <Card
       variant={variant}
       className={cn(
-        "h-full gap-0 py-0 transition-shadow",
+        "h-full gap-0 border border-neutral-200 py-0 shadow-sm transition-shadow",
         item.href && variant === "indonesia" && "hover:shadow-lg"
       )}
     >
       {item.imageSrc ? (
         <div className="relative h-[200px] w-full overflow-hidden">
-          <Image
+          <CmsImage
             src={item.imageSrc}
             alt={item.imageAlt || item.title}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-300 group-hover/card:scale-105"
+            fallbackLabel={item.title}
           />
         </div>
       ) : Icon ? (
@@ -154,7 +155,7 @@ function CardGridCard({
       </CardContent>
 
       {item.meta ? (
-        <CardFooter className="mt-5 text-sm font-medium text-neutral-600">
+        <CardFooter className="mt-5 text-sm font-semibold text-primary-600">
           {item.meta}
         </CardFooter>
       ) : null}

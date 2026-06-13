@@ -1,4 +1,4 @@
-import Image from "next/image"
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
 import { Container } from "@/themes/starter/components/ui/Container"
 
 interface TeamGridMember {
@@ -53,12 +53,13 @@ function TeamGrid({ title, subtitle, members }: TeamGridProps) {
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
                 {member.imageSrc ? (
-                  <Image
+                  <CmsImage
                     src={member.imageSrc}
                     alt={member.name}
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     className="object-cover"
+                    fallbackLabel={member.name}
                   />
                 ) : (
                   <div className="flex size-full items-center justify-center text-2xl font-bold text-neutral-400">
