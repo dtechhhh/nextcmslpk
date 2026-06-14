@@ -1180,9 +1180,9 @@ export const PAGE_EDITOR_DEFINITIONS = {
             cropPreset: "offer",
             visibleWhen: activeFeaturedOfferVisibility,
             helpText:
-              "Gambar ini khusus Offer Section homepage dan tidak mengambil thumbnail dari collection Offer. Kosongkan jika ingin banner tampil tanpa gambar.",
+              "Gambar ini khusus Offer Section homepage. Jika kosong, banner memakai gambar dari active featured offer agar tampilan tidak blank.",
             usage:
-              "Dipakai hanya ketika Source diset ke Active featured offer. Rasio crop 16:10, ideal 1600x1000 px, minimal disarankan 1200x750 px.",
+              "Dipakai hanya ketika Source diset ke Active featured offer sebagai override thumbnail campaign. Rasio crop 16:10, ideal 1600x1000 px, minimal disarankan 1200x750 px.",
             example:
               "Pilih foto dengan subjek utama di area tengah agar tidak terpotong di mobile dan desktop.",
           },

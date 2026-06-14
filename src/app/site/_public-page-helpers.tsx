@@ -284,8 +284,11 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
   const offerDescription = usesActiveFeaturedOffer
     ? activeOfferDescriptionOverride || offerItem?.excerpt || ""
     : offerItem?.excerpt || stringValue(offerSection.fallback_description);
+  const activeOfferCampaignImageSrc = mediaProxySrc(
+    stringValue(offerSection.active_campaign_image_id),
+  );
   const offerImageSrc = usesActiveFeaturedOffer
-    ? mediaProxySrc(stringValue(offerSection.active_campaign_image_id))
+    ? activeOfferCampaignImageSrc || getOfferCmsImageSrc(offerItem)
     : getOfferCmsImageSrc(offerItem) || offerPayload.fallbackImageSrc || undefined;
   const offerCtaLabel = usesActiveFeaturedOffer
     ? stringValueWithMissingFallback(
