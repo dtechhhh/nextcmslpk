@@ -14,6 +14,24 @@ import {
   statItemSchema,
 } from "@/lib/validations/pages/_shared";
 
+const activeOfferBenefitDefaults = [
+  "Trial belajar langsung",
+  "Cocok untuk pemula",
+  "Konsultasi jalur Jepang",
+];
+
+const activeFeaturedOfferDefaults = {
+  active_badge_label: "GRATIS, TANPA BIAYA PENDAFTARAN",
+  active_headline_override: "",
+  active_description_override: "",
+  active_campaign_image_id: "",
+  active_cta_label: "Daftar Kelas Gratis",
+  active_cta_href: "",
+  active_urgency_label: "",
+  active_microcopy: "Gratis, tanpa biaya pendaftaran",
+  active_benefit_items: activeOfferBenefitDefaults,
+};
+
 const trustCardSchema = z
   .object({
     icon_key: iconKeySchema,
@@ -150,6 +168,24 @@ export const homepageSchema = z
         fallback_image_id: mediaIdSchema,
         fallback_cta_label: optionalString(120),
         fallback_cta_href: optionalString(500),
+        active_badge_label: optionalString(120).default(
+          activeFeaturedOfferDefaults.active_badge_label,
+        ),
+        active_headline_override: optionalString(220).default(""),
+        active_description_override: optionalString(700).default(""),
+        active_campaign_image_id: mediaIdSchema.default(""),
+        active_cta_label: optionalString(120).default(
+          activeFeaturedOfferDefaults.active_cta_label,
+        ),
+        active_cta_href: optionalString(500).default(""),
+        active_urgency_label: optionalString(120).default(""),
+        active_microcopy: optionalString(160).default(
+          activeFeaturedOfferDefaults.active_microcopy,
+        ),
+        active_benefit_items: z
+          .array(optionalString(120))
+          .max(4)
+          .default(activeOfferBenefitDefaults),
       })
       .passthrough()
       .default({
@@ -162,6 +198,7 @@ export const homepageSchema = z
         fallback_image_id: "",
         fallback_cta_label: "",
         fallback_cta_href: "",
+        ...activeFeaturedOfferDefaults,
       }),
     stats: z.array(statItemSchema).min(3).max(5).default([]),
     trust_cards: z.array(trustCardSchema).min(3).max(5).default([]),

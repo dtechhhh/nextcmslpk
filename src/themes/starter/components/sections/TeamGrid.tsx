@@ -51,14 +51,14 @@ function TeamGrid({ title, subtitle, members }: TeamGridProps) {
               key={`${member.sortOrder}-${member.name}`}
               className="flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white"
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+              <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
                 {member.imageSrc ? (
                   <CmsImage
                     src={member.imageSrc}
                     alt={member.name}
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover"
+                    className="object-cover object-[center_20%]"
                     fallbackLabel={member.name}
                   />
                 ) : (

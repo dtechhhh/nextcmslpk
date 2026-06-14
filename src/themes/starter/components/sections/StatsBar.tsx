@@ -34,7 +34,7 @@ function StatsBar({ items, variant = "light", compact = false }: StatsBarProps) 
   return (
     <section
       className={cn(
-        compact ? "py-8 md:py-10 lg:py-12" : "py-10 md:py-14 lg:py-16",
+        compact ? "py-6 md:py-10 lg:py-12" : "py-8 md:py-12 lg:py-14",
         isDark
           ? "bg-primary-700 text-white"
           : "bg-neutral-50 text-neutral-900"
@@ -44,7 +44,7 @@ function StatsBar({ items, variant = "light", compact = false }: StatsBarProps) 
         <div
           className={cn(
             "grid grid-cols-2",
-            compact ? "gap-y-8" : "gap-y-10",
+            compact ? "gap-y-6" : "gap-y-7 md:gap-y-10",
             desktopGridClass,
           )}
         >
@@ -64,21 +64,21 @@ function StatsBar({ items, variant = "light", compact = false }: StatsBarProps) 
                 <Icon
                   aria-hidden="true"
                   className={cn(
-                    compact ? "mb-3 size-7" : "mb-4 size-8",
+                    compact ? "mb-2 size-6 md:mb-3 md:size-7" : "mb-3 size-6 md:mb-4 md:size-8",
                     isDark ? "text-white" : "text-[var(--color-primary)]"
                   )}
                 />
                 <p
                   className={cn(
                     "font-bold leading-none",
-                    compact ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl",
+                    compact ? "text-2xl md:text-3xl" : "text-2xl md:text-4xl",
                   )}
                 >
                   {item.value}
                 </p>
                 <p
                   className={cn(
-                    "mt-2 text-sm",
+                    "mt-2 text-xs leading-5 md:text-sm",
                     isDark ? "text-white/80" : "text-neutral-500"
                   )}
                 >

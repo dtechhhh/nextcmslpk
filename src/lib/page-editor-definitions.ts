@@ -10,11 +10,25 @@ export type PageEditorFieldOption = {
   label: string;
 };
 
+export type PageEditorFieldVisibility = {
+  path: string;
+  equals?: string | number | boolean | null;
+  notEquals?: string | number | boolean | null;
+};
+
+type PageEditorFieldGuidance = {
+  helpText?: string;
+  usage?: string;
+  example?: string;
+  requiredForPublish?: boolean;
+};
+
 type BaseField = {
   path: string;
   label: string;
   placeholder?: string;
-};
+  visibleWhen?: PageEditorFieldVisibility | PageEditorFieldVisibility[];
+} & PageEditorFieldGuidance;
 
 export type PageEditorField =
   | (BaseField & {
@@ -102,10 +116,48 @@ const mediaTypeOptions = [
   { value: "video", label: "Video" },
 ];
 
+const mediaPositionOptions = [
+  { value: "center", label: "Tengah" },
+  { value: "top", label: "Atas / wajah" },
+  { value: "bottom", label: "Bawah" },
+  { value: "left", label: "Kiri" },
+  { value: "right", label: "Kanan" },
+  { value: "top-left", label: "Kiri atas" },
+  { value: "top-right", label: "Kanan atas" },
+];
+
 const homepageOfferSourceOptions = [
   { value: "active_featured_offer", label: "Active featured offer" },
   { value: "manual", label: "Manual" },
 ];
+
+const activeFeaturedOfferVisibility = {
+  path: "offer_section.source",
+  equals: "active_featured_offer",
+} satisfies PageEditorFieldVisibility;
+
+const manualOfferVisibility = {
+  path: "offer_section.source",
+  equals: "manual",
+} satisfies PageEditorFieldVisibility;
+
+const homepageActiveOfferBenefitDefaults = [
+  "Trial belajar langsung",
+  "Cocok untuk pemula",
+  "Konsultasi jalur Jepang",
+];
+
+const homepageActiveFeaturedOfferDefaults = {
+  active_badge_label: "GRATIS, TANPA BIAYA PENDAFTARAN",
+  active_headline_override: "",
+  active_description_override: "",
+  active_campaign_image_id: "",
+  active_cta_label: "Daftar Kelas Gratis",
+  active_cta_href: "",
+  active_urgency_label: "",
+  active_microcopy: "Gratis, tanpa biaya pendaftaran",
+  active_benefit_items: homepageActiveOfferBenefitDefaults,
+};
 
 const offerSourceOptions = [
   ...homepageOfferSourceOptions,
@@ -133,6 +185,25 @@ const mediaHeroFields: PageEditorField[] = [
     options: mediaTypeOptions,
   },
   { kind: "media", path: "media_id", label: "Media", cropPreset: "hero" },
+  {
+    kind: "select",
+    path: "media_position",
+    label: "Posisi media desktop",
+    options: mediaPositionOptions,
+  },
+  {
+    kind: "select",
+    path: "mobile_media_type",
+    label: "Jenis media mobile",
+    options: mediaTypeOptions,
+  },
+  { kind: "media", path: "mobile_media_id", label: "Media mobile", cropPreset: "portrait" },
+  {
+    kind: "select",
+    path: "mobile_media_position",
+    label: "Posisi media mobile",
+    options: mediaPositionOptions,
+  },
   { kind: "text", path: "eyebrow_label", label: "Eyebrow label" },
   { kind: "text", path: "headline", label: "Headline" },
   { kind: "textarea", path: "subheadline", label: "Subheadline" },
@@ -154,7 +225,20 @@ const mediaHeroFields: PageEditorField[] = [
 const basicHeroFields: PageEditorField[] = [
   { kind: "text", path: "headline", label: "Headline" },
   { kind: "textarea", path: "subheadline", label: "Subheadline" },
-  { kind: "media", path: "image_id", label: "Image" },
+  { kind: "media", path: "image_id", label: "Image", cropPreset: "hero" },
+  {
+    kind: "select",
+    path: "media_position",
+    label: "Posisi image desktop",
+    options: mediaPositionOptions,
+  },
+  { kind: "media", path: "mobile_media_id", label: "Image mobile", cropPreset: "portrait" },
+  {
+    kind: "select",
+    path: "mobile_media_position",
+    label: "Posisi image mobile",
+    options: mediaPositionOptions,
+  },
   { kind: "text", path: "primary_cta_label", label: "Primary CTA label" },
   {
     kind: "textarea",
@@ -277,6 +361,9 @@ const emptyBasicHero = {
   headline: "",
   subheadline: "",
   image_id: "",
+  mobile_media_id: "",
+  media_position: "center",
+  mobile_media_position: "center",
   primary_cta_label: "",
   primary_cta_whatsapp_message: "",
 };
@@ -284,6 +371,10 @@ const emptyBasicHero = {
 const emptyMediaHero = {
   media_type: "image",
   media_id: "",
+  mobile_media_type: "image",
+  mobile_media_id: "",
+  media_position: "center",
+  mobile_media_position: "center",
   eyebrow_label: "",
   headline: "",
   subheadline: "",
@@ -320,7 +411,7 @@ const japanHeroFields: PageEditorField[] = [
     label: "Jenis media",
     options: japanMediaTypeOptions,
   },
-  { kind: "media", path: "media_id", label: "Media" },
+  { kind: "media", path: "media_id", label: "Media", cropPreset: "hero" },
   {
     kind: "media-array",
     path: "slider_media_ids",
@@ -328,6 +419,26 @@ const japanHeroFields: PageEditorField[] = [
     addLabel: "Tambah slide",
     itemLabel: "Slide",
     defaultItem: "",
+    cropPreset: "hero",
+  },
+  {
+    kind: "select",
+    path: "media_position",
+    label: "Posisi media desktop",
+    options: mediaPositionOptions,
+  },
+  {
+    kind: "select",
+    path: "mobile_media_type",
+    label: "Jenis media mobile",
+    options: japanBasicMediaTypeOptions,
+  },
+  { kind: "media", path: "mobile_media_id", label: "Media mobile", cropPreset: "portrait" },
+  {
+    kind: "select",
+    path: "mobile_media_position",
+    label: "Posisi media mobile",
+    options: mediaPositionOptions,
   },
   { kind: "text", path: "headline", label: "Judul utama" },
   { kind: "textarea", path: "subheadline", label: "Subjudul" },
@@ -358,7 +469,26 @@ const japanBasicHeroFields: PageEditorField[] = [
     label: "Jenis media",
     options: japanBasicMediaTypeOptions,
   },
-  { kind: "media", path: "media_id", label: "Media" },
+  { kind: "media", path: "media_id", label: "Media", cropPreset: "hero" },
+  {
+    kind: "select",
+    path: "media_position",
+    label: "Posisi media desktop",
+    options: mediaPositionOptions,
+  },
+  {
+    kind: "select",
+    path: "mobile_media_type",
+    label: "Jenis media mobile",
+    options: japanBasicMediaTypeOptions,
+  },
+  { kind: "media", path: "mobile_media_id", label: "Media mobile", cropPreset: "portrait" },
+  {
+    kind: "select",
+    path: "mobile_media_position",
+    label: "Posisi media mobile",
+    options: mediaPositionOptions,
+  },
   { kind: "text", path: "headline", label: "Judul utama" },
   { kind: "textarea", path: "subheadline", label: "Subjudul" },
   { kind: "text", path: "eyebrow_label", label: "Label kecil" },
@@ -472,6 +602,10 @@ const japanTimelineFields: PageEditorField[] = [
 const japanEmptyHero = {
   media_type: "image",
   media_id: "",
+  mobile_media_type: "image",
+  mobile_media_id: "",
+  media_position: "center",
+  mobile_media_position: "center",
   headline: "",
   subheadline: "",
   eyebrow_label: "",
@@ -853,6 +987,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         fallback_image_id: "",
         fallback_cta_label: "",
         fallback_cta_href: "",
+        ...homepageActiveFeaturedOfferDefaults,
       },
       stats: [statDefault(0), statDefault(1), statDefault(2)],
       trust_cards: [
@@ -977,42 +1112,154 @@ export const PAGE_EDITOR_DEFINITIONS = {
             path: "offer_section.source",
             label: "Source",
             options: homepageOfferSourceOptions,
+            helpText:
+              "Pilih Active featured offer untuk menarik offer aktif dari collection, atau Manual untuk memilih offer/fallback sendiri.",
           },
           {
             kind: "text",
             path: "offer_section.manual_offer_id",
             label: "Manual offer ID",
+            visibleWhen: manualOfferVisibility,
+            helpText:
+              "Isi ID offer jika ingin mengunci homepage ke satu offer tertentu. Jika kosong, field fallback di bawah akan dipakai.",
+            usage: "Dipakai hanya ketika Source diset ke Manual.",
           },
           {
             kind: "text",
             path: "offer_section.fallback_badge_label",
             label: "Fallback badge label",
+            visibleWhen: manualOfferVisibility,
+            helpText:
+              "Badge cadangan ketika manual offer tidak dipilih atau datanya tidak tersedia.",
           },
           {
             kind: "text",
             path: "offer_section.fallback_headline",
             label: "Fallback headline",
+            visibleWhen: manualOfferVisibility,
+            helpText:
+              "Judul cadangan untuk mode Manual. Section tetap bisa tampil walau belum ada collection offer.",
           },
           {
             kind: "textarea",
             path: "offer_section.fallback_description",
             label: "Fallback description",
+            visibleWhen: manualOfferVisibility,
+            helpText: "Deskripsi singkat cadangan untuk mode Manual.",
           },
           {
             kind: "media",
             path: "offer_section.fallback_image_id",
             label: "Fallback image",
+            visibleWhen: manualOfferVisibility,
+            cropPreset: "offer",
+            helpText:
+              "Gambar cadangan mode Manual. Gunakan rasio 16:10, ideal 1600x1000 px, dan pastikan wajah/objek utama berada di tengah.",
           },
           {
             kind: "text",
             path: "offer_section.fallback_cta_label",
             label: "Fallback CTA label",
+            visibleWhen: manualOfferVisibility,
+            helpText: "Label tombol cadangan untuk mode Manual.",
+            example: "Daftar Sekarang",
           },
           {
             kind: "text",
             path: "offer_section.fallback_cta_href",
             label: "Fallback CTA href",
             inputType: "url",
+            visibleWhen: manualOfferVisibility,
+            helpText: "Link tombol cadangan untuk mode Manual.",
+            example: "/offer/kelas-gratis",
+          },
+          {
+            kind: "media",
+            path: "offer_section.active_campaign_image_id",
+            label: "Thumbnail campaign offer",
+            cropPreset: "offer",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Gambar ini khusus Offer Section homepage. Jika kosong, banner memakai gambar dari active featured offer agar tampilan tidak blank.",
+            usage:
+              "Dipakai hanya ketika Source diset ke Active featured offer sebagai override thumbnail campaign. Rasio crop 16:10, ideal 1600x1000 px, minimal disarankan 1200x750 px.",
+            example:
+              "Pilih foto dengan subjek utama di area tengah agar tidak terpotong di mobile dan desktop.",
+          },
+          {
+            kind: "text",
+            path: "offer_section.active_badge_label",
+            label: "Badge campaign",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Label kecil untuk menarik perhatian sebelum user membaca judul offer aktif.",
+            example: "GRATIS, TANPA BIAYA PENDAFTARAN",
+          },
+          {
+            kind: "text",
+            path: "offer_section.active_headline_override",
+            label: "Override headline campaign",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Opsional. Isi hanya jika judul collection offer terlalu panjang atau kurang kuat untuk homepage.",
+            usage: "Jika kosong, headline tetap memakai judul dari active featured offer.",
+          },
+          {
+            kind: "textarea",
+            path: "offer_section.active_description_override",
+            label: "Override deskripsi campaign",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Opsional. Isi jika deskripsi collection terlalu umum untuk kebutuhan marketing homepage.",
+            usage: "Jika kosong, deskripsi tetap memakai excerpt dari active featured offer.",
+          },
+          {
+            kind: "text",
+            path: "offer_section.active_cta_label",
+            label: "CTA campaign",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText: "Label tombol utama untuk offer aktif.",
+            example: "Daftar Kelas Gratis",
+          },
+          {
+            kind: "text",
+            path: "offer_section.active_cta_href",
+            label: "CTA campaign href",
+            inputType: "url",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Opsional. Jika kosong, tombol otomatis menuju detail active featured offer.",
+            example: "/offer/kelas-gratis",
+          },
+          {
+            kind: "text",
+            path: "offer_section.active_urgency_label",
+            label: "Urgency label campaign",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Opsional untuk membuat konteks waktu/kuota lebih jelas tanpa memenuhi headline.",
+            example: "Kuota terbatas bulan ini",
+          },
+          {
+            kind: "string-array",
+            path: "offer_section.active_benefit_items",
+            label: "Benefit campaign",
+            itemLabel: "Benefit",
+            addLabel: "Tambah benefit",
+            defaultItem: "Benefit baru",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Tulis 2-3 alasan singkat yang menjawab keraguan user sebelum klik CTA.",
+            usage: "Muncul sebagai chips benefit di dalam Offer Section homepage.",
+          },
+          {
+            kind: "text",
+            path: "offer_section.active_microcopy",
+            label: "Microcopy CTA campaign",
+            visibleWhen: activeFeaturedOfferVisibility,
+            helpText:
+              "Teks kecil di samping tombol untuk menurunkan rasa ragu user.",
+            example: "Gratis, tanpa biaya pendaftaran",
           },
         ],
       },
@@ -1885,7 +2132,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
               { kind: "textarea", path: "credentials", label: "Credentials" },
               { kind: "textarea", path: "responsibility", label: "Responsibility" },
               { kind: "textarea", path: "bio", label: "Bio" },
-              { kind: "media", path: "image_id", label: "Image" },
+              { kind: "media", path: "image_id", label: "Image", cropPreset: "portrait" },
               ...sortableFields,
             ],
           },
@@ -2774,7 +3021,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
               { kind: "textarea", path: "responsibility", label: "Tanggung jawab" },
               { kind: "textarea", path: "credentials", label: "Kualifikasi" },
               { kind: "textarea", path: "bio", label: "Bio" },
-              { kind: "media", path: "image_id", label: "Gambar" },
+              { kind: "media", path: "image_id", label: "Gambar", cropPreset: "portrait" },
               ...japanSortableFields,
             ],
           },

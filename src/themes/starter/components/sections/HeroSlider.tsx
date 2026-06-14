@@ -5,6 +5,10 @@ import { Button } from "@/themes/starter/components/ui/Button"
 import { Container } from "@/themes/starter/components/ui/Container"
 import { cn } from "@/lib/utils"
 import { CmsImage } from "@/themes/starter/components/ui/CmsImage"
+import {
+  responsiveMediaPositionStyle,
+  type MediaPositionPreset,
+} from "@/lib/media-position"
 
 interface HeroSliderCTA {
   label: string
@@ -28,6 +32,11 @@ interface HeroSliderProps {
   eyebrowLabel?: string
   primaryCTA?: HeroSliderPrimaryCTA
   secondaryCTA?: HeroSliderCTA
+  mediaPosition?: MediaPositionPreset
+  mobileMediaType?: "image" | "video"
+  mobileMediaSrc?: string
+  mobileMediaAlt?: string
+  mobileMediaPosition?: MediaPositionPreset
   autoPlayMs?: number
   locale?: "ja" | "id"
 }
@@ -39,12 +48,21 @@ function HeroSlider({
   eyebrowLabel,
   primaryCTA,
   secondaryCTA,
+  mediaPosition = "center",
+  mobileMediaType = "image",
+  mobileMediaSrc,
+  mobileMediaAlt,
+  mobileMediaPosition = "center",
   autoPlayMs = 5000,
   locale = "ja",
 }: HeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const hasSlides = slides.length > 0
+  const mediaPositionStyle = responsiveMediaPositionStyle(
+    mediaPosition,
+    mobileMediaPosition,
+  )
 
   useEffect(() => {
     if (isPaused || slides.length <= 1) {
@@ -137,14 +155,42 @@ function HeroSlider({
             priority={index === 0}
             sizes="100vw"
             className={cn(
-              "object-cover transition-opacity duration-500 ease-in-out",
+              "object-cover [object-position:var(--media-position-mobile)] transition-opacity duration-500 ease-in-out md:[object-position:var(--media-position-desktop)]",
+              mobileMediaSrc ? "hidden md:block" : "",
               index === activeIndex ? "opacity-100" : "opacity-0"
             )}
+            style={mediaPositionStyle}
             fallbackLabel={slide.mediaAlt || headline}
           />
         ))}
+        {mobileMediaSrc ? (
+          mobileMediaType === "video" ? (
+            <video
+              className="h-full w-full object-cover object-[var(--media-position-mobile)] md:hidden"
+              style={mediaPositionStyle}
+              src={mobileMediaSrc}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-label={mobileMediaAlt || headline}
+            />
+          ) : (
+            <CmsImage
+              src={mobileMediaSrc}
+              alt={mobileMediaAlt || headline}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[var(--media-position-mobile)] md:hidden"
+              style={mediaPositionStyle}
+              fallbackLabel={mobileMediaAlt || headline}
+            />
+          )
+        ) : null}
       </div>
-      <div className="absolute inset-0 z-10 bg-gradient-to-r from-neutral-950/85 via-neutral-950/60 to-neutral-950/25" />
+      <div className="absolute inset-0 z-10 bg-neutral-950/60 md:bg-gradient-to-r md:from-neutral-950/85 md:via-neutral-950/60 md:to-neutral-950/25" />
 
       <Container className="relative z-20 py-12 sm:py-14 md:py-16 lg:py-20">
         <div className="max-w-3xl">
@@ -193,7 +239,10 @@ function HeroSlider({
       </Container>
 
       {slides.length > 1 ? (
-        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2 md:bottom-6">
+        <div className={cn(
+          "absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2 md:bottom-6",
+          mobileMediaSrc ? "hidden md:flex" : "",
+        )}>
           {slides.map((slide, index) => (
             <button
               key={`${slide.mediaSrc}-dot-${index}`}

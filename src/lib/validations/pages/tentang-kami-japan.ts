@@ -5,6 +5,7 @@ import {
   enabledSortFields,
   iconKeySchema,
   mediaIdSchema,
+  mediaPositionSchema,
   optionalString,
 } from "@/lib/validations/pages/_shared";
 
@@ -12,6 +13,10 @@ const japanMediaHeroSchema = z
   .object({
     media_type: z.enum(["image", "video"]).default("image"),
     media_id: mediaIdSchema,
+    mobile_media_type: z.enum(["image", "video"]).default("image"),
+    mobile_media_id: mediaIdSchema,
+    media_position: mediaPositionSchema,
+    mobile_media_position: mediaPositionSchema,
     headline: optionalString(220),
     subheadline: optionalString(600),
     eyebrow_label: optionalString(120),
@@ -144,6 +149,10 @@ export const tentangKamiJapanSchema = z
     hero: japanMediaHeroSchema.default({
       media_type: "image",
       media_id: "",
+      mobile_media_type: "image",
+      mobile_media_id: "",
+      media_position: "center",
+      mobile_media_position: "center",
       headline: "",
       subheadline: "",
       eyebrow_label: "",

@@ -35,7 +35,7 @@ function FloatingCTA({
     }
 
     function handleScroll() {
-      setIsExpanded(true)
+      setIsExpanded(window.innerWidth >= 640)
       collapseAfterIdle()
     }
 
@@ -55,19 +55,20 @@ function FloatingCTA({
       rel="noreferrer"
       aria-label={isExpanded ? labelAfterScroll : iconOnlyLabel}
       className={cn(
-        "fixed z-50 flex h-12 items-center justify-center overflow-hidden rounded-full px-4 text-white shadow-lg transition-all duration-300 sm:bottom-6 sm:h-14",
-        "bottom-4 w-auto gap-2",
+        "fixed z-50 flex h-12 items-center justify-center overflow-hidden rounded-full text-white shadow-lg transition-all duration-300 sm:h-14",
+        "bottom-[calc(1rem+env(safe-area-inset-bottom))]",
         position === "bottom-right" ? "right-4 sm:right-6" : "left-4 sm:left-6",
         variant === "whatsapp" ? "bg-brand-whatsapp" : "bg-jp-line",
-        isExpanded ? "sm:w-56 sm:gap-2" : "sm:w-14 sm:gap-0"
+        isExpanded
+          ? "w-12 gap-0 px-0 sm:w-56 sm:gap-2 sm:px-4"
+          : "w-12 gap-0 px-0 sm:w-14"
       )}
     >
       <Icon aria-hidden="true" className="size-5 shrink-0" />
       <span
         className={cn(
           "whitespace-nowrap text-sm font-semibold transition-all duration-200",
-          "max-w-52 opacity-100 sm:max-w-0 sm:opacity-0",
-          isExpanded && "sm:max-w-44 sm:opacity-100"
+          isExpanded ? "max-w-0 opacity-0 sm:max-w-52 sm:opacity-100" : "max-w-0 opacity-0"
         )}
       >
         {labelAfterScroll}
