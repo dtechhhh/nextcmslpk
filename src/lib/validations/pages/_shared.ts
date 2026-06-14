@@ -9,6 +9,9 @@ import {
 } from "@/lib/validations/global/_shared";
 
 export const iconKeySchema = z.string().trim().max(120).default("");
+export const mediaPositionSchema = z
+  .enum(["center", "top", "bottom", "left", "right", "top-left", "top-right"])
+  .default("center");
 export const contentIdSchema = z.preprocess(
   emptyStringFromNullish,
   z.string().trim().max(128).default(""),
@@ -41,6 +44,9 @@ export const basicHeroSchema = z
     headline: optionalString(220),
     subheadline: optionalString(600),
     image_id: mediaIdSchema,
+    mobile_media_id: mediaIdSchema,
+    media_position: mediaPositionSchema,
+    mobile_media_position: mediaPositionSchema,
     primary_cta_label: optionalString(120),
     primary_cta_whatsapp_message: optionalString(600),
   })
@@ -50,6 +56,9 @@ export const defaultBasicHero = {
   headline: "",
   subheadline: "",
   image_id: "",
+  mobile_media_id: "",
+  media_position: "center" as const,
+  mobile_media_position: "center" as const,
   primary_cta_label: "",
   primary_cta_whatsapp_message: "",
 };
@@ -58,6 +67,10 @@ export const mediaHeroSchema = z
   .object({
     media_type: z.enum(["image", "video"]).default("image"),
     media_id: mediaIdSchema,
+    mobile_media_type: z.enum(["image", "video"]).default("image"),
+    mobile_media_id: mediaIdSchema,
+    media_position: mediaPositionSchema,
+    mobile_media_position: mediaPositionSchema,
     eyebrow_label: optionalString(120),
     headline: optionalString(220),
     subheadline: optionalString(600),
@@ -71,6 +84,10 @@ export const mediaHeroSchema = z
 export const defaultMediaHero = {
   media_type: "image" as const,
   media_id: "",
+  mobile_media_type: "image" as const,
+  mobile_media_id: "",
+  media_position: "center" as const,
+  mobile_media_position: "center" as const,
   eyebrow_label: "",
   headline: "",
   subheadline: "",

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   basicHeroSchema,
+  defaultBasicHero,
   defaultFinalCta,
   enabledSortFields,
   faqItemSchema,
@@ -18,11 +19,7 @@ const programHeroSchema = basicHeroSchema.extend({
 export const programPageSchema = z
   .object({
     hero: programHeroSchema.default({
-      headline: "",
-      subheadline: "",
-      image_id: "",
-      primary_cta_label: "",
-      primary_cta_whatsapp_message: "",
+      ...defaultBasicHero,
       secondary_cta_label: "",
     }),
     stats: z.array(statItemSchema.extend({

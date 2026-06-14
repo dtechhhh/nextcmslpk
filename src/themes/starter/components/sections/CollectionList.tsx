@@ -79,10 +79,10 @@ function CollectionList({
   const endItem = Math.min(safePage * pageSize, total)
 
   return (
-    <section className="bg-neutral-50 py-12 md:py-16 lg:py-20">
+    <section className="bg-neutral-50 py-10 md:py-16 lg:py-20">
       <Container>
         {title || subtitle ? (
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between md:mb-8">
             <div className="max-w-3xl">
               {title ? (
                 <h2 className="text-2xl font-bold text-neutral-900 md:text-4xl">
@@ -90,7 +90,7 @@ function CollectionList({
                 </h2>
               ) : null}
               {subtitle ? (
-                <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">
+                <p className="mt-3 text-sm leading-6 text-neutral-600 md:mt-4 md:text-lg md:leading-7">
                   {subtitle}
                 </p>
               ) : null}
@@ -120,7 +120,7 @@ function CollectionList({
                 Menampilkan {startItem}-{endItem} dari {total} data
               </div>
             ) : null}
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-3">
               {items.map((item) => {
                 const href = `${detailPathPrefix}/${item.slug}`
                 const isExpired = item.isExpired || item.status === "CLOSED"
@@ -133,13 +133,14 @@ function CollectionList({
                           src={item.thumbnailSrc}
                           alt={item.title}
                           fill
+                          loading="eager"
                           sizes="(min-width: 1024px) 33vw, 100vw"
                           className="object-cover"
                           fallbackLabel={item.title}
                         />
                       </div>
                     ) : null}
-                    <CardContent className="flex flex-1 flex-col p-5">
+                    <CardContent className="flex flex-1 flex-col p-4 md:p-5">
                       <div className="mb-3 flex flex-wrap gap-2">
                         {item.isFeatured ? <Badge>Unggulan</Badge> : null}
                         {item.badge ? (
@@ -168,7 +169,7 @@ function CollectionList({
                         </p>
                       ) : null}
                     </CardContent>
-                    <CardFooter className="mt-auto p-5">
+                    <CardFooter className="mt-auto p-4 md:p-5">
                       {isExpired ? (
                         <Button
                           disabled

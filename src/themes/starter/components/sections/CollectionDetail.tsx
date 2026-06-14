@@ -21,10 +21,10 @@ function CollectionDetail({
   sidebarFirstOnMobile = false,
 }: CollectionDetailProps) {
   return (
-    <section className="bg-white py-16 md:py-20 lg:py-24">
+    <section className="bg-white py-8 md:py-16 lg:py-20">
       <Container>
         {breadcrumb && breadcrumb.length > 0 ? (
-          <nav aria-label="Breadcrumb" className="mb-8">
+          <nav aria-label="Breadcrumb" className="mb-6 md:mb-8">
             <ol className="flex flex-wrap items-center gap-2 text-sm text-neutral-500">
               {breadcrumb.map((item, index) => {
                 const isLast = index === breadcrumb.length - 1
@@ -50,7 +50,7 @@ function CollectionDetail({
           </nav>
         ) : null}
 
-        <div className={sidebar ? "grid gap-10 lg:grid-cols-3" : "mx-auto max-w-4xl"}>
+        <div className={sidebar ? "grid gap-8 lg:grid-cols-3 lg:gap-10" : "mx-auto max-w-4xl"}>
           <main
             className={
               sidebar

@@ -134,7 +134,7 @@ export function HeaderIndonesia({
               {variantSwitch.label || "Japan"}
             </Button>
           ) : null}
-          <Button render={<a href={headerCTA.whatsappHref} />} variant="whatsapp">
+          <Button render={<a href={headerCTA.whatsappHref} />}>
             {headerCTA.label}
           </Button>
         </div>
@@ -242,15 +242,10 @@ export function HeaderIndonesia({
                 {variantSwitch.isEnabled ? (
                   <a
                     href={variantSwitch.targetHref}
-                    className="flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold transition hover:border-primary-200 hover:bg-primary-50"
+                    className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-bold uppercase tracking-normal transition hover:border-primary-200 hover:bg-primary-50"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <Globe2 aria-hidden="true" className="size-4 text-primary-600" />
-                      Versi perusahaan Jepang
-                    </span>
-                    <span className="text-xs font-bold text-primary-600">
-                      {variantSwitch.label || "Japan"}
-                    </span>
+                    <Globe2 aria-hidden="true" className="size-4 text-primary-600" />
+                    JAPAN
                   </a>
                 ) : null}
               </div>
@@ -258,7 +253,6 @@ export function HeaderIndonesia({
               <SheetFooter className="mt-0 border-t border-neutral-200 bg-white p-5">
                 <Button
                   render={<a href={headerCTA.whatsappHref} />}
-                  variant="whatsapp"
                   size="lg"
                   className="w-full shadow-sm"
                 >

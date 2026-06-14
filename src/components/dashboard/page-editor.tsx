@@ -29,6 +29,7 @@ import {
 import {
   Field,
   FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -526,6 +527,10 @@ function FieldRenderer({
   setValue: (path: string, value: unknown) => void;
   basePath?: string;
 }) {
+  if (!isFieldVisible(field, data)) {
+    return null;
+  }
+
   const path = joinPath(basePath, field.path);
   const error = getError(errors, path);
   const fieldClassName =
@@ -543,6 +548,7 @@ function FieldRenderer({
     return (
       <Field className={fieldClassName} data-invalid={Boolean(error)}>
         <FieldLabel>{field.label}</FieldLabel>
+        <FieldGuidance field={field} />
         <SortableList
           items={items.map((item) =>
             isRecord(item) ? deepMerge(field.defaultItem, item) : item,
@@ -596,6 +602,7 @@ function FieldRenderer({
     return (
       <Field className={fieldClassName} data-invalid={Boolean(error)}>
         <FieldLabel>{field.label}</FieldLabel>
+        <FieldGuidance field={field} />
         <SortableList
           items={items}
           addLabel={field.addLabel}
@@ -633,6 +640,7 @@ function FieldRenderer({
     return (
       <Field className={fieldClassName} data-invalid={Boolean(error)}>
         <FieldLabel>{field.label}</FieldLabel>
+        <FieldGuidance field={field} />
         <SortableList
           items={items}
           addLabel={field.addLabel}
@@ -667,6 +675,7 @@ function FieldRenderer({
         <div className="flex min-h-10 items-center justify-between gap-3 rounded-lg border px-3 py-2">
           <FieldContent>
             <FieldLabel>{field.label}</FieldLabel>
+            <FieldGuidance field={field} compact />
           </FieldContent>
           <Switch
             checked={Boolean(getAtPath(data, path))}
@@ -677,12 +686,77 @@ function FieldRenderer({
       ) : (
         <>
           <FieldLabel>{field.label}</FieldLabel>
+          <FieldGuidance field={field} />
           {renderControl({ field, data, error, path, tenantId, setValue })}
         </>
       )}
       <FieldError>{error}</FieldError>
     </Field>
   );
+}
+
+function FieldGuidance({
+  field,
+  compact = false,
+}: {
+  field: PageEditorField;
+  compact?: boolean;
+}) {
+  const hasGuidance =
+    field.helpText || field.usage || field.example || field.requiredForPublish;
+
+  if (!hasGuidance) {
+    return null;
+  }
+
+  return (
+    <div className={cn("space-y-1", compact && "mt-0.5")}>
+      {field.helpText ? (
+        <FieldDescription className={compact ? "text-xs" : undefined}>
+          {field.helpText}
+        </FieldDescription>
+      ) : null}
+      {field.usage ? (
+        <p className="text-xs leading-5 text-muted-foreground">
+          Dipakai untuk: {field.usage}
+        </p>
+      ) : null}
+      {field.example ? (
+        <p className="text-xs leading-5 text-muted-foreground">
+          Contoh: <span className="font-medium text-foreground">{field.example}</span>
+        </p>
+      ) : null}
+      {field.requiredForPublish ? (
+        <Badge variant="outline" className="w-fit text-[11px]">
+          Wajib sebelum terbit
+        </Badge>
+      ) : null}
+    </div>
+  );
+}
+
+function isFieldVisible(field: PageEditorField, data: PageEditorData) {
+  if (!field.visibleWhen) {
+    return true;
+  }
+
+  const conditions = Array.isArray(field.visibleWhen)
+    ? field.visibleWhen
+    : [field.visibleWhen];
+
+  return conditions.every((condition) => {
+    const value = getAtPath(data, condition.path);
+
+    if (Object.prototype.hasOwnProperty.call(condition, "equals")) {
+      return value === condition.equals;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(condition, "notEquals")) {
+      return value !== condition.notEquals;
+    }
+
+    return true;
+  });
 }
 
 function renderControl({

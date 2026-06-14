@@ -7,6 +7,10 @@ import { CalendarClock, Check, GraduationCap } from "lucide-react";
 
 import { getSiteContext } from "@/app/site/site-context";
 import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
+import {
+  isMediaPositionPreset,
+  type MediaPositionPreset,
+} from "@/lib/media-position";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import {
   resolveActiveOffer,
@@ -98,6 +102,16 @@ type PublicCollectionSource = PublicCollectionListOptions["source"];
 
 const PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS = 300;
 const PUBLIC_CONTENT_CACHE_VERSION = "2026-06-13-public-content-v2";
+const ACTIVE_FEATURED_OFFER_DEFAULT_BENEFITS = [
+  "Trial belajar langsung",
+  "Cocok untuk pemula",
+  "Konsultasi jalur Jepang",
+];
+const ACTIVE_FEATURED_OFFER_DEFAULTS = {
+  badgeLabel: "GRATIS, TANPA BIAYA PENDAFTARAN",
+  ctaLabel: "Daftar Kelas Gratis",
+  microcopy: "Gratis, tanpa biaya pendaftaran",
+};
 
 function normalizePublicCollectionSource(value: string): PublicCollectionSource {
   return value === "featured" ||
@@ -237,9 +251,71 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     resolveOfferSectionPayload(context.variantId, offerSection),
   ]);
   const offerItem = offerPayload.item;
-  const offerBadgeLabel = offerItem
+  const offerSource = stringValue(offerSection.source) || "active_featured_offer";
+  const usesActiveFeaturedOffer = offerSource !== "manual";
+  const manualOfferBadgeLabel = offerItem && !usesActiveFeaturedOffer
     ? await resolveOfferBannerBadge(offerItem, context.variantId)
     : stringValue(offerSection.fallback_badge_label);
+  const activeOfferHeadlineOverride = stringValueWithMissingFallback(
+    offerSection,
+    "active_headline_override",
+    "",
+  );
+  const activeOfferDescriptionOverride = stringValueWithMissingFallback(
+    offerSection,
+    "active_description_override",
+    "",
+  );
+  const activeOfferCtaHref = stringValueWithMissingFallback(
+    offerSection,
+    "active_cta_href",
+    "",
+  );
+  const offerBadgeLabel = usesActiveFeaturedOffer
+    ? stringValueWithMissingFallback(
+        offerSection,
+        "active_badge_label",
+        ACTIVE_FEATURED_OFFER_DEFAULTS.badgeLabel,
+      )
+    : manualOfferBadgeLabel;
+  const offerHeadline = usesActiveFeaturedOffer
+    ? activeOfferHeadlineOverride || offerItem?.title || ""
+    : offerItem?.title || stringValue(offerSection.fallback_headline);
+  const offerDescription = usesActiveFeaturedOffer
+    ? activeOfferDescriptionOverride || offerItem?.excerpt || ""
+    : offerItem?.excerpt || stringValue(offerSection.fallback_description);
+  const offerImageSrc = usesActiveFeaturedOffer
+    ? mediaProxySrc(stringValue(offerSection.active_campaign_image_id))
+    : getOfferCmsImageSrc(offerItem) || offerPayload.fallbackImageSrc || undefined;
+  const offerCtaLabel = usesActiveFeaturedOffer
+    ? stringValueWithMissingFallback(
+        offerSection,
+        "active_cta_label",
+        ACTIVE_FEATURED_OFFER_DEFAULTS.ctaLabel,
+      )
+    : stringValue(offerSection.fallback_cta_label) || (offerItem ? "Lihat Penawaran" : "");
+  const offerCtaHref = usesActiveFeaturedOffer
+    ? activeOfferCtaHref || (offerItem ? `/offer/${offerItem.slug}` : "")
+    : offerItem
+      ? `/offer/${offerItem.slug}`
+      : stringValue(offerSection.fallback_cta_href);
+  const offerUrgencyLabel = usesActiveFeaturedOffer
+    ? stringValue(offerSection.active_urgency_label)
+    : "";
+  const offerMicrocopy = usesActiveFeaturedOffer
+    ? stringValueWithMissingFallback(
+        offerSection,
+        "active_microcopy",
+        ACTIVE_FEATURED_OFFER_DEFAULTS.microcopy,
+      )
+    : "";
+  const offerBenefitItems = usesActiveFeaturedOffer
+    ? flatStringListWithMissingFallback(
+        offerSection,
+        "active_benefit_items",
+        ACTIVE_FEATURED_OFFER_DEFAULT_BENEFITS,
+      )
+    : [];
   const [programCards, jobListItems, blogCards] = await Promise.all([
     Promise.all(
       programs.items.map((item) => programCollectionCard(item, context.variantId)),
@@ -274,7 +350,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
     ? {
         label: heroPrimaryCtaLabel,
         href: whatsappHref,
-        variant: "whatsapp" as const,
+        variant: "default" as const,
       }
     : undefined;
   const heroSecondaryCTA = stringValue(hero.secondary_cta_label)
@@ -292,6 +368,7 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           mediaType={heroMediaType}
           mediaSrc={heroMediaType === "video" ? getMediaProxyUrl(heroMediaId) : heroImage}
           mediaAlt={stringValue(hero.media_alt) || stringValue(hero.headline)}
+          {...heroMediaProps(hero, "right")}
           headline={stringValue(hero.headline) || page.title}
           subheadline={stringValue(hero.subheadline)}
           eyebrowLabel={stringValue(hero.eyebrow_label)}
@@ -313,31 +390,21 @@ export async function renderHomepage({ searchParams }: { searchParams: PageSearc
           !offerPayload.isDisabled &&
           booleanValue(
             offerSection.is_enabled,
-            Boolean(offerItem || stringValue(offerSection.fallback_headline)),
-          )
+            Boolean(offerHeadline),
+          ) &&
+          Boolean(offerHeadline)
         }
         badgeLabel={offerBadgeLabel}
-        headline={
-          offerItem?.title ||
-          stringValue(offerSection.fallback_headline) ||
-          "Promo Program"
-        }
-        description={offerItem?.excerpt || stringValue(offerSection.fallback_description)}
-        imageSrc={
-          getOfferCmsImageSrc(offerItem) || offerPayload.fallbackImageSrc || undefined
-        }
-        ctaLabel={
-          offerItem
-            ? "Lihat Penawaran"
-            : stringValue(offerSection.fallback_cta_label)
-        }
-        ctaHref={
-          offerItem
-            ? `/offer/${offerItem.slug}`
-            : stringValue(offerSection.fallback_cta_href)
-        }
+        headline={offerHeadline}
+        description={offerDescription}
+        imageSrc={offerImageSrc}
+        ctaLabel={offerCtaLabel}
+        ctaHref={offerCtaHref}
+        urgencyLabel={offerUrgencyLabel}
+        benefitItems={offerBenefitItems}
+        microcopy={offerMicrocopy}
       />
-      <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
+      <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} compact />
       <CardGrid
         title={homepageText("audience_paths_title", "Pilih Kebutuhanmu")}
         subtitle={stringValue(displayText.audience_paths_description)}
@@ -529,7 +596,7 @@ export async function renderListPage(options: ListPageOptions) {
   const heroHeadline = stringValue(hero.headline) || page.title;
   const heroSubheadline = stringValue(hero.subheadline);
   const heroPrimaryCTA = stringValue(hero.primary_cta_label)
-    ? { label: stringValue(hero.primary_cta_label), href: whatsappHref, variant: "whatsapp" as const }
+    ? { label: stringValue(hero.primary_cta_label), href: whatsappHref, variant: "default" as const }
     : undefined;
   const heroSecondaryCTA = stringValue(hero.secondary_cta_label)
     ? { label: stringValue(hero.secondary_cta_label), href: stringValue(hero.secondary_cta_href) || "/program" }
@@ -543,6 +610,7 @@ export async function renderListPage(options: ListPageOptions) {
           mediaType="image"
           mediaSrc={heroImage}
           mediaAlt={stringValue(hero.media_alt) || heroHeadline}
+          {...heroMediaProps(hero)}
           headline={heroHeadline}
           subheadline={heroSubheadline}
           primaryCTA={heroPrimaryCTA}
@@ -564,7 +632,7 @@ export async function renderListPage(options: ListPageOptions) {
           headline={offerItem?.title || "Promo Program"}
           description={offerItem?.excerpt || stringValue(offerData.short_description)}
           imageSrc={getOfferCmsImageSrc(offerItem)}
-          ctaLabel="Lihat Penawaran"
+          ctaLabel="Daftar Kelas Gratis"
           ctaHref={offerItem ? `/offer/${offerItem.slug}` : undefined}
         />
       ) : null}
@@ -601,7 +669,7 @@ export async function renderListPage(options: ListPageOptions) {
           primaryCTA={{
             label: finalCtaLabel || "Chat WhatsApp",
             href: finalCtaHref,
-            variant: "whatsapp",
+            variant: "default",
           }}
         />
       ) : null}
@@ -702,7 +770,6 @@ export async function renderDetailPage(options: DetailPageOptions) {
               brochureUrl={brochureUrl}
             />
           }
-          sidebarFirstOnMobile
         />
       </>
     );
@@ -733,7 +800,6 @@ export async function renderDetailPage(options: DetailPageOptions) {
             />
           }
           sidebar={<JobDetailSidebar item={item} />}
-          sidebarFirstOnMobile
         />
       </>
     );
@@ -1690,6 +1756,7 @@ export async function renderTentangKami({ searchParams }: { searchParams: PageSe
           mediaType={stringValue(hero.media_type) === "video" ? "video" : "image"}
           mediaSrc={heroImage}
           mediaAlt={stringValue(hero.headline) || page.title}
+          {...heroMediaProps(hero, "right")}
           eyebrowLabel={stringValue(hero.eyebrow_label)}
           headline={stringValue(hero.headline) || page.title}
           subheadline={stringValue(hero.subheadline)}
@@ -2084,13 +2151,13 @@ async function TentangKamiEducationQualitySection({ config }: { config: PublicJs
 
           <div className="space-y-4">
             {imageSrc ? (
-              <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/15 bg-white/10">
+              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-lg border border-white/15 bg-white/10 sm:max-w-md lg:max-w-none">
                 <CmsImage
                   src={imageSrc}
                   alt={stringValue(config.leader_name) || headline}
                   fill
                   sizes="(min-width: 1024px) 35vw, 100vw"
-                  className="object-cover"
+                  className="object-cover object-[center_18%]"
                   fallbackLabel={stringValue(config.leader_name) || headline}
                 />
               </div>
@@ -2917,17 +2984,19 @@ async function ProgramDetailMain({
   const classificationLabels = [
     optLabel(stringValue(data.program_type_option_id)),
     optLabel(stringValue(data.gender_option_id)),
-    stringValue(data.duration_label),
-    stringValue(data.capacity_label),
-    ageLabel,
-    stringValue(data.contract_label),
-    stringValue(data.salary_range_label),
-    stringValue(data.target_language_label),
-    stringValue(data.visa_path_label),
     optLabel(stringValue(data.education_level_option_id)),
     optLabel(stringValue(data.language_level_option_id)),
     stringValue(data.highlight_label),
   ].filter(Boolean);
+
+  const programDecisionItems = [
+    { label: "Durasi", value: stringValue(data.duration_label) },
+    { label: "Usia", value: ageLabel },
+    { label: "Target bahasa", value: stringValue(data.target_language_label) },
+    { label: "Jalur visa", value: stringValue(data.visa_path_label) },
+    { label: "Estimasi gaji", value: stringValue(data.salary_range_label) },
+    { label: "Pendidikan awal", value: optLabel(stringValue(data.education_level_option_id)) },
+  ].filter((entry) => entry.value);
 
   const whatsappHref = getProgramWhatsappHref(data, globalConfig, lpkName, item.title);
 
@@ -2945,6 +3014,20 @@ async function ProgramDetailMain({
             ))}
           </div>
         ) : null}
+        {programDecisionItems.length > 0 ? (
+          <dl className="mt-6 grid gap-3 rounded-lg border border-primary-100 bg-primary-50/50 p-4 sm:grid-cols-2">
+            {programDecisionItems.map((entry) => (
+              <div key={entry.label}>
+                <dt className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+                  {entry.label}
+                </dt>
+                <dd className="mt-1 text-sm font-semibold leading-6 text-neutral-950">
+                  {entry.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
         {stringValue(data.overview) ? (
           <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">
             {stringValue(data.overview)}
@@ -2952,7 +3035,7 @@ async function ProgramDetailMain({
         ) : null}
         {whatsappHref !== "#" ? (
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button render={<a href={whatsappHref} />} variant="whatsapp">
+            <Button render={<a href={whatsappHref} />}>
               {stringValue(data.primary_cta_label) || "Konsultasi Program Ini"}
             </Button>
             <Button render={<a href="/job" />} variant="outline">
@@ -3058,7 +3141,7 @@ async function ProgramDetailMain({
           primaryCTA={{
             label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
             href: whatsappHref,
-            variant: "whatsapp",
+            variant: "default",
           }}
         />
       ) : null}
@@ -3275,20 +3358,16 @@ async function JobDetailMain({
             ) : null}
           </div>
         ) : null}
-        {shortDescription ? (
-          <p className="mt-4 text-lg leading-8 text-neutral-600">{shortDescription}</p>
-        ) : null}
-        {overview ? (
-          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
-        ) : null}
         {decisionItems.length > 0 ? (
-          <dl className="mt-8 grid gap-x-8 gap-y-5 border-y border-neutral-200 py-6 sm:grid-cols-2">
+          <dl className="mt-6 grid gap-3 rounded-lg border border-primary-100 bg-primary-50/50 p-4 sm:grid-cols-2">
             {decisionItems.map((entry) => (
               <div key={entry.label}>
-                <dt className="text-sm font-medium text-neutral-500">{entry.label}</dt>
-                <dd className="mt-1 font-semibold text-neutral-900">{entry.value}</dd>
+                <dt className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+                  {entry.label}
+                </dt>
+                <dd className="mt-1 text-sm font-semibold leading-6 text-neutral-950">{entry.value}</dd>
                 {entry.detail ? (
-                  <dd className="mt-1 text-sm leading-6 text-neutral-600">{entry.detail}</dd>
+                  <dd className="mt-1 text-xs leading-5 text-neutral-600">{entry.detail}</dd>
                 ) : null}
               </div>
             ))}
@@ -3305,7 +3384,7 @@ async function JobDetailMain({
                 : "Kirim profil untuk pemeriksaan awal. Tim HIT akan menjelaskan pihak yang terlibat, tahapan, dan biaya sebelum kamu menyetujui proses berikutnya."}
             </p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <Button render={<a href={whatsappHref} />} variant="whatsapp">
+              <Button render={<a href={whatsappHref} />}>
                 {primaryCtaLabel}
               </Button>
               {preparationCtaLabel ? (
@@ -3314,6 +3393,16 @@ async function JobDetailMain({
                 </Button>
               ) : null}
             </div>
+          </div>
+        ) : null}
+        {shortDescription || overview ? (
+          <div className="mt-8 space-y-5 border-t border-neutral-200 pt-6">
+            {shortDescription ? (
+              <p className="text-lg leading-8 text-neutral-600">{shortDescription}</p>
+            ) : null}
+            {overview ? (
+              <div className="whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+            ) : null}
           </div>
         ) : null}
       </section>
@@ -3440,7 +3529,7 @@ async function JobDetailMain({
           primaryCTA={{
             label: primaryCtaLabel,
             href: whatsappHref,
-            variant: "whatsapp",
+            variant: "default",
           }}
         />
       ) : null}
@@ -3888,7 +3977,7 @@ function OfferDetailHero({
       headline={item.title}
       subheadline={subtitle}
       eyebrowLabel={stringValue(data.hero_eyebrow_label)}
-      primaryCTA={canRegister ? { label: ctaLabel, href: whatsappHref, variant: "whatsapp" } : undefined}
+      primaryCTA={canRegister ? { label: ctaLabel, href: whatsappHref, variant: "default" } : undefined}
       priority
     />
   ) : (
@@ -3899,7 +3988,7 @@ function OfferDetailHero({
           <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
         ) : null}
         {canRegister ? (
-          <Button render={<a href={whatsappHref} />} variant="whatsapp" size="lg" className="mt-8">
+          <Button render={<a href={whatsappHref} />} size="lg" className="mt-8">
             {ctaLabel}
           </Button>
         ) : null}
@@ -4124,7 +4213,7 @@ async function OfferDetailMain({
           primaryCTA={{
             label: stringValue(data.primary_cta_label) || "Pilih Batch & Daftar Gratis",
             href: whatsappHref,
-            variant: "whatsapp",
+            variant: "default",
           }}
         />
       ) : null}
@@ -4180,7 +4269,6 @@ function OfferDetailSidebar({
         <Button
           render={<a href={item.isExpired ? "#" : whatsappHref} />}
           disabled={item.isExpired}
-          variant="whatsapp"
           className="mt-6 w-full"
           title={item.isExpired ? "Penawaran ini sudah tidak tersedia" : undefined}
         >
@@ -4523,7 +4611,7 @@ function getOfferCmsImageSrc(item?: PublicCollectionItem | null) {
 }
 
 function getListPageFallbackHeroImage(pageKey: string, items: PublicCollectionItem[]) {
-  if (pageKey !== "program_page") {
+  if (pageKey !== "program_page" && pageKey !== "blog_page") {
     return null;
   }
 
@@ -4909,9 +4997,44 @@ function stringValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function mediaPositionPreset(
+  value: unknown,
+  fallback: MediaPositionPreset = "center",
+): MediaPositionPreset {
+  return isMediaPositionPreset(value) ? value : fallback;
+}
+
+function heroMediaProps(
+  hero: PublicJson,
+  mobileFallback: MediaPositionPreset = "center",
+) {
+  const mobileMediaId = stringValue(hero.mobile_media_id);
+
+  return {
+    mediaPosition: mediaPositionPreset(hero.media_position),
+    mobileMediaType:
+      stringValue(hero.mobile_media_type) === "video" ? ("video" as const) : ("image" as const),
+    mobileMediaSrc: mediaProxySrc(mobileMediaId),
+    mobileMediaPosition: mediaPositionPreset(
+      hero.mobile_media_position,
+      mobileFallback,
+    ),
+  };
+}
+
 function stringValueWithMissingFallback(recordValue: PublicJson, key: string, fallback: string) {
   return Object.prototype.hasOwnProperty.call(recordValue, key)
     ? stringValue(recordValue[key])
+    : fallback;
+}
+
+function flatStringListWithMissingFallback(
+  recordValue: PublicJson,
+  key: string,
+  fallback: string[],
+) {
+  return Object.prototype.hasOwnProperty.call(recordValue, key)
+    ? flatStringList(recordValue[key])
     : fallback;
 }
 

@@ -4,6 +4,11 @@ import { Check, ExternalLink, Mail, MessageCircle, ShieldCheck } from "lucide-re
 import { normalizeActionLabel } from "@/lib/display-label";
 import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
 import { buildLineUrl } from "@/lib/line";
+import {
+  isMediaPositionPreset,
+  responsiveMediaPositionStyle,
+  type MediaPositionPreset,
+} from "@/lib/media-position";
 import { cn } from "@/lib/utils";
 import {
   resolveCollectionList,
@@ -1351,6 +1356,15 @@ async function JapanHero({
   const subheadline = stringValue(hero.subheadline);
   const eyebrowLabel = stringValue(hero.eyebrow_label);
   const mediaType = stringValue(hero.media_type);
+  const mobileMediaId = stringValue(hero.mobile_media_id);
+  const mobileMediaType = stringValue(hero.mobile_media_type) === "video" ? "video" : "image";
+  const mobileMediaSrc = mobileMediaId
+    ? mobileMediaType === "video"
+      ? getMediaProxyUrl(mobileMediaId)
+      : await resolveMediaUrl(mobileMediaId)
+    : null;
+  const mediaPosition = mediaPositionPreset(hero.media_position);
+  const mobileMediaPosition = mediaPositionPreset(hero.mobile_media_position);
   const { primaryCTA, secondaryCTA } = prioritizeJapanHeroCTAs(
     getHeroPrimaryCTA(hero, globalConfig, tenantName, withLineCTA),
     getHeroSecondaryCTA(hero),
@@ -1374,6 +1388,11 @@ async function JapanHero({
           headline={headline}
           subheadline={subheadline}
           eyebrowLabel={eyebrowLabel}
+          mediaPosition={mediaPosition}
+          mobileMediaType={mobileMediaType}
+          mobileMediaSrc={mobileMediaSrc ?? undefined}
+          mobileMediaAlt={headline}
+          mobileMediaPosition={mobileMediaPosition}
           primaryCTA={primaryCTA}
           secondaryCTA={secondaryCTA}
         />
@@ -1403,6 +1422,11 @@ async function JapanHero({
       mediaType={heroMediaType}
       mediaSrc={heroMediaType === "video" ? getMediaProxyUrl(mediaId) : mediaSrc}
       mediaAlt={headline}
+      mediaPosition={mediaPosition}
+      mobileMediaType={mobileMediaType}
+      mobileMediaSrc={mobileMediaSrc ?? undefined}
+      mobileMediaAlt={headline}
+      mobileMediaPosition={mobileMediaPosition}
       headline={headline}
       subheadline={subheadline}
       eyebrowLabel={eyebrowLabel}
@@ -1570,8 +1594,18 @@ async function CandidatePoolHero({
     )
     .sort((a, b) => a.sortOrder - b.sortOrder);
   const mediaId = stringValue(fallbackHero.media_id);
-  const mediaSrc = await resolveMediaUrl(mediaId);
+  const mobileMediaId = stringValue(fallbackHero.mobile_media_id);
   const isVideo = stringValue(fallbackHero.media_type) === "video";
+  const isMobileVideo = stringValue(fallbackHero.mobile_media_type) === "video";
+  const [mediaSrc, mobileMediaSrc] = await Promise.all([
+    resolveMediaUrl(mediaId),
+    isMobileVideo ? Promise.resolve("") : resolveMediaUrl(mobileMediaId),
+  ]);
+  const mediaPositionStyle = responsiveMediaPositionStyle(
+    fallbackHero.media_position,
+    fallbackHero.mobile_media_position,
+  );
+  const hasMobileMedia = Boolean(mobileMediaId);
 
   return (
     <section className="relative overflow-hidden bg-primary-700 py-14 text-white md:py-20 lg:py-24">
@@ -1579,7 +1613,8 @@ async function CandidatePoolHero({
         <div className="absolute inset-0">
           {isVideo ? (
             <video
-              className="h-full w-full object-cover"
+              className={`${hasMobileMedia ? "hidden md:block" : ""} h-full w-full object-cover [object-position:var(--media-position-mobile)] md:[object-position:var(--media-position-desktop)]`}
+              style={mediaPositionStyle}
               src={getMediaProxyUrl(mediaId)}
               autoPlay
               muted
@@ -1595,10 +1630,36 @@ async function CandidatePoolHero({
               fill
               priority
               sizes="100vw"
-              className="object-cover"
+              className={`${hasMobileMedia ? "hidden md:block" : ""} object-cover [object-position:var(--media-position-mobile)] md:[object-position:var(--media-position-desktop)]`}
+              style={mediaPositionStyle}
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/85 via-neutral-950/70 to-neutral-950/50" />
+          {mobileMediaId ? (
+            isMobileVideo ? (
+              <video
+                className="h-full w-full object-cover object-[var(--media-position-mobile)] md:hidden"
+                style={mediaPositionStyle}
+                src={getMediaProxyUrl(mobileMediaId)}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                aria-label={headline || undefined}
+              />
+            ) : mobileMediaSrc ? (
+              <Image
+                src={mobileMediaSrc}
+                alt={headline}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-[var(--media-position-mobile)] md:hidden"
+                style={mediaPositionStyle}
+              />
+            ) : null
+          ) : null}
+          <div className="absolute inset-0 bg-neutral-950/65 md:bg-gradient-to-r md:from-neutral-950/85 md:via-neutral-950/70 md:to-neutral-950/50" />
         </div>
       ) : null}
 
@@ -1730,14 +1791,14 @@ function CandidatePoolHeroCard({
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="relative flex size-14 shrink-0 overflow-hidden rounded-lg bg-[var(--color-section-alt)] text-[var(--color-primary)] ring-1 ring-neutral-200">
+        <div className="relative flex size-16 shrink-0 overflow-hidden rounded-lg bg-[var(--color-section-alt)] text-[var(--color-primary)] ring-1 ring-neutral-200">
           {item.imageSrc ? (
             <Image
               src={item.imageSrc}
               alt={displayName}
               fill
-              sizes="56px"
-              className="object-cover"
+              sizes="64px"
+              className="object-cover object-[center_20%]"
             />
           ) : (
             <span className="m-auto text-lg font-bold tracking-normal">
@@ -2399,13 +2460,13 @@ async function EducationQualitySection({ config }: { config: PublicJson }) {
 
           <div className="space-y-4">
             {imageSrc ? (
-              <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/15 bg-white/10">
+              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-lg border border-white/15 bg-white/10 sm:max-w-md lg:max-w-none">
                 <Image
                   src={imageSrc}
                   alt={stringValue(config.leader_name) || headline}
                   fill
                   sizes="(min-width: 1024px) 35vw, 100vw"
-                  className="object-cover"
+                  className="object-cover object-[center_18%]"
                 />
               </div>
             ) : null}
@@ -2762,14 +2823,14 @@ function CandidateExampleCard({ item }: { item: CandidateExampleCard }) {
     <Card variant="japan" className="h-full p-6">
       <CardContent className="flex h-full flex-col p-0">
         <div className="flex items-start gap-4">
-          <div className="relative flex size-16 shrink-0 overflow-hidden rounded-full bg-[var(--color-section-alt)] text-[var(--color-primary)] ring-1 ring-neutral-200">
+          <div className="relative flex size-20 shrink-0 overflow-hidden rounded-full bg-[var(--color-section-alt)] text-[var(--color-primary)] ring-1 ring-neutral-200">
             {item.imageSrc ? (
               <Image
                 src={item.imageSrc}
                 alt={item.name}
                 fill
-                sizes="64px"
-                className="object-cover"
+                sizes="80px"
+                className="object-cover object-[center_20%]"
               />
             ) : (
               <span className="m-auto text-xl font-bold tracking-normal">
@@ -3806,7 +3867,7 @@ function SectorCandidateSnapshots({ items }: { items: SectorCandidateSnapshot[] 
                     alt={candidate.name}
                     fill
                     sizes="64px"
-                    className="object-cover"
+                    className="object-cover object-[center_20%]"
                   />
                 ) : (
                   <span className="m-auto text-lg font-bold">{candidate.initials}</span>
@@ -4728,6 +4789,13 @@ function arrayOfStrings(value: unknown) {
 
 function stringValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function mediaPositionPreset(
+  value: unknown,
+  fallback: MediaPositionPreset = "center",
+): MediaPositionPreset {
+  return isMediaPositionPreset(value) ? value : fallback;
 }
 
 function booleanValue(value: unknown, fallback: boolean) {

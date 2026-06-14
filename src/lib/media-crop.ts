@@ -1,4 +1,9 @@
-export type MediaCropPreset = "thumbnail" | "hero" | "square" | "portrait";
+export type MediaCropPreset =
+  | "thumbnail"
+  | "hero"
+  | "square"
+  | "portrait"
+  | "offer";
 
 export type MediaCropRect = {
   x: number;
@@ -44,6 +49,13 @@ export const MEDIA_CROP_PRESETS: Record<MediaCropPreset, MediaCropConfig> = {
     outputWidth: 960,
     outputHeight: 1200,
   },
+  offer: {
+    preset: "offer",
+    label: "Offer campaign image",
+    aspectRatio: 16 / 10,
+    outputWidth: 1600,
+    outputHeight: 1000,
+  },
 };
 
 export function getMediaCropConfig(preset: MediaCropPreset) {
@@ -55,6 +67,7 @@ export function isMediaCropPreset(value: unknown): value is MediaCropPreset {
     value === "thumbnail" ||
     value === "hero" ||
     value === "square" ||
-    value === "portrait"
+    value === "portrait" ||
+    value === "offer"
   );
 }
