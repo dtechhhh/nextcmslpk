@@ -77,6 +77,7 @@ export async function LayoutJapan({
       className="theme-japan font-japanese min-h-screen bg-white text-neutral-900"
       style={appearanceStyle}
     >
+      <script dangerouslySetInnerHTML={{ __html: 'document.documentElement.lang="ja"' }} />
       <HeaderJapan
         lpkName={lpkName}
         tagline={tagline}

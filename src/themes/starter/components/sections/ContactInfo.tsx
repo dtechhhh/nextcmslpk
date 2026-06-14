@@ -145,14 +145,14 @@ function ContactInfo({
           {resolvedMapUrl ? (
             <iframe
               src={resolvedMapUrl}
-              title="Lokasi"
+              title="所在地"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="h-[300px] w-full rounded-xl border-0"
             />
           ) : (
             <div className="flex h-[300px] items-center justify-center rounded-xl bg-neutral-100 text-neutral-500">
-              Peta belum tersedia
+              地図を読み込めません
             </div>
           )}
         </div>

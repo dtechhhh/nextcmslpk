@@ -68,6 +68,7 @@ export async function LayoutIndonesia({
       className="theme-indonesia min-h-screen bg-white"
       style={appearanceStyle}
     >
+      <script dangerouslySetInnerHTML={{ __html: 'document.documentElement.lang="id"' }} />
       <HeaderIndonesia
         lpkName={lpkName}
         tagline={tagline}

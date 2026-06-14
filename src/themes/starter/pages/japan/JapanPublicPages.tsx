@@ -107,8 +107,8 @@ type LeadershipQuoteData = {
   photoImageId: string;
 };
 
-const JAPAN_DOWNLOAD_LABEL = "Unduh dokumen";
-const JAPAN_DETAIL_LABEL = "Lihat detail";
+const JAPAN_DOWNLOAD_LABEL = "資料をダウンロード";
+const JAPAN_DETAIL_LABEL = "詳細を見る";
 const DEFAULT_LEADERSHIP_QUOTE = {
   isEnabled: true,
   quote:
@@ -279,15 +279,15 @@ export async function JapanAboutPage(props: JapanPageProps) {
       <OperationalReadinessSection config={operationalReadiness} />
       <LeadershipQuoteSection quoteData={leadershipQuote} />
       <TeamGrid
-        title={displayText(display, "team_title", "Tim")}
+        title={displayText(display, "team_title", "チーム")}
         members={await resolveTeamMembers(sortedRecords(data.team_members))}
       />
       <FacilityGallery
-        title={displayText(display, "facilities_title", "Fasilitas Pelatihan")}
+        title={displayText(display, "facilities_title", "研修施設")}
         items={await resolveGalleryItems(sortedRecords(data.facilities), "image_id")}
       />
       <Timeline
-        title={displayText(display, "timeline_title", "Linimasa")}
+        title={displayText(display, "timeline_title", "沿革")}
         items={sortedRecords(data.timeline).map((item, index) => ({
           yearLabel: stringValue(item.year_label),
           title: stringValue(item.title),
@@ -303,12 +303,12 @@ export async function JapanAboutPage(props: JapanPageProps) {
         missionDescription={stringValue(visionMission.mission_description)}
       />
       <CardGrid
-        title={displayText(display, "values_title", "Nilai yang Kami Pegang")}
+        title={displayText(display, "values_title", "大切にしている価値観")}
         variant="japan"
         items={sortedRecords(data.values).map(iconCard)}
       />
       <JapanDocumentCardGrid
-        title={displayText(display, "legal_overview_title", "Ringkasan Legalitas")}
+        title={displayText(display, "legal_overview_title", "法人情報・許認可")}
         items={sortedRecords(data.legal_overview).map((item, index) => ({
           id: `legal-overview-${index}`,
           title: stringValue(item.title),
@@ -362,7 +362,7 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
       />
       <TrainingRiskSection config={record(data.partner_risks)} />
       <CardGrid
-        title={displayText(display, "training_pillars_title", "Pilar Pelatihan")}
+        title={displayText(display, "training_pillars_title", "教育の柱")}
         variant="japan"
         items={sortedRecords(data.training_pillars).map(iconCard)}
       />
@@ -370,13 +370,13 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
         <TrainingProgramOverview config={programOverview} />
       ) : (
         <StepFlow
-          title={displayText(display, "training_flow_title", "Alur Pelatihan")}
+          title={displayText(display, "training_flow_title", "教育フロー")}
           items={sortedRecords(data.training_flow).map(toStepItem)}
         />
       )}
       <DocumentSection config={record(data.curriculum_download)} />
       <CurriculumAreasSection
-        title={displayText(display, "curriculum_areas_title", "Area Kurikulum")}
+        title={displayText(display, "curriculum_areas_title", "教育分野")}
         stats={sortedRecords(data.curriculum_stats).map(toProofStatItem)}
         items={sortedRecords(data.curriculum_areas).map(iconCard)}
       />
@@ -385,7 +385,7 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
         <TrainingReadinessStandards config={readinessStandards} />
       ) : (
         <CardGrid
-          title={displayText(display, "evaluation_items_title", "Aspek Evaluasi")}
+          title={displayText(display, "evaluation_items_title", "評価項目")}
           variant="japan"
           items={sortedRecords(data.evaluation_items).map(iconCard)}
         />
@@ -394,7 +394,7 @@ export async function JapanTrainingMethodPage(props: JapanPageProps) {
       <TrainingPartnerReport config={record(data.partner_report)} />
       <TrainingEvidence config={record(data.outcome_evidence)} />
       <FacilityGallery
-        title={displayText(display, "training_gallery_title", "Galeri Pelatihan")}
+        title={displayText(display, "training_gallery_title", "研修施設ギャラリー")}
         items={await resolveGalleryItems(sortedRecords(data.training_gallery), "media_id")}
       />
       <FAQ
@@ -705,7 +705,7 @@ export async function JapanNewsListPage({
         finalCta={record(data.final_cta)}
         globalConfig={globalConfig}
         tenantName={tenantName}
-        defaultHeadline="Ikuti informasi terbaru dari tim kami"
+        defaultHeadline="採用担当者向けの最新情報"
       />
     </>
   );
@@ -2643,7 +2643,7 @@ async function DocumentSection({ config }: { config: PublicJson }) {
               ) : null}
             </div>
             <DocumentDownload
-              label={stringValue(config.button_label) || "Unduh"}
+              label={stringValue(config.button_label) || "ダウンロード"}
               fileUrl={fileUrl}
               fallbackLabel={JAPAN_DOWNLOAD_LABEL}
               variant="outline"
@@ -3314,10 +3314,10 @@ function JapanCollectionList({
   const cardCtaLabel = displayText(
     display,
     "card_cta_label",
-    kind === "news" ? "Baca" : "Lihat Detail",
+    kind === "news" ? "記事を読む" : "詳細を見る",
   );
-  const featuredBadgeLabel = displayText(display, "featured_badge_label", "Unggulan");
-  const newBadgeLabel = displayText(display, "new_badge_label", "Baru");
+  const featuredBadgeLabel = displayText(display, "featured_badge_label", "おすすめ");
+  const newBadgeLabel = displayText(display, "new_badge_label", "新着");
 
   return (
     <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
@@ -4398,7 +4398,7 @@ async function resolveJapanContentBlocks(
             data: {
               title: sector.title,
               description: sector.excerpt || stringValue(sector.dataJson.short_description),
-              ctaLabel: stringValue(data.cta_label) || "Lihat Detail",
+              ctaLabel: stringValue(data.cta_label) || "詳細を見る",
               ctaHref: `/sectors/${sector.slug}`,
             },
           }
@@ -4649,7 +4649,7 @@ function newsCard(item: PublicCollectionItem, labels: { newBadgeLabel?: string }
     description: item.excerpt,
     href: `/news/${item.slug}`,
     imageSrc: item.thumbnailSrc,
-    badge: isNew ? labels.newBadgeLabel || "Baru" : undefined,
+    badge: isNew ? labels.newBadgeLabel || "新着" : undefined,
     badgeVariant: isNew ? ("new" as const) : undefined,
     meta: item.publishedAt ? formatDate(item.publishedAt) : undefined,
     isEnabled: true,

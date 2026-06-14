@@ -91,7 +91,7 @@ export function HeaderJapan({
   return (
     <header className={cn("z-40 bg-white", sticky && "sticky top-0")}>
       {topbar.isEnabled ? (
-        <div className="hidden border-b-2 border-secondary-500 bg-primary-700 text-white md:flex">
+        <div className="hidden border-b border-white/10 bg-primary-700 text-white md:flex">
           <div className="mx-auto grid h-10 w-full max-w-7xl grid-cols-3 items-center gap-4 px-4 text-xs font-medium sm:px-6 lg:px-8">
             <p className="truncate text-left">{topbar.locationLabel}</p>
             <p className="truncate text-center">{topbar.emailLabel}</p>
@@ -133,7 +133,14 @@ export function HeaderJapan({
             <SecondaryCTA secondaryCTA={secondaryCTA} />
           </div>
 
-          <Sheet>
+          <div className="flex items-center gap-2 lg:hidden">
+            {lineHref && primaryCTA ? (
+              <Button render={<a href={lineHref} />} variant="line" size="sm">
+                <MessageCircle aria-hidden="true" className="size-4" />
+                <span className="hidden sm:inline">{primaryCTA.label}</span>
+              </Button>
+            ) : null}
+            <Sheet>
             <SheetTrigger
               className="inline-flex size-10 items-center justify-center rounded-lg text-neutral-900 lg:hidden"
               aria-label="メニューを開く"
@@ -177,7 +184,7 @@ export function HeaderJapan({
                 {hasDrawerContact ? (
                   <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
                     <p className="text-xs font-bold uppercase tracking-normal text-primary-600">
-                      Contact
+                      お問い合わせ
                     </p>
                     <div className="mt-3 space-y-3 text-xs leading-5 text-neutral-600">
                       {topbar.businessHoursLabel ? (
@@ -198,6 +205,7 @@ export function HeaderJapan({
               </div>
             </SheetContent>
           </Sheet>
+          </div>
         </div>
       </div>
     </header>

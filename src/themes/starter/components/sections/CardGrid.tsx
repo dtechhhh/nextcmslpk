@@ -107,7 +107,8 @@ function CardGridCard({
       variant={variant}
       className={cn(
         "h-full gap-0 border border-neutral-200 py-0 shadow-sm transition-shadow",
-        item.href && variant === "indonesia" && "hover:shadow-lg"
+        item.href && variant === "indonesia" && "hover:shadow-lg",
+        item.href && variant === "japan" && "hover:border-primary-200 hover:shadow-md"
       )}
     >
       {item.imageSrc ? (

@@ -197,4 +197,5 @@
 
 .font-japanese {
   font-family: var(--font-japanese);
+  line-height: 1.85;
 }
