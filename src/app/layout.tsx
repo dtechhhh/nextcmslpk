@@ -24,8 +24,13 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "nextcmslpk",
-  description: "Multi-tenant CMS for LPK",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  title: {
+    default: "PT Hashimoto Indo Trust",
+    template: "%s | PT Hashimoto Indo Trust",
+  },
+  description:
+    "Lembaga Pelatihan Kerja resmi untuk penempatan tenaga kerja Indonesia ke Jepang",
 };
 
 export default function RootLayout({
