@@ -1,0 +1,200 @@
+/* ==========================================================================
+   Starter Theme — Design Tokens
+   PR 1: Design system tokens + shared UI
+   ========================================================================== */
+
+/* --- Brand Color Palette: Indonesia --- */
+:root {
+  --color-brand-primary: #123b57;
+  --color-brand-primary-hover: #0b2b40;
+  --color-brand-primary-50: #eef7fb;
+  --color-brand-primary-100: #d9edf6;
+  --color-brand-primary-200: #b6ddeb;
+  --color-brand-primary-300: #7fbed5;
+  --color-brand-primary-400: #3c91b5;
+  --color-brand-primary-500: #123b57;
+  --color-brand-primary-600: #0b2b40;
+  --color-brand-primary-700: #071f30;
+  --color-brand-accent-blue: #2e9fd6;
+
+  --color-brand-secondary: #e53935;
+  --color-brand-secondary-400: #ef5350;
+  --color-brand-secondary-500: #e53935;
+  --color-brand-secondary-600: #c62828;
+
+  --color-brand-whatsapp: #25D366;
+}
+
+/* --- Brand Color Palette: Japan --- */
+:root {
+  --color-jp-primary: #1e3a5f;
+  --color-jp-primary-hover: #162d4a;
+  --color-jp-primary-50: #eef8fd;
+  --color-jp-primary-100: #d8eef8;
+  --color-jp-primary-200: #acd9ef;
+  --color-jp-primary-300: #73c2e4;
+  --color-jp-primary-400: #2e9fd6;
+  --color-jp-primary-500: #1e3a5f;
+  --color-jp-primary-600: #162d4a;
+  --color-jp-primary-700: #0f2035;
+
+  --color-jp-accent: #e53935;
+  --color-jp-line: #06C755;
+}
+
+/* --- Status Colors --- */
+:root {
+  --color-status-success: #22c55e;
+  --color-status-warning: #f59e0b;
+  --color-status-error: #ef4444;
+  --color-status-info: #3b82f6;
+}
+
+/* --- Typography Scale --- */
+:root {
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1.15;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+/* --- Spacing --- */
+:root {
+  --section-padding-y: 4rem;
+  --container-max-width: 80rem;
+}
+
+/* --- Border Radius --- */
+:root {
+  --radius-card: 0.75rem;
+  --radius-button: 0.5rem;
+  --radius-input: 0.375rem;
+  --radius-badge: 9999px;
+}
+
+/* --- Shadows --- */
+:root {
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* --- Neutral (Slate) Scale --- */
+:root {
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
+}
+
+/* ==========================================================================
+   Variant: Indonesia
+   Primary #123b57, Accent #e53935, CTA WhatsApp #25D366
+   ========================================================================== */
+.theme-indonesia {
+  --color-primary: #0f7ea8;
+  --color-primary-hover: #0a5f82;
+  --color-primary-foreground: #ffffff;
+  --primary-50: var(--color-brand-primary-50);
+  --primary-100: var(--color-brand-primary-100);
+  --primary-200: var(--color-brand-primary-200);
+  --primary-300: var(--color-brand-primary-300);
+  --primary-500: #0f7ea8;
+  --primary-700: var(--color-brand-primary-700);
+  --secondary-500: var(--color-brand-secondary-500);
+  --secondary-600: var(--color-brand-secondary-600);
+  --warning-50: color-mix(in srgb, var(--color-status-warning) 10%, white);
+  --warning-200: color-mix(in srgb, var(--color-status-warning) 28%, white);
+  --warning-700: color-mix(in srgb, var(--color-status-warning) 82%, black);
+  --color-secondary: #e53935;
+  --color-secondary-foreground: #ffffff;
+  --color-cta: #25D366;
+  --color-cta-foreground: #ffffff;
+
+  /* Override shadcn primary/secondary */
+  --primary: #0f7ea8;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+
+  /* Background & text for light theme */
+  --color-background: #ffffff;
+  --color-section-alt: #eef7fb;
+  --color-heading: #0f172a;
+  --color-body: #475569;
+  font-family: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   Variant: Japan
+   Primary #1e3a5f, Accent #e53935, CTA LINE #06C755
+   ========================================================================== */
+.theme-japan {
+  --color-primary: #1e3a5f;
+  --color-primary-hover: #162d4a;
+  --color-primary-foreground: #ffffff;
+  --primary-50: var(--color-jp-primary-50);
+  --primary-100: var(--color-jp-primary-100);
+  --primary-200: var(--color-jp-primary-200);
+  --primary-300: var(--color-jp-primary-300);
+  --primary-500: var(--color-jp-primary-500);
+  --primary-700: var(--color-jp-primary-700);
+  --secondary-500: var(--color-brand-secondary-500);
+  --secondary-600: var(--color-brand-secondary-600);
+  --warning-50: color-mix(in srgb, var(--color-status-warning) 10%, white);
+  --warning-200: color-mix(in srgb, var(--color-status-warning) 28%, white);
+  --warning-700: color-mix(in srgb, var(--color-status-warning) 82%, black);
+  --color-secondary: #e53935;
+  --color-secondary-foreground: #ffffff;
+  --color-cta: #06C755;
+  --color-cta-foreground: #ffffff;
+
+  /* Override shadcn primary/secondary */
+  --primary: #1e3a5f;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+
+  /* Background & text for light theme */
+  --color-background: #ffffff;
+  --color-section-alt: #f1f5f9;
+  --color-heading: #0f172a;
+  --color-body: #475569;
+}
+
+/* ==========================================================================
+   Font Family
+   ========================================================================== */
+:root {
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-japanese: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-japanese {
+  font-family: var(--font-japanese);
+}

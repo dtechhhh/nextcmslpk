@@ -1,0 +1,158 @@
+import { z } from "zod";
+
+import {
+  contentIdSchema,
+  ctaFields,
+  ctaDefaults,
+  faqItemSchema,
+  iconKeySchema,
+  identityFields,
+  identityDefaults,
+  legacyTitleDescArray,
+  optionalString,
+  sidebarFields,
+  sidebarDefaults,
+} from "@/lib/validations/collections/_shared";
+import { SHORT_DESCRIPTION_MAX_LENGTH } from "@/lib/content-summary-limits";
+
+const sortFields = {
+  is_enabled: z.boolean().default(true),
+  sort_order: z.coerce.number().int().min(0).default(0),
+};
+
+const itemWithTitleDesc = z
+  .object({
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
+const stepItemWithIcon = z
+  .object({
+    icon_key: iconKeySchema,
+    title: optionalString(300),
+    description: optionalString(1200),
+    ...sortFields,
+  })
+  .passthrough();
+
+export const jobSchema = z
+  .object({
+    ...identityFields,
+    ...ctaFields,
+    ...sidebarFields,
+    short_description: optionalString(SHORT_DESCRIPTION_MAX_LENGTH),
+    overview: optionalString(2000),
+    status: z
+      .enum(["DRAFT", "PUBLISHED", "CLOSED", "FILLED"])
+      .default("DRAFT"),
+    published_at: z.string().default(""),
+    expired_at: z.string().default(""),
+    job_type_option_id: contentIdSchema,
+    location_option_id: contentIdSchema,
+    job_field_option_id: contentIdSchema,
+    gender_option_id: contentIdSchema,
+    language_level_option_id: contentIdSchema,
+    education_level_option_id: contentIdSchema,
+    related_program_id: contentIdSchema,
+    is_sample_listing: z.boolean().default(false),
+    listing_notice_title: optionalString(300),
+    listing_notice_description: optionalString(1600),
+    verification_label: optionalString(200),
+    visa_path_label: optionalString(200),
+    employer_disclosure_label: optionalString(500),
+    employment_model_label: optionalString(300),
+    hit_role_label: optionalString(1000),
+    min_age: z.coerce.number().int().min(0).max(100).default(0),
+    max_age: z.coerce.number().int().min(0).max(100).default(0),
+    certificate_required_label: optionalString(200),
+    experience_required_label: optionalString(200),
+    ex_japan_required: z.boolean().default(false),
+    required_documents: z.array(z.string()).default([]),
+    location_label: optionalString(200),
+    salary_range_label: optionalString(200),
+    contract_label: optionalString(120),
+    deadline_label: optionalString(120),
+    quota_label: optionalString(120),
+    salary_basis_label: optionalString(500),
+    estimated_take_home_label: optionalString(500),
+    preparation_cta_label: optionalString(200),
+    preparation_cta_href: optionalString(500),
+    candidate_fit_items: z.array(z.string()).default([]),
+    overview_items: legacyTitleDescArray(itemWithTitleDesc),
+    work_condition_items: legacyTitleDescArray(itemWithTitleDesc),
+    compensation_items: legacyTitleDescArray(itemWithTitleDesc),
+    employer_benefit_items: legacyTitleDescArray(itemWithTitleDesc),
+    process_role_items: legacyTitleDescArray(itemWithTitleDesc),
+    cost_transparency_items: legacyTitleDescArray(itemWithTitleDesc),
+    job_description: optionalString(3000),
+    responsibilities: z.array(z.string()).default([]),
+    benefits: z.array(z.string()).default([]),
+    requirements: z.array(z.string()).default([]),
+    benefit_items: legacyTitleDescArray(itemWithTitleDesc),
+    qualification_items: legacyTitleDescArray(itemWithTitleDesc),
+    recruitment_steps: legacyTitleDescArray(stepItemWithIcon),
+    gallery_media_ids: z.array(z.string()).default([]),
+    faqs: z.array(faqItemSchema).default([]),
+  })
+  .passthrough();
+
+export type JobData = z.infer<typeof jobSchema>;
+
+export const jobDefaults: JobData = {
+  ...identityDefaults,
+  ...ctaDefaults,
+  ...sidebarDefaults,
+  short_description: "",
+  overview: "",
+  status: "DRAFT",
+  published_at: "",
+  expired_at: "",
+  job_type_option_id: "",
+  location_option_id: "",
+  job_field_option_id: "",
+  gender_option_id: "",
+  language_level_option_id: "",
+  education_level_option_id: "",
+    related_program_id: "",
+    is_sample_listing: false,
+    listing_notice_title: "",
+    listing_notice_description: "",
+    verification_label: "",
+    visa_path_label: "",
+    employer_disclosure_label: "",
+    employment_model_label: "",
+    hit_role_label: "",
+    min_age: 0,
+  max_age: 0,
+  certificate_required_label: "",
+  experience_required_label: "",
+  ex_japan_required: false,
+  required_documents: [],
+  location_label: "",
+  salary_range_label: "",
+    contract_label: "",
+    deadline_label: "",
+    quota_label: "",
+    salary_basis_label: "",
+    estimated_take_home_label: "",
+    preparation_cta_label: "",
+    preparation_cta_href: "",
+    candidate_fit_items: [],
+    overview_items: [],
+    work_condition_items: [],
+    compensation_items: [],
+    employer_benefit_items: [],
+    process_role_items: [],
+    cost_transparency_items: [],
+  job_description: "",
+  responsibilities: [],
+  benefits: [],
+  requirements: [],
+  benefit_items: [],
+  qualification_items: [],
+  recruitment_steps: [],
+  gallery_media_ids: [],
+  faqs: [],
+};

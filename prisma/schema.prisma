@@ -1,0 +1,328 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMS ─────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  TENANT_ADMIN
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum VariantStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum DomainStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  FILLED
+}
+
+enum MediaType {
+  IMAGE
+  DOCUMENT
+  VIDEO
+}
+
+enum MediaStatus {
+  UPLOADING
+  ACTIVE
+}
+
+// ─── TENANT ────────────────────────────────────────
+
+model Tenant {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  status      TenantStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  variants            Variant[]
+  users               User[]
+  mediaAssets          MediaAsset[]
+  contentPages         ContentPage[]
+  contentItems         ContentItem[]
+  contentCollections   ContentCollection[]
+  optionSets           OptionSet[]
+  globalConfigs        VariantGlobalConfig[]
+  auditLogs            AuditLog[]
+
+  @@map("tenants")
+}
+
+// ─── USER ──────────────────────────────────────────
+
+model User {
+  id                 String   @id @default(cuid())
+  tenantId           String?  @map("tenant_id")
+  username           String   @unique
+  passwordHash       String   @map("password_hash")
+  role               UserRole
+  totpSecret         String?  @map("totp_secret")
+  totpVerified       Boolean  @default(false) @map("totp_verified")
+  mustChangePassword Boolean  @default(false) @map("must_change_password")
+  securityStamp      String   @default(cuid()) @map("security_stamp")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  tenant                Tenant?               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  auditLogs             AuditLog[]
+  updatedContentPages   ContentPage[]         @relation("ContentPageUpdatedBy")
+  updatedContentItems   ContentItem[]         @relation("ContentItemUpdatedBy")
+  updatedGlobalConfigs  VariantGlobalConfig[] @relation("GlobalConfigUpdatedBy")
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+// ─── VARIANT ───────────────────────────────────────
+
+model Variant {
+  id        String        @id @default(cuid())
+  tenantId  String        @map("tenant_id")
+  key       String
+  label     String
+  themeKey  String        @default("starter") @map("theme_key")
+  status    VariantStatus @default(ACTIVE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  domains             Domain[]
+  globalConfigs       VariantGlobalConfig[]
+  contentPages        ContentPage[]
+  contentItems        ContentItem[]
+  contentCollections  ContentCollection[]
+  optionSets          OptionSet[]
+
+  @@unique([tenantId, key])
+  @@map("variants")
+}
+
+// ─── DOMAIN ────────────────────────────────────────
+
+model Domain {
+  id          String       @id @default(cuid())
+  variantId   String       @map("variant_id")
+  host        String       @unique
+  status      DomainStatus @default(PENDING)
+  isPrimary   Boolean      @default(false) @map("is_primary")
+  verifiedAt  DateTime?    @map("verified_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+  @@map("domains")
+}
+
+// ─── GLOBAL CONFIG ────────────────────────────────
+
+model VariantGlobalConfig {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  variantId String   @map("variant_id")
+  configKey String   @map("config_key")
+  dataJson  Json     @map("data_json")
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  editor  User?   @relation("GlobalConfigUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([variantId, configKey])
+  @@index([tenantId])
+  @@map("variant_global_configs")
+}
+
+// ─── CONTENT PAGE ─────────────────────────────────
+
+model ContentPage {
+  id                String        @id @default(cuid())
+  tenantId          String        @map("tenant_id")
+  variantId         String        @map("variant_id")
+  pageKey           String        @map("page_key")
+  title             String
+  slug              String
+  status            PublishStatus @default(DRAFT)
+  dataJson          Json          @map("data_json")
+  publishedDataJson Json?         @map("published_data_json")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  updatedBy         String?       @map("updated_by")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  editor  User?   @relation("ContentPageUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([variantId, pageKey])
+  @@unique([variantId, slug])
+  @@index([tenantId, variantId, status])
+  @@map("content_pages")
+}
+
+// ─── CONTENT COLLECTION ───────────────────────────
+
+model ContentCollection {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  variantId String   @map("variant_id")
+  key       String
+  label     String
+  isEnabled Boolean  @default(true) @map("is_enabled")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, key])
+  @@index([tenantId])
+  @@map("content_collections")
+}
+
+// ─── CONTENT ITEM ─────────────────────────────────
+
+model ContentItem {
+  id                String        @id @default(cuid())
+  tenantId          String        @map("tenant_id")
+  variantId         String        @map("variant_id")
+  collectionKey     String        @map("collection_key")
+  title             String
+  slug              String
+  status            PublishStatus @default(DRAFT)
+  excerpt           String?
+  thumbnailImageId  String?       @map("thumbnail_image_id")
+  heroImageId       String?       @map("hero_image_id")
+  isFeatured        Boolean       @default(false) @map("is_featured")
+  publishedAt       DateTime?     @map("published_at")
+  startAt           DateTime?     @map("start_at")
+  expiredAt         DateTime?     @map("expired_at")
+  sortOrder         Int           @default(0) @map("sort_order")
+  dataJson          Json          @map("data_json")
+  publishedDataJson Json?         @map("published_data_json")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  updatedBy         String?       @map("updated_by")
+
+  tenant         Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  variant        Variant     @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  thumbnailImage MediaAsset? @relation("ContentItemThumbnail", fields: [thumbnailImageId], references: [id], onDelete: SetNull)
+  heroImage      MediaAsset? @relation("ContentItemHero", fields: [heroImageId], references: [id], onDelete: SetNull)
+  editor         User?       @relation("ContentItemUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([variantId, collectionKey, slug])
+  @@index([tenantId, variantId, collectionKey, status])
+  @@index([tenantId, variantId, collectionKey, isFeatured])
+  @@index([expiredAt])
+  @@index([publishedAt])
+  @@map("content_items")
+}
+
+// ─── OPTION SET & VALUE ───────────────────────────
+
+model OptionSet {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  variantId String   @map("variant_id")
+  key       String
+  label     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  variant Variant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  values  OptionValue[]
+
+  @@unique([variantId, key])
+  @@index([tenantId])
+  @@map("option_sets")
+}
+
+model OptionValue {
+  id          String   @id @default(cuid())
+  optionSetId String   @map("option_set_id")
+  value       String
+  label       String
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  optionSet OptionSet @relation(fields: [optionSetId], references: [id], onDelete: Cascade)
+
+  @@unique([optionSetId, value])
+  @@map("option_values")
+}
+
+// ─── MEDIA ASSET ──────────────────────────────────
+
+model MediaAsset {
+  id           String    @id @default(cuid())
+  tenantId     String    @map("tenant_id")
+  fileName     String    @map("file_name")
+  mimeType     String    @map("mime_type")
+  fileSize     Int       @map("file_size")
+  mediaType    MediaType @map("media_type")
+  status       MediaStatus @default(UPLOADING)
+  storagePath  String    @map("storage_path")
+  altText      String?   @map("alt_text")
+  width        Int?
+  height       Int?
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  tenant             Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contentItemsThumbs ContentItem[] @relation("ContentItemThumbnail")
+  contentItemsHeroes ContentItem[] @relation("ContentItemHero")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("media_assets")
+}
+
+// ─── AUDIT LOG ────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id")
+  userId     String   @map("user_id")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String?  @map("target_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

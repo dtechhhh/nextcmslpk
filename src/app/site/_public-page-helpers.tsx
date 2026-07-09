@@ -1,0 +1,5236 @@
+import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import { unstable_cache, unstable_noStore as noStore } from "next/cache";
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { CalendarClock, Check, GraduationCap } from "lucide-react";
+
+import { getSiteContext } from "@/app/site/site-context";
+import { FALLBACK_ICON, ICON_REGISTRY, type IconKey } from "@/lib/icon-registry";
+import {
+  isMediaPositionPreset,
+  type MediaPositionPreset,
+} from "@/lib/media-position";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import {
+  resolveActiveOffer,
+  resolveCollectionItem,
+  resolveCollectionList,
+  resolveMediaUrl,
+  resolveMediaUrls,
+  resolveOptionLabel,
+  resolveOptionSet,
+  resolvePageData,
+  resolvePreviewToken,
+  type PublicCollectionItem,
+  type PublicJson,
+  type PublicPageSearchParams,
+} from "@/server/resolvers/public";
+import {
+  JapanAboutPage,
+  JapanCandidateProfilePage,
+  JapanContactPage,
+  JapanHomepage,
+  JapanNewsDetailPage,
+  JapanNewsListPage,
+  JapanRecruitmentNetworkPage,
+  JapanSectorDetailPage,
+  JapanSectorListPage,
+  JapanTrainingMethodPage,
+} from "@/themes/starter/pages/japan/JapanPublicPages";
+import { Badge } from "@/themes/starter/components/ui/Badge";
+import { Button } from "@/themes/starter/components/ui/Button";
+import { Container } from "@/themes/starter/components/ui/Container";
+import { CmsImage } from "@/themes/starter/components/ui/CmsImage";
+import { Card, CardContent } from "@/themes/starter/components/ui/Card";
+import { CardGrid } from "@/themes/starter/components/sections/CardGrid";
+import { CollectionDetail } from "@/themes/starter/components/sections/CollectionDetail";
+import { CollectionList } from "@/themes/starter/components/sections/CollectionList";
+import { ContactInfo } from "@/themes/starter/components/sections/ContactInfo";
+import { ContentBlocks, type ContentBlock, type ContentBlockType } from "@/themes/starter/components/sections/ContentBlocks";
+import { CTABanner } from "@/themes/starter/components/sections/CTABanner";
+import { ExpiredBadge } from "@/themes/starter/components/sections/ExpiredBadge";
+import { FAQ } from "@/themes/starter/components/sections/FAQ";
+import { DocumentDownload } from "@/themes/starter/components/sections/DocumentDownload";
+import { HeroSection } from "@/themes/starter/components/sections/HeroSection";
+import { OfferBanner } from "@/themes/starter/components/sections/OfferBanner";
+import { RelatedItems } from "@/themes/starter/components/sections/RelatedItems";
+import { StatsBar } from "@/themes/starter/components/sections/StatsBar";
+import { StepFlow } from "@/themes/starter/components/sections/StepFlow";
+import { TeamGrid } from "@/themes/starter/components/sections/TeamGrid";
+import { TestimonialCarousel } from "@/themes/starter/components/sections/TestimonialCarousel";
+import { Timeline } from "@/themes/starter/components/sections/Timeline";
+
+export type PageSearchParams = Promise<PublicPageSearchParams>;
+export type SlugParams = Promise<{ slug: string }>;
+
+type PageLoadOptions = {
+  pageKey: string;
+  path: string;
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams: PageSearchParams;
+};
+
+type ListPageOptions = {
+  pageKey: string;
+  collectionKey: string;
+  path: string;
+  detailPathPrefix: string;
+  optionSetKeys: string[];
+  cardLabelOptionKeys?: string[];
+  cardMetaKeys?: string[];
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams: PageSearchParams;
+  activeOnly?: boolean;
+};
+
+type DetailPageOptions = {
+  collectionKey: string;
+  slug: string;
+  pathPrefix: string;
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams?: PageSearchParams;
+};
+
+type PublicCollectionListOptions = NonNullable<
+  Parameters<typeof resolveCollectionList>[2]
+>;
+type PublicCollectionSource = PublicCollectionListOptions["source"];
+
+const PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS = 300;
+const PUBLIC_CONTENT_CACHE_VERSION = "2026-06-13-public-content-v2";
+const ACTIVE_FEATURED_OFFER_DEFAULT_BENEFITS = [
+  "Trial belajar langsung",
+  "Cocok untuk pemula",
+  "Konsultasi jalur Jepang",
+];
+const ACTIVE_FEATURED_OFFER_DEFAULTS = {
+  badgeLabel: "GRATIS, TANPA BIAYA PENDAFTARAN",
+  ctaLabel: "Daftar Kelas Gratis",
+  microcopy: "Gratis, tanpa biaya pendaftaran",
+};
+
+function normalizePublicCollectionSource(value: string): PublicCollectionSource {
+  return value === "featured" ||
+    value === "latest_active" ||
+    value === "latest_published"
+    ? value
+    : undefined;
+}
+
+export async function loadPublicPage(options: PageLoadOptions) {
+  const context = await getOkContext();
+  const params = await options.searchParams;
+  const preview = await getPreviewState(params, context.tenant.id, options.path);
+
+  if (preview.isPreview) {
+    noStore();
+    const page = await resolvePageData(context.variantId, options.pageKey, {
+      preview: true,
+      token: preview.token,
+    });
+    return { context, page, isPreview: true };
+  }
+
+  const page = await unstable_cache(
+    () => resolvePageData(context.variantId, options.pageKey),
+    ["public-page", PUBLIC_CONTENT_CACHE_VERSION, context.variantId, options.pageKey],
+    {
+      revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
+      tags: resolveTags(options.cacheTags, context.variantId),
+    },
+  )();
+
+  return { context, page, isPreview: false };
+}
+
+export async function renderHomepage({ searchParams }: { searchParams: PageSearchParams }) {
+  const { context, page, isPreview } = await loadPublicPage({
+    pageKey: "homepage",
+    path: "/",
+    cacheTags: (variantId) => [`page:${variantId}:homepage`],
+    revalidate: 60,
+    searchParams,
+  });
+
+  if (!page) {
+    notFound();
+  }
+
+  const data = page.dataJson;
+  if (context.variantKey === "japan") {
+    const latestNewsConfig = record(data.latest_news);
+    const latestNews = await resolveCachedCollectionList(
+      context.variantId,
+      "news",
+      {
+        source: normalizePublicCollectionSource(stringValue(latestNewsConfig.source)) ?? "latest_published",
+        pageSize: numberValue(latestNewsConfig.max_items) || 4,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:news`],
+    );
+
+    return (
+      <JapanHomepage
+        page={page}
+        globalConfig={context.globalConfig}
+        tenantName={getLpkName(context.globalConfig, context.tenant.name)}
+        variantId={context.variantId}
+        isPreview={isPreview}
+        latestNews={latestNews.items}
+      />
+    );
+  }
+
+  const hero = record(data.hero);
+  const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+  const defaultWhatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
+  const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
+  const whatsappHref = heroWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
+    : defaultWhatsappHref;
+  const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
+  const heroMediaType = stringValue(hero.media_type) === "video" ? "video" : "image";
+  const featuredProgramsConfig = record(data.featured_programs);
+  const offerSection = record(data.offer_section);
+  const contactSection = record(data.contact_section);
+  const displayText = record(data.display_text);
+  const foundationSection = record(data.foundation_section);
+  const latestJobsConfig = record(data.latest_jobs);
+  const latestBlogsConfig = record(data.latest_blogs);
+  const showLatestJobs = booleanValue(latestJobsConfig.is_enabled, true);
+  const showLatestBlogs = booleanValue(latestBlogsConfig.is_enabled, true);
+  const latestJobsPageSize = numberValue(latestJobsConfig.max_items) || 5;
+  const latestBlogsPageSize = numberValue(latestBlogsConfig.max_items) || 5;
+  const homepageText = (key: string, fallback: string) =>
+    stringValue(displayText[key]) || fallback;
+  const [heroImage, programs, jobs, blogs, offerPayload] = await Promise.all([
+    Promise.resolve(mediaProxySrc(heroMediaId) ?? null),
+    resolveFeaturedPrograms(context.variantId, featuredProgramsConfig),
+    showLatestJobs
+      ? resolveCachedCollectionList(
+          context.variantId,
+          "job",
+          {
+            source: "latest_active",
+            pageSize: latestJobsPageSize,
+            activeOnly: true,
+          },
+          PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+          (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:job`],
+        )
+      : Promise.resolve({
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: latestJobsPageSize,
+          totalPages: 1,
+        }),
+    showLatestBlogs
+      ? resolveCachedCollectionList(
+          context.variantId,
+          "blog",
+          {
+            source: "latest_published",
+            pageSize: latestBlogsPageSize,
+          },
+          PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+          (variantId) => [`page:${variantId}:homepage`, `collection:${variantId}:blog`],
+        )
+      : Promise.resolve({
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: latestBlogsPageSize,
+          totalPages: 1,
+        }),
+    resolveOfferSectionPayload(context.variantId, offerSection),
+  ]);
+  const offerItem = offerPayload.item;
+  const offerSource = stringValue(offerSection.source) || "active_featured_offer";
+  const usesActiveFeaturedOffer = offerSource !== "manual";
+  const manualOfferBadgeLabel = offerItem && !usesActiveFeaturedOffer
+    ? await resolveOfferBannerBadge(offerItem, context.variantId)
+    : stringValue(offerSection.fallback_badge_label);
+  const activeOfferHeadlineOverride = stringValueWithMissingFallback(
+    offerSection,
+    "active_headline_override",
+    "",
+  );
+  const activeOfferDescriptionOverride = stringValueWithMissingFallback(
+    offerSection,
+    "active_description_override",
+    "",
+  );
+  const activeOfferCtaHref = stringValueWithMissingFallback(
+    offerSection,
+    "active_cta_href",
+    "",
+  );
+  const offerBadgeLabel = usesActiveFeaturedOffer
+    ? stringValueWithMissingFallback(
+        offerSection,
+        "active_badge_label",
+        ACTIVE_FEATURED_OFFER_DEFAULTS.badgeLabel,
+      )
+    : manualOfferBadgeLabel;
+  const offerHeadline = usesActiveFeaturedOffer
+    ? activeOfferHeadlineOverride || offerItem?.title || ""
+    : offerItem?.title || stringValue(offerSection.fallback_headline);
+  const offerDescription = usesActiveFeaturedOffer
+    ? activeOfferDescriptionOverride || offerItem?.excerpt || ""
+    : offerItem?.excerpt || stringValue(offerSection.fallback_description);
+  const activeOfferCampaignImageSrc = mediaProxySrc(
+    stringValue(offerSection.active_campaign_image_id),
+  );
+  const offerImageSrc = usesActiveFeaturedOffer
+    ? activeOfferCampaignImageSrc || getOfferCmsImageSrc(offerItem)
+    : getOfferCmsImageSrc(offerItem) || offerPayload.fallbackImageSrc || undefined;
+  const offerCtaLabel = usesActiveFeaturedOffer
+    ? stringValueWithMissingFallback(
+        offerSection,
+        "active_cta_label",
+        ACTIVE_FEATURED_OFFER_DEFAULTS.ctaLabel,
+      )
+    : stringValue(offerSection.fallback_cta_label) || (offerItem ? "Lihat Penawaran" : "");
+  const offerCtaHref = usesActiveFeaturedOffer
+    ? activeOfferCtaHref || (offerItem ? `/offer/${offerItem.slug}` : "")
+    : offerItem
+      ? `/offer/${offerItem.slug}`
+      : stringValue(offerSection.fallback_cta_href);
+  const offerUrgencyLabel = usesActiveFeaturedOffer
+    ? stringValue(offerSection.active_urgency_label)
+    : "";
+  const offerMicrocopy = usesActiveFeaturedOffer
+    ? stringValueWithMissingFallback(
+        offerSection,
+        "active_microcopy",
+        ACTIVE_FEATURED_OFFER_DEFAULTS.microcopy,
+      )
+    : "";
+  const offerBenefitItems = usesActiveFeaturedOffer
+    ? flatStringListWithMissingFallback(
+        offerSection,
+        "active_benefit_items",
+        ACTIVE_FEATURED_OFFER_DEFAULT_BENEFITS,
+      )
+    : [];
+  const [programCards, jobListItems, blogCards] = await Promise.all([
+    Promise.all(
+      programs.items.map((item) => programCollectionCard(item, context.variantId)),
+    ),
+    Promise.all(
+      jobs.items.map((item) => toCollectionListItem(item, "job", context.variantId)),
+    ),
+    Promise.all(
+      blogs.items.map((item) =>
+        collectionCard(item, "/blog", ["category"], context.variantId),
+      ),
+    ),
+  ]);
+  const workFieldCards = await Promise.all(
+    sortedRecords(data.work_fields).map(async (item, index) => ({
+      id: `work-field-${index}`,
+      title: stringValue(item.title),
+      description: stringValue(item.description),
+      iconKey: stringValue(item.icon_key),
+      imageSrc:
+        mediaProxySrc(stringValue(item.image_id)),
+      isEnabled: booleanValue(item.is_enabled, true),
+    })),
+  );
+  const audiencePathCards = buildAudiencePathCards(data);
+  const heroPrimaryCtaLabel = stringValueWithMissingFallback(
+    hero,
+    "primary_cta_label",
+    "Konsultasi Gratis via WhatsApp",
+  );
+  const heroPrimaryCTA = heroPrimaryCtaLabel
+    ? {
+        label: heroPrimaryCtaLabel,
+        href: whatsappHref,
+        variant: "default" as const,
+      }
+    : undefined;
+  const heroSecondaryCTA = stringValue(hero.secondary_cta_label)
+    ? {
+        label: stringValue(hero.secondary_cta_label),
+        href: stringValue(hero.secondary_cta_href) || "/program",
+      }
+    : undefined;
+
+  return (
+    <>
+      <PreviewBanner isPreview={isPreview} />
+      {heroImage ? (
+        <HeroSection
+          mediaType={heroMediaType}
+          mediaSrc={heroMediaType === "video" ? getMediaProxyUrl(heroMediaId) : heroImage}
+          mediaAlt={stringValue(hero.media_alt) || stringValue(hero.headline)}
+          {...heroMediaProps(hero, "right")}
+          headline={stringValue(hero.headline) || page.title}
+          subheadline={stringValue(hero.subheadline)}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
+          priority
+        />
+      ) : (
+        <PlainHero
+          title={stringValue(hero.headline) || page.title}
+          subtitle={stringValue(hero.subheadline)}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
+        />
+      )}
+      <OfferBanner
+        isEnabled={
+          !offerPayload.isDisabled &&
+          booleanValue(
+            offerSection.is_enabled,
+            Boolean(offerHeadline),
+          ) &&
+          Boolean(offerHeadline)
+        }
+        badgeLabel={offerBadgeLabel}
+        headline={offerHeadline}
+        description={offerDescription}
+        imageSrc={offerImageSrc}
+        ctaLabel={offerCtaLabel}
+        ctaHref={offerCtaHref}
+        urgencyLabel={offerUrgencyLabel}
+        benefitItems={offerBenefitItems}
+        microcopy={offerMicrocopy}
+      />
+      <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} compact />
+      <CardGrid
+        title={homepageText("audience_paths_title", "Pilih Kebutuhanmu")}
+        subtitle={stringValue(displayText.audience_paths_description)}
+        columns={audiencePathCards.length > 2 ? 3 : 2}
+        items={audiencePathCards}
+      />
+      {showLatestJobs ? (
+        <CollectionList
+          title={homepageText("jobs_title", "Lowongan Terbaru")}
+          subtitle={stringValue(displayText.jobs_description)}
+          items={jobListItems.map((item) => ({ ...item, subtitle: undefined }))}
+          total={jobListItems.length}
+          page={1}
+          pageSize={Math.max(jobListItems.length, 1)}
+          totalPages={1}
+          detailPathPrefix="/job"
+          ctaLabel={homepageText("jobs_cta_label", "Lihat Semua Lowongan")}
+          ctaHref="/job"
+          showSummary={false}
+          showPagination={false}
+        />
+      ) : null}
+      <CardGrid
+        title={homepageText("programs_title", "Program Unggulan")}
+        subtitle={stringValue(displayText.programs_description)}
+        items={programCards}
+        ctaLabel={homepageText("programs_cta_label", "Lihat Semua Program")}
+        ctaHref="/program"
+      />
+      <CardGrid
+        title={homepageText("work_fields_title", "Bidang Kerja yang Dipersiapkan")}
+        subtitle={stringValue(displayText.work_fields_description)}
+        items={workFieldCards}
+      />
+      <CardGrid
+        title={homepageText("trust_title", "Kenapa Memilih Kami")}
+        subtitle={stringValue(displayText.trust_description)}
+        items={arrayOfRecords(data.trust_cards).map((item, index) => ({
+          id: String(index),
+          title: stringValue(item.headline) || stringValue(item.title),
+          description: stringValue(item.description),
+          iconKey: stringValue(item.icon_key),
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <HomepageFoundationSection
+        isEnabled={booleanValue(foundationSection.is_enabled, true)}
+        eyebrowLabel={stringValue(foundationSection.eyebrow_label)}
+        headline={stringValue(foundationSection.headline)}
+        description={stringValue(foundationSection.description)}
+        bulletItems={flatStringList(foundationSection.bullet_items)}
+        ctaLabel={stringValue(foundationSection.cta_label)}
+        ctaHref={stringValue(foundationSection.cta_href)}
+      />
+      <StepFlow
+        title={homepageText("steps_title", "Alur Pendaftaran")}
+        subtitle={stringValue(displayText.steps_description)}
+        items={arrayOfRecords(data.steps).map((item, index) => ({
+          iconKey: stringValue(item.icon_key) || "check",
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <StepFlow
+        title={homepageText("applicant_steps_title", "Alur Melamar Lowongan")}
+        subtitle={stringValue(displayText.applicant_steps_description)}
+        items={arrayOfRecords(data.applicant_steps).map((item, index) => ({
+          iconKey: stringValue(item.icon_key) || "check",
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <TestimonialCarousel
+        title={homepageText("testimonials_title", "Cerita Alumni")}
+        items={arrayOfRecords(data.testimonials).map((item) => ({
+          name: stringValue(item.name),
+          roleOrProgram: stringValue(item.role_or_program),
+          quote: stringValue(item.quote),
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <FAQ
+        title={homepageText("faq_title", "Pertanyaan Umum")}
+        subtitle={stringValue(displayText.faq_description)}
+        items={arrayOfRecords(data.faqs).map(toFaqItem)}
+      />
+      {showLatestBlogs ? (
+        <CardGrid
+          title={homepageText("blogs_title", "Artikel Terbaru")}
+          subtitle={stringValue(displayText.blogs_description)}
+          items={blogCards.map((item) => ({ ...item, description: undefined }))}
+          ctaLabel={homepageText("blogs_cta_label", "Lihat Semua Artikel")}
+          ctaHref="/blog"
+        />
+      ) : null}
+      <ContactSection
+        headline={stringValue(contactSection.headline) || "Hubungi Kami"}
+        description={stringValue(contactSection.description)}
+        globalConfig={context.globalConfig}
+        whatsappHref={whatsappHref}
+        showGlobalContact={booleanValue(contactSection.use_global_contact, true)}
+      />
+    </>
+  );
+}
+
+export async function renderListPage(options: ListPageOptions) {
+  const { context, page, isPreview } = await loadPublicPage(options);
+
+  if (!page) {
+    notFound();
+  }
+
+  const params = await options.searchParams;
+  const currentPage = numberFromParam(params.page) || 1;
+  const data = page.dataJson;
+  const enabledOptionSetKeys = getEnabledIndonesiaFilterKeys(data, options.optionSetKeys);
+  const filters = pickFilters(readFilters(params), enabledOptionSetKeys);
+  const hero = record(data.hero);
+  const heroMediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
+  const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+  const defaultWhatsappHref = getWhatsappHref(context.globalConfig, context.tenant.name);
+  const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
+  const whatsappHref = heroWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
+    : defaultWhatsappHref;
+  const finalCta = record(data.final_cta);
+  const finalCtaHeadline = stringValue(finalCta.headline);
+  const finalCtaDescription = stringValue(finalCta.description);
+  const finalCtaLabel = stringValue(finalCta.cta_label);
+  const finalCtaMessage = stringValue(finalCta.whatsapp_message_template);
+  const finalCtaHref = finalCtaMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, finalCtaMessage)
+    : defaultWhatsappHref;
+
+  const listOfferSection = record(data.offer_section);
+  const shouldResolveOffer =
+    options.pageKey === "blog_page" &&
+    booleanValue(listOfferSection.is_enabled, stringValue(listOfferSection.source) !== "disabled");
+  const [resolvedHeroImage, collection, filterDefs, offerPayload] = await Promise.all([
+    Promise.resolve(heroMediaId ? getMediaProxyUrl(heroMediaId) : null),
+    unstable_cache(
+      () =>
+        resolveCollectionList(context.variantId, options.collectionKey, {
+          filters,
+          page: currentPage,
+          pageSize: 12,
+          activeOnly: options.activeOnly,
+        }),
+      [
+        "public-collection",
+        PUBLIC_CONTENT_CACHE_VERSION,
+        context.variantId,
+        options.collectionKey,
+        JSON.stringify(filters),
+        String(currentPage),
+      ],
+      {
+        revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
+        tags: resolveTags(options.cacheTags, context.variantId),
+      },
+    )(),
+    Promise.all(enabledOptionSetKeys.map((key) => resolveOptionSet(context.variantId, key))),
+    shouldResolveOffer
+      ? resolveOfferSectionPayload(context.variantId, listOfferSection)
+      : Promise.resolve({ item: null, fallbackImageSrc: null, isDisabled: false }),
+  ]);
+  const heroImage =
+    resolvedHeroImage ?? getListPageFallbackHeroImage(options.pageKey, collection.items);
+  const offerItem = offerPayload.item;
+  const offerData = offerItem?.dataJson ?? {};
+  const offerBadgeLabel = offerItem
+    ? await resolveOfferBannerBadge(offerItem, context.variantId)
+    : "";
+
+  const itemsWithLabels = await Promise.all(
+    collection.items.map((item) =>
+      toCollectionListItem(item, options.collectionKey, context.variantId, {
+        labelKeys: options.cardLabelOptionKeys,
+        metaKeys: options.cardMetaKeys,
+      }),
+    ),
+  );
+
+  const heroHeadline = stringValue(hero.headline) || page.title;
+  const heroSubheadline = stringValue(hero.subheadline);
+  const heroPrimaryCTA = stringValue(hero.primary_cta_label)
+    ? { label: stringValue(hero.primary_cta_label), href: whatsappHref, variant: "default" as const }
+    : undefined;
+  const heroSecondaryCTA = stringValue(hero.secondary_cta_label)
+    ? { label: stringValue(hero.secondary_cta_label), href: stringValue(hero.secondary_cta_href) || "/program" }
+    : undefined;
+
+  return (
+    <>
+      <PreviewBanner isPreview={isPreview} />
+      {heroImage ? (
+        <HeroSection
+          mediaType="image"
+          mediaSrc={heroImage}
+          mediaAlt={stringValue(hero.media_alt) || heroHeadline}
+          {...heroMediaProps(hero)}
+          headline={heroHeadline}
+          subheadline={heroSubheadline}
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
+          priority
+        />
+      ) : (
+        <PlainHero
+          title={heroHeadline}
+          subtitle={heroSubheadline}
+          primaryCTA={heroPrimaryCTA}
+          secondaryCTA={heroSecondaryCTA}
+        />
+      )}
+      {shouldResolveOffer ? (
+        <OfferBanner
+          isEnabled={Boolean(offerItem)}
+          badgeLabel={offerBadgeLabel}
+          headline={offerItem?.title || "Promo Program"}
+          description={offerItem?.excerpt || stringValue(offerData.short_description)}
+          imageSrc={getOfferCmsImageSrc(offerItem)}
+          ctaLabel="Daftar Kelas Gratis"
+          ctaHref={offerItem ? `/offer/${offerItem.slug}` : undefined}
+        />
+      ) : null}
+      {options.pageKey === "job_page" ? (
+        <JobPageInformationNotice config={record(data.information_notice)} />
+      ) : null}
+      <StatsBar items={arrayOfRecords(data.stats).map(toStatItem)} />
+      {options.pageKey === "program_page" ? (
+        <ProgramComparisonSection config={record(data.program_comparison)} />
+      ) : null}
+      <CollectionList
+        items={itemsWithLabels}
+        total={collection.total}
+        page={collection.page}
+        pageSize={collection.pageSize}
+        totalPages={collection.totalPages}
+        currentFilters={filters}
+        filters={enabledOptionSetKeys.map((key, index) => ({
+          key,
+          label: formatLabel(key),
+          isEnabled: true,
+          options: filterDefs[index].map((option) => ({
+            label: option.label,
+            value: option.id,
+          })),
+        }))}
+        detailPathPrefix={options.detailPathPrefix}
+      />
+      <FAQ title="Pertanyaan Umum" items={arrayOfRecords(data.faq).map(toFaqItem)} />
+      {finalCtaHeadline || finalCtaDescription || finalCtaLabel ? (
+        <CTABanner
+          headline={finalCtaHeadline || "Siap mulai perjalanan kerja ke Jepang?"}
+          description={finalCtaDescription}
+          primaryCTA={{
+            label: finalCtaLabel || "Chat WhatsApp",
+            href: finalCtaHref,
+            variant: "default",
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function JobPageInformationNotice({ config }: { config: PublicJson }) {
+  const eyebrow = stringValue(config.eyebrow);
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+
+  if (!eyebrow && !headline && !description) {
+    return null;
+  }
+
+  return (
+    <section className="border-y border-amber-200 bg-amber-50/70 py-8">
+      <Container>
+        <div className="max-w-5xl rounded-lg border border-amber-200 bg-white/70 p-5">
+          {eyebrow ? (
+            <p className="text-sm font-semibold uppercase text-amber-800">{eyebrow}</p>
+          ) : null}
+          {headline ? (
+            <h2 className="mt-2 text-xl font-bold text-neutral-900 md:text-2xl">{headline}</h2>
+          ) : null}
+          {description ? (
+            <p className="mt-4 whitespace-pre-line text-sm leading-6 text-neutral-700 md:text-base md:leading-7">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+export async function renderDetailPage(options: DetailPageOptions) {
+  const context = await getOkContext();
+  const params = options.searchParams ? await options.searchParams : {};
+  const path = `${options.pathPrefix}/${options.slug}`;
+  const preview = await getPreviewState(params, context.tenant.id, path);
+  const item = preview.isPreview
+    ? await resolveCollectionItem(context.variantId, options.collectionKey, options.slug, {
+        preview: true,
+        token: preview.token,
+      })
+    : await unstable_cache(
+        () => resolveCollectionItem(context.variantId, options.collectionKey, options.slug),
+        ["public-item", PUBLIC_CONTENT_CACHE_VERSION, context.variantId, options.collectionKey, options.slug],
+        { revalidate: options.revalidate, tags: resolveTags(options.cacheTags, context.variantId) },
+      )();
+
+  if (!item) {
+    notFound();
+  }
+
+  if (preview.isPreview) {
+    noStore();
+  }
+
+  if (options.collectionKey === "program") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const fallbackHeroImage = getDetailHeroSrc(item)
+      ? undefined
+      : await resolveDetailPageHeroSrc(context.variantId, "program_page");
+    let brochureUrl: string | null = null;
+
+    if (booleanValue(item.dataJson.brochure_enabled, false)) {
+      brochureUrl = stringValue(item.dataJson.brochure_url);
+
+      if (!brochureUrl) {
+        brochureUrl = await resolveMediaUrl(stringValue(item.dataJson.brochure_file_id));
+      }
+    }
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <ProgramDetailHero item={item} fallbackImageSrc={fallbackHeroImage ?? undefined} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Program", href: "/program" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <ProgramDetailMain
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+              variantId={context.variantId}
+            />
+          }
+          sidebar={
+            <ProgramDetailSidebar
+              item={item}
+              brochureUrl={brochureUrl}
+            />
+          }
+        />
+      </>
+    );
+  }
+
+  if (options.collectionKey === "job") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const fallbackHeroImage = getDetailHeroSrc(item)
+      ? undefined
+      : await resolveDetailPageHeroSrc(context.variantId, "job_page");
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <JobDetailHero item={item} fallbackImageSrc={fallbackHeroImage ?? undefined} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Lowongan", href: "/job" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <JobDetailMain
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+              variantId={context.variantId}
+            />
+          }
+          sidebar={<JobDetailSidebar item={item} />}
+        />
+      </>
+    );
+  }
+
+  if (options.collectionKey === "blog") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const blocks = await resolveIndonesiaContentBlocks(
+      arrayOfRecords(item.dataJson.content_blocks),
+      context.variantId,
+      context.globalConfig,
+      lpkName,
+      item.title,
+    );
+    const categoryOption = await resolveOptionLabel(
+      stringValue(item.dataJson.category_option_id),
+      { variantId: context.variantId, optionSetKey: "blog_category" },
+    );
+    const tagOptionIds = flatStringList(item.dataJson.tag_option_ids);
+    const tagOptions = await Promise.all(
+      tagOptionIds.map((id) =>
+        resolveOptionLabel(id, {
+          variantId: context.variantId,
+          optionSetKey: "blog_tag",
+        }),
+      ),
+    );
+    const tagLabels = tagOptions
+      .map((opt) => opt?.label ?? "")
+      .filter(Boolean);
+    const coverImageUrl = mediaProxySrc(stringValue(item.dataJson.cover_image_id));
+    const authorImageUrl = mediaProxySrc(stringValue(item.dataJson.author_image_id));
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <BlogDetailHero
+          item={item}
+          coverImageUrl={coverImageUrl}
+          categoryLabel={categoryOption?.label}
+          tagLabels={tagLabels}
+          authorImageUrl={authorImageUrl}
+        />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Blog", href: "/blog" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <BlogDetailContent item={item} blocks={blocks} />
+          }
+          sidebar={
+            <BlogDetailSidebar
+              item={item}
+              globalConfig={context.globalConfig}
+              tenantName={lpkName}
+              categoryLabel={categoryOption?.label}
+              tagLabels={tagLabels}
+            />
+          }
+        />
+        <RelatedForBlog variantId={context.variantId} currentSlug={item.slug} />
+      </>
+    );
+  }
+
+  if (options.collectionKey === "karir") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const fallbackHeroImage = getDetailHeroSrc(item)
+      ? undefined
+      : await resolveDetailPageHeroSrc(context.variantId, "karir_page");
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <KarirDetailHero item={item} fallbackImageSrc={fallbackHeroImage ?? undefined} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Karir", href: "/karir" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <KarirDetailMain
+              item={item}
+              globalConfig={context.globalConfig}
+              lpkName={lpkName}
+              variantId={context.variantId}
+            />
+          }
+          sidebar={<KarirDetailSidebar item={item} />}
+        />
+      </>
+    );
+  }
+
+  if (options.collectionKey === "offer") {
+    const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+    const whatsappHref = getOfferWhatsappHref(item.dataJson, context.globalConfig, lpkName, item.title);
+
+    return (
+      <>
+        <PreviewBanner isPreview={preview.isPreview} />
+        <OfferDetailHero item={item} whatsappHref={whatsappHref} />
+        <CollectionDetail
+          breadcrumb={[
+            { label: "Beranda", href: "/" },
+            { label: "Penawaran" },
+            { label: item.title },
+          ]}
+          mainContent={
+            <OfferDetailMain
+              item={item}
+              variantId={context.variantId}
+              whatsappHref={whatsappHref}
+            />
+          }
+          sidebar={
+            <OfferDetailSidebar
+              item={item}
+              whatsappHref={whatsappHref}
+            />
+          }
+          sidebarFirstOnMobile
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <PreviewBanner isPreview={preview.isPreview} />
+      <GenericDetailHero item={item} />
+      <CollectionDetail
+        breadcrumb={[
+          { label: "Home", href: "/" },
+          { label: formatLabel(options.collectionKey), href: options.pathPrefix },
+          { label: item.title },
+        ]}
+        mainContent={
+          <DetailMain
+            item={item}
+            collectionKey={options.collectionKey}
+            showHeading={!getDetailHeroSrc(item)}
+          />
+        }
+        sidebar={<DetailSidebar item={item} globalConfig={context.globalConfig} tenantName={context.tenant.name} />}
+      />
+    </>
+  );
+}
+
+function ProgramComparisonSection({ config }: { config: PublicJson }) {
+  const title = stringValue(config.title);
+  const description = stringValue(config.description);
+  const items = sortedRecords(config.items).filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) ||
+        stringValue(item.best_for) ||
+        stringValue(item.preparation) ||
+        stringValue(item.note)),
+  );
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-12 md:py-16 lg:py-20">
+      <Container>
+        <div className="mx-auto mb-8 max-w-3xl text-center">
+          {title ? (
+            <h2 className="text-2xl font-bold text-neutral-900 md:text-4xl">
+              {title}
+            </h2>
+          ) : null}
+          {description ? (
+            <p className="mt-4 text-base leading-7 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="grid gap-3 md:hidden">
+          {items.map((item, index) => (
+            <details
+              key={`${stringValue(item.title)}-${index}`}
+              className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm"
+              open={index === 0}
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-neutral-900">
+                <span>{stringValue(item.title)}</span>
+                <span className="text-sm text-primary-600 transition group-open:rotate-45">+</span>
+              </summary>
+              <div className="mt-4 space-y-4">
+                <ComparisonField label="Cocok untuk" value={stringValue(item.best_for)} />
+                <ComparisonField label="Yang disiapkan" value={stringValue(item.preparation)} />
+                <ComparisonField label="Catatan" value={stringValue(item.note)} emphasis />
+              </div>
+            </details>
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded-lg border border-neutral-200 bg-white shadow-sm md:block">
+          <div
+            className="grid min-w-[980px]"
+            style={{
+              gridTemplateColumns: `180px repeat(${items.length}, minmax(160px, 1fr))`,
+            } as CSSProperties}
+          >
+            <div className="border-b border-neutral-200 bg-neutral-50 p-4 text-sm font-semibold text-neutral-500">
+              Jalur
+            </div>
+            {items.map((item, index) => (
+              <div
+                key={`title-${stringValue(item.title)}-${index}`}
+                className="border-b border-l border-neutral-200 bg-neutral-50 p-4 font-bold text-neutral-900"
+              >
+                {stringValue(item.title)}
+              </div>
+            ))}
+
+            <ComparisonRow label="Cocok untuk" items={items} field="best_for" />
+            <ComparisonRow label="Yang disiapkan" items={items} field="preparation" />
+            <ComparisonRow label="Catatan sebelum memilih" items={items} field="note" muted />
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function ComparisonField({
+  label,
+  value,
+  emphasis = false,
+}: {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+}) {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <div className={emphasis ? "rounded-lg bg-primary-50 p-3" : undefined}>
+      <p className="text-xs font-semibold uppercase text-neutral-500">{label}</p>
+      <p className="mt-1 text-sm leading-6 text-neutral-700">{value}</p>
+    </div>
+  );
+}
+
+function ComparisonRow({
+  label,
+  items,
+  field,
+  muted = false,
+}: {
+  label: string;
+  items: PublicJson[];
+  field: "best_for" | "preparation" | "note";
+  muted?: boolean;
+}) {
+  return (
+    <>
+      <div className="border-b border-neutral-200 bg-neutral-50 p-4 text-sm font-semibold text-neutral-700">
+        {label}
+      </div>
+      {items.map((item, index) => (
+        <div
+          key={`${field}-${index}`}
+          className="border-b border-l border-neutral-200 p-4 text-sm leading-6 text-neutral-700"
+        >
+          <span className={muted ? "block rounded-lg bg-primary-50 p-3" : undefined}>
+            {stringValue(item[field]) || "-"}
+          </span>
+        </div>
+      ))}
+    </>
+  );
+}
+
+async function resolveIndonesiaContentBlocks(
+  blocks: PublicJson[],
+  variantId: string,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  blogTitle: string,
+) {
+  const resolved = await Promise.all(
+    blocks.map(async (block, index): Promise<ContentBlock | null> => {
+      const type = stringValue(block.type) as ContentBlockType;
+      const data = record(block.data);
+      const sortOrder = numberValue(block.sort_order) ?? index;
+
+      if (type === "image") {
+        const src = mediaProxySrc(stringValue(data.image_id));
+        return src
+          ? {
+              type,
+              sortOrder,
+              data: {
+                src,
+                alt: stringValue(data.alt_text),
+                caption: stringValue(data.caption),
+              },
+            }
+          : null;
+      }
+
+      if (type === "youtube_embed") {
+        const videoId = stringValue(data.video_id);
+        return videoId
+          ? {
+              type,
+              sortOrder,
+              data: {
+                src: `https://www.youtube.com/embed/${videoId}`,
+                title: stringValue(data.caption) || "Video YouTube",
+              },
+            }
+          : null;
+      }
+
+      if (type === "quote") {
+        return {
+          type,
+          sortOrder,
+          data: {
+            quote: stringValue(data.text) || stringValue(data.quote),
+            author: stringValue(data.author),
+          },
+        };
+      }
+
+      if (type === "offer_callout") {
+        const offerId = stringValue(data.offer_id);
+        const offer = offerId
+          ? (await resolveCollectionList(variantId, "offer", {
+              source: "manual",
+              manualIds: [offerId],
+              pageSize: 1,
+            })).items[0]
+          : null;
+        return offer
+          ? {
+              type,
+              sortOrder,
+              data: {
+                title: offer.title,
+                description:
+                  offer.excerpt || stringValue(offer.dataJson.short_description),
+                ctaLabel: "Lihat Penawaran",
+                ctaHref: `/offer/${offer.slug}`,
+              },
+            }
+          : null;
+      }
+
+      if (type === "whatsapp_cta") {
+        const label = stringValue(data.label) || "Hubungi via WhatsApp";
+        const template = stringValue(data.whatsapp_message_template);
+        const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+        const number = stringValue(whatsapp.number);
+        const href = number
+          ? buildWhatsAppUrl(
+              number,
+              template || "Halo, saya tertarik dengan artikel ini.",
+              { lpk_name: lpkName, blog_title: blogTitle },
+            )
+          : null;
+        return href ? { type, sortOrder, data: { label, href } } : null;
+      }
+
+      if (type === "heading" || type === "paragraph") {
+        return { type, sortOrder, data };
+      }
+
+      return null;
+    }),
+  );
+
+  return resolved.filter((block): block is ContentBlock => Boolean(block));
+}
+
+function BlogDetailHero({
+  item,
+  coverImageUrl,
+  categoryLabel,
+  tagLabels,
+  authorImageUrl,
+}: {
+  item: PublicCollectionItem;
+  coverImageUrl?: string | null;
+  categoryLabel?: string;
+  tagLabels: string[];
+  authorImageUrl?: string | null;
+}) {
+  const imageSrc = coverImageUrl || getDetailHeroSrc(item);
+  const authorName = stringValue(item.dataJson.author_name);
+  const authorTitle = stringValue(item.dataJson.author_title);
+  const readingTimeLabel = stringValue(item.dataJson.reading_time_label);
+
+  return (
+    <section>
+      {imageSrc ? (
+        <div className="relative aspect-[21/9] overflow-hidden bg-neutral-200">
+          <CmsImage
+            src={imageSrc}
+            alt={item.title}
+            fill
+            className="object-cover"
+            priority
+            fallbackLabel={item.title}
+          />
+        </div>
+      ) : null}
+      <Container className="py-8">
+        <div className="flex flex-wrap items-center gap-3">
+          {item.publishedAt ? (
+            <time className="text-sm text-neutral-500">
+              {formatDate(item.publishedAt)}
+            </time>
+          ) : null}
+          {readingTimeLabel ? (
+            <span className="text-sm text-neutral-500">{readingTimeLabel}</span>
+          ) : null}
+          {categoryLabel ? (
+            <Badge variant="outline">{categoryLabel}</Badge>
+          ) : null}
+          {tagLabels.length > 0
+            ? tagLabels.map((tag) => (
+                <Badge key={tag} variant="outline">
+                  {tag}
+                </Badge>
+              ))
+            : null}
+        </div>
+        {(authorName || authorImageUrl) ? (
+          <div className="mt-6 flex items-center gap-4">
+            {authorImageUrl ? (
+              <div className="relative size-12 shrink-0 overflow-hidden rounded-full">
+                <CmsImage
+                  src={authorImageUrl}
+                  alt={authorName || ""}
+                  fill
+                  className="object-cover"
+                  fallbackLabel={authorName}
+                />
+              </div>
+            ) : null}
+            <div>
+              {authorName ? (
+                <span className="text-sm font-semibold text-neutral-900">
+                  {authorName}
+                </span>
+              ) : null}
+              {authorTitle ? (
+                <p className="text-sm text-neutral-500">{authorTitle}</p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+function BlogDetailContent({
+  item,
+  blocks,
+}: {
+  item: PublicCollectionItem;
+  blocks: ContentBlock[];
+}) {
+  const takeaways = flatStringList(item.dataJson.key_takeaways);
+  const sources = sortedRecords(item.dataJson.source_items).filter(
+    (source) =>
+      booleanValue(source.is_enabled, true) &&
+      (stringValue(source.title) ||
+        stringValue(source.description) ||
+        stringValue(source.source_label) ||
+        stringValue(source.source_url)),
+  );
+
+  return (
+    <article>
+      <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+        {item.title}
+      </h1>
+      {item.excerpt ? (
+        <p className="mt-4 text-lg leading-8 text-neutral-600">
+          {item.excerpt}
+        </p>
+      ) : null}
+      <BlogTakeaways items={takeaways} />
+      {blocks.length > 0 ? (
+        <div className="mt-8">
+          <ContentBlocks variant="indonesia" blocks={blocks} />
+        </div>
+      ) : null}
+      <BlogSourceList items={sources} />
+    </article>
+  );
+}
+
+function BlogTakeaways({ items }: { items: string[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mt-8 rounded-lg border border-primary-100 bg-primary-50 p-5">
+      <h2 className="text-lg font-semibold text-neutral-900">
+        Ringkasan untuk calon peserta
+      </h2>
+      <ul className="mt-4 space-y-3 text-sm leading-6 text-neutral-700">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3">
+            <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary-600" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function BlogSourceList({ items }: { items: PublicJson[] }) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mt-10 border-t border-neutral-200 pt-6">
+      <h2 className="text-xl font-semibold text-neutral-900">
+        Sumber dan catatan rujukan
+      </h2>
+      <div className="mt-4 space-y-4">
+        {items.map((item, index) => {
+          const title = stringValue(item.title);
+          const description = stringValue(item.description);
+          const sourceLabel = stringValue(item.source_label);
+          const sourceUrl = stringValue(item.source_url);
+          const label = sourceLabel || title || sourceUrl;
+
+          return (
+            <article key={`${label}-${index}`} className="text-sm leading-6">
+              {title ? (
+                <h3 className="font-semibold text-neutral-900">{title}</h3>
+              ) : null}
+              {description ? (
+                <p className="mt-1 text-neutral-600">{description}</p>
+              ) : null}
+              {sourceUrl ? (
+                <a
+                  href={sourceUrl}
+                  className="mt-1 inline-block break-all font-medium text-primary-600 hover:text-primary-700"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {label}
+                </a>
+              ) : sourceLabel ? (
+                <p className="mt-1 font-medium text-neutral-700">{sourceLabel}</p>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function BlogDetailSidebar({
+  item,
+  globalConfig,
+  tenantName,
+  categoryLabel,
+  tagLabels,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  tenantName: string;
+  categoryLabel?: string;
+  tagLabels: string[];
+}) {
+  const whatsappHref = getWhatsappHref(globalConfig, tenantName, {
+    blog_title: item.title,
+  });
+  const authorName = stringValue(item.dataJson.author_name);
+  const authorTitle = stringValue(item.dataJson.author_title);
+  const authorBio = stringValue(item.dataJson.author_bio);
+  const readingTimeLabel = stringValue(item.dataJson.reading_time_label);
+  const reviewerName = stringValue(item.dataJson.reviewer_name);
+  const reviewerTitle = stringValue(item.dataJson.reviewer_title);
+  const reviewedAt = stringValue(item.dataJson.reviewed_at);
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">
+          Detail Artikel
+        </h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {item.publishedAt ? (
+            <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
+          ) : null}
+          {readingTimeLabel ? (
+            <MetaRow label="Waktu baca" value={readingTimeLabel} />
+          ) : null}
+          {categoryLabel ? (
+            <MetaRow label="Kategori" value={categoryLabel} />
+          ) : null}
+          {tagLabels.length > 0
+            ? tagLabels.map((tag) => (
+                <MetaRow key={tag} label="Tag" value={tag} />
+              ))
+            : null}
+          {authorName ? (
+            <MetaRow label="Penulis" value={authorName} />
+          ) : null}
+          {authorTitle ? (
+            <MetaRow label="Jabatan" value={authorTitle} />
+          ) : null}
+          {reviewerName ? (
+            <MetaRow label="Ditinjau oleh" value={reviewerName} />
+          ) : null}
+          {reviewerTitle ? (
+            <MetaRow label="Peran reviewer" value={reviewerTitle} />
+          ) : null}
+          {reviewedAt ? (
+            <MetaRow label="Terakhir ditinjau" value={formatDate(reviewedAt)} />
+          ) : null}
+        </dl>
+        {authorBio ? (
+          <p className="mt-4 text-sm leading-6 text-neutral-500">
+            {authorBio}
+          </p>
+        ) : null}
+        <Button
+          render={<a href={whatsappHref} />}
+          variant="whatsapp"
+          className="mt-6 w-full"
+        >
+          Konsultasi via WhatsApp
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+type JapanStaticPageKind =
+  | "about"
+  | "training_method"
+  | "candidate_profile"
+  | "recruitment_network"
+  | "contact";
+
+type JapanStaticPageOptions = PageLoadOptions & {
+  kind: JapanStaticPageKind;
+};
+
+type JapanListPageKind = "sector" | "news";
+
+type JapanListPageOptions = {
+  kind: JapanListPageKind;
+  pageKey: string;
+  collectionKey: "sector" | "news";
+  path: string;
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams: PageSearchParams;
+};
+
+type JapanDetailPageOptions = {
+  collectionKey: "sector" | "news";
+  slug: string;
+  pathPrefix: string;
+  cacheTags: string[] | ((variantId: string) => string[]);
+  revalidate: number;
+  searchParams?: PageSearchParams;
+};
+
+export async function renderJapanStaticPage(options: JapanStaticPageOptions) {
+  const { context, page, isPreview } = await loadPublicPage(options);
+
+  if (context.variantKey !== "japan" || !page) {
+    notFound();
+  }
+
+  const commonProps = {
+    page,
+    globalConfig: context.globalConfig,
+    tenantName: getLpkName(context.globalConfig, context.tenant.name),
+    variantId: context.variantId,
+    isPreview,
+  };
+
+  if (options.kind === "about") {
+    return <JapanAboutPage {...commonProps} />;
+  }
+
+  if (options.kind === "training_method") {
+    return <JapanTrainingMethodPage {...commonProps} />;
+  }
+
+  if (options.kind === "candidate_profile") {
+    return <JapanCandidateProfilePage {...commonProps} />;
+  }
+
+  if (options.kind === "recruitment_network") {
+    return <JapanRecruitmentNetworkPage {...commonProps} />;
+  }
+
+  return <JapanContactPage {...commonProps} />;
+}
+
+export async function renderJapanListPage(options: JapanListPageOptions) {
+  const { context, page, isPreview } = await loadPublicPage({
+    pageKey: options.pageKey,
+    path: options.path,
+    cacheTags: options.cacheTags,
+    revalidate: options.revalidate,
+    searchParams: options.searchParams,
+  });
+
+  if (context.variantKey !== "japan" || !page) {
+    notFound();
+  }
+
+  const params = await options.searchParams;
+  const currentPage = numberFromParam(params.page) || 1;
+  const filterConfigs = getJapanFilterConfigs(options.kind, page.dataJson);
+  const filters = pickFilters(readFilters(params), filterConfigs.map((config) => config.key));
+  const [collection, filterDefs] = await Promise.all([
+    unstable_cache(
+      () =>
+        resolveCollectionList(context.variantId, options.collectionKey, {
+          filters,
+          page: currentPage,
+          pageSize: 12,
+        }),
+      [
+        "public-japan-collection",
+        PUBLIC_CONTENT_CACHE_VERSION,
+        context.variantId,
+        options.collectionKey,
+        JSON.stringify(filters),
+        String(currentPage),
+      ],
+      {
+        revalidate: Math.max(options.revalidate, PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS),
+        tags: resolveTags(options.cacheTags, context.variantId),
+      },
+    )(),
+    Promise.all(filterConfigs.map((config) => resolveOptionSet(context.variantId, config.optionSetKey))),
+  ]);
+  const filterBarFilters = filterConfigs.map((config, index) => ({
+    key: config.key,
+    label: config.label,
+    isEnabled: true,
+    options: filterDefs[index].map((option) => ({
+      label: option.label,
+      value: option.id,
+    })),
+  }));
+  const commonProps = {
+    page,
+    globalConfig: context.globalConfig,
+    tenantName: getLpkName(context.globalConfig, context.tenant.name),
+    variantId: context.variantId,
+    isPreview,
+    collection,
+    filters: filterBarFilters,
+    currentFilters: filters,
+  };
+
+  return options.kind === "sector" ? (
+    <JapanSectorListPage {...commonProps} />
+  ) : (
+    <JapanNewsListPage {...commonProps} />
+  );
+}
+
+export async function renderJapanDetailPage(options: JapanDetailPageOptions) {
+  const context = await getOkContext();
+
+  if (context.variantKey !== "japan") {
+    notFound();
+  }
+
+  const params = options.searchParams ? await options.searchParams : {};
+  const path = `${options.pathPrefix}/${options.slug}`;
+  const preview = await getPreviewState(params, context.tenant.id, path);
+  const item = preview.isPreview
+    ? await resolveCollectionItem(context.variantId, options.collectionKey, options.slug, {
+        preview: true,
+        token: preview.token,
+      })
+    : await unstable_cache(
+        () => resolveCollectionItem(context.variantId, options.collectionKey, options.slug),
+        ["public-japan-item", PUBLIC_CONTENT_CACHE_VERSION, context.variantId, options.collectionKey, options.slug],
+        {
+          revalidate: options.revalidate,
+          tags: resolveTags(options.cacheTags, context.variantId),
+        },
+      )();
+
+  if (!item) {
+    notFound();
+  }
+
+  if (preview.isPreview) {
+    noStore();
+  }
+
+  const listPageKey = options.collectionKey === "sector" ? "sector_page" : "news_page";
+  const page = preview.isPreview
+    ? await resolvePageData(context.variantId, listPageKey)
+    : await unstable_cache(
+        () => resolvePageData(context.variantId, listPageKey),
+        ["public-japan-detail-page", context.variantId, listPageKey],
+        {
+          revalidate: options.revalidate,
+          tags: resolveTags([`page:${context.variantId}:${listPageKey}`], context.variantId),
+        },
+      )();
+
+  const commonProps = {
+    item,
+    page,
+    globalConfig: context.globalConfig,
+    tenantName: getLpkName(context.globalConfig, context.tenant.name),
+    variantId: context.variantId,
+    isPreview: preview.isPreview,
+  };
+
+  if (options.collectionKey === "sector") {
+    return <JapanSectorDetailPage {...commonProps} />;
+  }
+
+  const relatedMaxItems = Math.min(numberValue(item.dataJson.related_max_items) || 3, 10);
+  const relatedSource = stringValue(item.dataJson.related_source) || "same_category";
+  const manualIds = Array.from(
+    new Set([
+      ...flatStringList(item.dataJson.manual_news_ids),
+      ...flatStringList(item.dataJson.related_articles),
+    ]),
+  );
+  const categoryId = stringValue(item.dataJson.category_option_id);
+  const tagIds = flatStringList(item.dataJson.tag_option_ids);
+  const primaryRelated =
+    relatedSource === "manual" && manualIds.length > 0
+      ? await resolveCollectionList(context.variantId, "news", {
+          source: "manual",
+          manualIds,
+          pageSize: relatedMaxItems + 1,
+        })
+      : relatedSource === "same_tags" && tagIds.length > 0
+        ? await resolveCollectionList(context.variantId, "news", {
+            filters: { tag: tagIds[0] },
+            pageSize: relatedMaxItems + 1,
+          })
+        : categoryId
+          ? await resolveCollectionList(context.variantId, "news", {
+              filters: { category: categoryId },
+              pageSize: relatedMaxItems + 1,
+            })
+          : await resolveCollectionList(context.variantId, "news", {
+              source: "latest_published",
+              pageSize: relatedMaxItems + 1,
+            });
+  const latestRelated = await resolveCollectionList(context.variantId, "news", {
+    source: "latest_published",
+    pageSize: relatedMaxItems + 1,
+  });
+  const manualOrder = new Map(manualIds.map((id, index) => [id, index]));
+  const relatedItems = Array.from(
+    new Map(
+      [...primaryRelated.items, ...latestRelated.items]
+        .filter((related) => related.id !== item.id)
+        .map((related) => [related.id, related]),
+    ).values(),
+  );
+
+  if (relatedSource === "manual") {
+    relatedItems.sort(
+      (a, b) =>
+        (manualOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+        (manualOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+    );
+  }
+
+  return (
+    <JapanNewsDetailPage
+      {...commonProps}
+      relatedItems={relatedItems.slice(0, relatedMaxItems)}
+    />
+  );
+}
+
+export async function renderTentangKami({ searchParams }: { searchParams: PageSearchParams }) {
+  const { context, page, isPreview } = await loadPublicPage({
+    pageKey: "tentang_kami",
+    path: "/tentang-kami",
+    cacheTags: (variantId) => [`page:${variantId}:tentang_kami`],
+    revalidate: 3600,
+    searchParams,
+  });
+
+  if (!page) {
+    notFound();
+  }
+
+  if (context.variantKey !== "indonesia") {
+    redirect("/about");
+  }
+
+  const data = page.dataJson;
+  const hero = record(data.hero);
+  const companyStatus = record(data.company_status);
+  const story = record(data.story);
+  const japanRelationship = record(data.japan_relationship);
+  const educationQuality = record(data.education_quality);
+  const operationalReadiness = record(data.operational_readiness);
+  const visionMission = record(data.vision_mission);
+  const contactSection = record(data.contact_section);
+  const finalCta = record(data.final_cta);
+  const lpkName = getLpkName(context.globalConfig, context.tenant.name);
+  const defaultWhatsappHref = getWhatsappHref(context.globalConfig, lpkName);
+  const heroWhatsappMessage = stringValue(hero.primary_cta_whatsapp_message);
+  const heroWhatsappHref = heroWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, heroWhatsappMessage)
+    : defaultWhatsappHref;
+  const finalWhatsappMessage = stringValue(finalCta.primary_whatsapp_message);
+  const finalWhatsappHref = finalWhatsappMessage
+    ? buildHeroWhatsappHref(context.globalConfig, lpkName, finalWhatsappMessage)
+    : defaultWhatsappHref;
+
+  const heroImageId = stringValue(hero.media_id) || stringValue(hero.image_id);
+  const heroImage = mediaProxySrc(heroImageId) ?? null;
+
+  const teamMembers = await resolveTeamMemberCards(sortedRecords(data.team_members));
+
+  return (
+    <>
+      <PreviewBanner isPreview={isPreview} />
+      {heroImage ? (
+        <HeroSection
+          mediaType={stringValue(hero.media_type) === "video" ? "video" : "image"}
+          mediaSrc={heroImage}
+          mediaAlt={stringValue(hero.headline) || page.title}
+          {...heroMediaProps(hero, "right")}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
+          headline={stringValue(hero.headline) || page.title}
+          subheadline={stringValue(hero.subheadline)}
+          primaryCTA={
+            stringValue(hero.primary_cta_label)
+              ? {
+                  label: stringValue(hero.primary_cta_label),
+                  href: heroWhatsappHref,
+                  variant: "whatsapp" as const,
+                }
+              : undefined
+          }
+          secondaryCTA={
+            stringValue(hero.secondary_cta_label)
+              ? {
+                  label: stringValue(hero.secondary_cta_label),
+                  href: stringValue(hero.secondary_cta_href) || "/program",
+                }
+              : undefined
+          }
+          priority
+        />
+      ) : (
+        <PlainHero
+          title={stringValue(hero.headline) || page.title}
+          subtitle={stringValue(hero.subheadline)}
+          eyebrowLabel={stringValue(hero.eyebrow_label)}
+          primaryCTA={
+            stringValue(hero.primary_cta_label)
+              ? {
+                  label: stringValue(hero.primary_cta_label),
+                  href: heroWhatsappHref,
+                  variant: "whatsapp" as const,
+                }
+              : undefined
+          }
+          secondaryCTA={
+            stringValue(hero.secondary_cta_label)
+              ? {
+                  label: stringValue(hero.secondary_cta_label),
+                  href: stringValue(hero.secondary_cta_href) || "/program",
+                }
+              : undefined
+          }
+        />
+      )}
+      <StatsBar
+        items={sortedRecords(data.proof_stats).map(toStatItem)}
+      />
+      <TentangKamiCompanyStatusSection config={companyStatus} />
+      <TentangKamiStorySection
+        imageId={stringValue(story.image_id)}
+        badgeLabel={stringValue(story.badge_label)}
+        headline={stringValue(story.headline)}
+        body={stringValue(story.body)}
+      />
+      <TentangKamiJapanRelationshipSection config={japanRelationship} />
+      <TentangKamiEducationQualitySection config={educationQuality} />
+      <TentangKamiOperationalReadinessSection config={operationalReadiness} />
+      <CardGrid
+        title="Pendampingan yang Berfokus pada Perkembanganmu"
+        subtitle="Setiap bagian dari proses persiapan dirancang untuk membantu kandidat belajar lebih terarah dan menghadapi tahapan berikutnya dengan lebih siap."
+        items={sortedRecords(data.values).map((item, index) => ({
+          id: `value-${index}`,
+          title: stringValue(item.title) || stringValue(item.headline),
+          description: stringValue(item.description),
+          iconKey: stringValue(item.icon_key),
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <TeamGrid
+        title="Tim di Balik Persiapanmu"
+        subtitle="Pengalaman kerja di Jepang, kompetensi pendidikan bahasa, dan dukungan profesional dipadukan untuk mendampingi perkembangan kandidat."
+        members={teamMembers}
+      />
+      <Timeline
+        title="Pengalaman yang Membentuk HIT"
+        items={sortedRecords(data.timeline).map((item, index) => ({
+          yearLabel: stringValue(item.year_label),
+          title: stringValue(item.title),
+          description: stringValue(item.description),
+          sortOrder: numberValue(item.sort_order) ?? index,
+          isEnabled: booleanValue(item.is_enabled, true),
+        }))}
+      />
+      <TentangKamiVisionMissionSection
+        visionHeadline={stringValue(visionMission.vision_headline)}
+        visionDescription={stringValue(visionMission.vision_description)}
+        missionHeadline={stringValue(visionMission.mission_headline)}
+        missionDescription={stringValue(visionMission.mission_description)}
+      />
+      <TentangKamiLegalitiesSection items={sortedRecords(data.legalities)} />
+      <TentangKamiContactSection
+        headline={stringValue(contactSection.headline)}
+        description={stringValue(contactSection.description)}
+        globalConfig={context.globalConfig}
+        whatsappHref={defaultWhatsappHref}
+      />
+      <CTABanner
+        headline={stringValue(finalCta.headline) || "Mulai persiapanmu bersama HIT"}
+        description={stringValue(finalCta.description)}
+        primaryCTA={{
+          label: stringValue(finalCta.primary_cta_label) || "Konsultasi lewat WhatsApp",
+          href: finalWhatsappHref,
+          variant: "whatsapp",
+        }}
+        secondaryCTA={
+          stringValue(finalCta.secondary_cta_label)
+            ? {
+                label: stringValue(finalCta.secondary_cta_label),
+                href: stringValue(finalCta.secondary_href) || "/program",
+              }
+            : undefined
+        }
+      />
+    </>
+  );
+}
+
+async function TentangKamiStorySection({
+  imageId,
+  badgeLabel,
+  headline,
+  body,
+}: {
+  imageId: string;
+  badgeLabel: string;
+  headline: string;
+  body: string;
+}) {
+  const imageSrc = mediaProxySrc(imageId);
+
+  if (!headline && !body) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+          {imageSrc ? (
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-100">
+              <CmsImage
+                src={imageSrc}
+                alt={headline || "Cerita Kami"}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+                fallbackLabel={headline || "Cerita Kami"}
+              />
+            </div>
+          ) : null}
+          <div>
+            {badgeLabel ? (
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary-500">
+                {badgeLabel}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {body ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {body}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiCompanyStatusSection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const facts = sortedRecords(config.facts).filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.value) || stringValue(item.label) || stringValue(item.description)),
+  );
+
+  if (!headline && !description && facts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="profil-lembaga" className="scroll-mt-24 bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
+          <div>
+            {stringValue(config.eyebrow_label) ? (
+              <p className="text-sm font-semibold uppercase text-primary-600">
+                {stringValue(config.eyebrow_label)}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {description}
+              </p>
+            ) : null}
+            {stringValue(config.status_label) || stringValue(config.last_updated_label) ? (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                {stringValue(config.status_label) ? (
+                  <Badge variant="info">{stringValue(config.status_label)}</Badge>
+                ) : null}
+                {stringValue(config.last_updated_label) ? (
+                  <span className="text-sm text-neutral-500">
+                    {stringValue(config.last_updated_label)}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
+          {facts.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {facts.map((item, index) => {
+                const iconKey = stringValue(item.icon_key) || "building_2";
+                const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+
+                return (
+                  <article
+                    key={`${stringValue(item.label)}-${index}`}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-5"
+                  >
+                    <Icon aria-hidden="true" className="size-6 text-primary-600" />
+                    {stringValue(item.value) ? (
+                      <p className="mt-4 text-2xl font-bold text-neutral-950">
+                        {stringValue(item.value)}
+                      </p>
+                    ) : null}
+                    {stringValue(item.label) ? (
+                      <h3 className="mt-1 font-semibold text-neutral-900">
+                        {stringValue(item.label)}
+                      </h3>
+                    ) : null}
+                    {stringValue(item.description) ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">
+                        {stringValue(item.description)}
+                      </p>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiJapanRelationshipSection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const people = sortedRecords(config.people).filter(
+    (item) => booleanValue(item.is_enabled, true) && stringValue(item.name),
+  );
+  const cooperationScope = flatStringList(config.cooperation_scope);
+
+  if (!headline && !description && people.length === 0 && cooperationScope.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          {stringValue(config.eyebrow_label) ? (
+            <p className="text-sm font-semibold uppercase text-primary-600">
+              {stringValue(config.eyebrow_label)}
+            </p>
+          ) : null}
+          {headline ? (
+            <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+              {headline}
+            </h2>
+          ) : null}
+          {description ? (
+            <p className="mt-5 text-base leading-8 text-neutral-600 md:text-lg">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        {people.length > 0 ? (
+          <div className="mx-auto mt-10 grid max-w-5xl gap-5 lg:grid-cols-2">
+            {people.slice(0, 2).map((person, index) => (
+              <article
+                key={`${stringValue(person.name)}-${index}`}
+                className="rounded-lg border border-neutral-200 bg-white p-6"
+              >
+                {stringValue(person.side_label) ? (
+                  <Badge variant="outline">{stringValue(person.side_label)}</Badge>
+                ) : null}
+                <h3 className="mt-4 text-xl font-bold text-neutral-950">
+                  {stringValue(person.name)}
+                </h3>
+                {[stringValue(person.role), stringValue(person.organization)]
+                  .filter(Boolean)
+                  .map((line) => (
+                    <p key={line} className="mt-1 text-sm font-medium text-primary-600">
+                      {line}
+                    </p>
+                  ))}
+                {stringValue(person.summary) ? (
+                  <p className="mt-4 text-sm leading-7 text-neutral-600">
+                    {stringValue(person.summary)}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : null}
+
+        {cooperationScope.length > 0 ? (
+          <div className="mx-auto mt-8 max-w-5xl rounded-lg border border-primary-100 bg-white p-6">
+            <h3 className="text-lg font-bold text-neutral-900">
+              Pengalaman tersebut diterapkan dalam
+            </h3>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {cooperationScope.map((item) => (
+                <div key={item} className="flex gap-3 text-sm leading-6 text-neutral-700">
+                  <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-primary-600" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {stringValue(config.clarification_note) ? (
+          <p className="mx-auto mt-5 max-w-5xl text-sm leading-6 text-neutral-500">
+            {stringValue(config.clarification_note)}
+          </p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function TentangKamiEducationQualitySection({ config }: { config: PublicJson }) {
+  const headline = stringValue(config.headline);
+  const description = stringValue(config.description);
+  const focusItems = flatStringList(config.focus_items);
+  const imageSrc = mediaProxySrc(stringValue(config.image_id));
+
+  if (!headline && !description && focusItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-primary-700 py-16 text-white md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)] lg:items-center">
+          <div>
+            {stringValue(config.eyebrow_label) ? (
+              <p className="text-sm font-semibold uppercase text-white/70">
+                {stringValue(config.eyebrow_label)}
+              </p>
+            ) : null}
+            {stringValue(config.qualification_label) ? (
+              <div className="mt-5 inline-flex items-center rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-xl font-bold">
+                {stringValue(config.qualification_label)}
+              </div>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-6 text-3xl font-bold leading-tight md:text-4xl">{headline}</h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/80">{description}</p>
+            ) : null}
+            {stringValue(config.leader_name) || stringValue(config.leader_role) ? (
+              <div className="mt-6">
+                <p className="font-bold text-white">{stringValue(config.leader_name)}</p>
+                <p className="mt-1 text-sm text-white/70">
+                  {[stringValue(config.leader_role), stringValue(config.experience_label)]
+                    .filter(Boolean)
+                    .join(" / ")}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-4">
+            {imageSrc ? (
+              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-lg border border-white/15 bg-white/10 sm:max-w-md lg:max-w-none">
+                <CmsImage
+                  src={imageSrc}
+                  alt={stringValue(config.leader_name) || headline}
+                  fill
+                  sizes="(min-width: 1024px) 35vw, 100vw"
+                  className="object-cover object-[center_18%]"
+                  fallbackLabel={stringValue(config.leader_name) || headline}
+                />
+              </div>
+            ) : null}
+            {focusItems.length > 0 ? (
+              <div className="rounded-lg border border-white/15 bg-white/10 p-6">
+                <h3 className="font-bold text-white">Fokus pendidikan dan evaluasi</h3>
+                <ul className="mt-4 space-y-3">
+                  {focusItems.map((item) => (
+                    <li key={item} className="flex gap-3 text-sm leading-6 text-white/80">
+                      <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-red-300" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiOperationalReadinessSection({ config }: { config: PublicJson }) {
+  const items = sortedRecords(config.items).filter(
+    (item) => booleanValue(item.is_enabled, true) && stringValue(item.title),
+  );
+
+  if (!stringValue(config.headline) && !stringValue(config.description) && items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          {stringValue(config.headline) ? (
+            <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+              {stringValue(config.headline)}
+            </h2>
+          ) : null}
+          {stringValue(config.description) ? (
+            <p className="mt-4 text-base leading-8 text-neutral-600 md:text-lg">
+              {stringValue(config.description)}
+            </p>
+          ) : null}
+        </div>
+
+        {items.length > 0 ? (
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {items.map((item, index) => {
+              const status = stringValue(item.status);
+              const iconKey = stringValue(item.icon_key) || "circle_check";
+              const Icon = ICON_REGISTRY[iconKey as IconKey] ?? FALLBACK_ICON;
+              const badgeVariant =
+                status === "completed" ? "success" : status === "in_progress" ? "info" : "neutral";
+
+              return (
+                <article
+                  key={`${stringValue(item.title)}-${index}`}
+                  className="rounded-lg border border-neutral-200 bg-neutral-50 p-6"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <Icon aria-hidden="true" className="size-6 shrink-0 text-primary-600" />
+                    {stringValue(item.status_label) ? (
+                      <Badge variant={badgeVariant}>{stringValue(item.status_label)}</Badge>
+                    ) : null}
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-neutral-900">
+                    {stringValue(item.title)}
+                  </h3>
+                  {stringValue(item.description) ? (
+                    <p className="mt-3 text-sm leading-7 text-neutral-600">
+                      {stringValue(item.description)}
+                    </p>
+                  ) : null}
+                  {stringValue(item.target_label) ? (
+                    <p className="mt-4 text-xs font-semibold text-neutral-500">
+                      {stringValue(item.target_label)}
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiVisionMissionSection({
+  visionHeadline,
+  visionDescription,
+  missionHeadline,
+  missionDescription,
+}: {
+  visionHeadline: string;
+  visionDescription: string;
+  missionHeadline: string;
+  missionDescription: string;
+}) {
+  if (!visionHeadline && !visionDescription && !missionHeadline && !missionDescription) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <h2 className="text-2xl font-bold text-neutral-900">
+                {visionHeadline || "Visi"}
+              </h2>
+              {visionDescription ? (
+                <p className="mt-4 leading-7 text-neutral-600">
+                  {visionDescription}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <h2 className="text-2xl font-bold text-neutral-900">
+                {missionHeadline || "Misi"}
+              </h2>
+              {missionDescription ? (
+                <p className="mt-4 leading-7 text-neutral-600">
+                  {missionDescription}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiLegalitiesSection({
+  items,
+}: {
+  items: PublicJson[];
+}) {
+  const visible = items.filter(
+    (item) =>
+      booleanValue(item.is_enabled, true) &&
+      (stringValue(item.title) || stringValue(item.description)),
+  );
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="legalitas" className="scroll-mt-24 bg-white py-16 md:py-20 lg:py-24">
+      <Container>
+        <h2 className="mb-10 text-center text-3xl font-bold text-neutral-900 md:text-4xl">
+          Legalitas dan Identitas Perusahaan
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((item, index) => (
+            <Card key={index} className="p-6">
+              <CardContent className="flex flex-1 flex-col p-0">
+                {stringValue(item.type_label) ? (
+                  <div className="mb-3">
+                    <Badge variant="outline">{stringValue(item.type_label)}</Badge>
+                  </div>
+                ) : null}
+                {stringValue(item.title) ? (
+                  <h3 className="text-lg font-semibold text-neutral-900">
+                    {stringValue(item.title)}
+                  </h3>
+                ) : null}
+                {stringValue(item.description) ? (
+                  <p className="mt-3 text-sm leading-6 text-neutral-600">
+                    {stringValue(item.description)}
+                  </p>
+                ) : null}
+                {[stringValue(item.issuing_authority), stringValue(item.issued_date_label)]
+                  .filter(Boolean)
+                  .map((detail) => (
+                    <p key={detail} className="mt-2 text-xs leading-5 text-neutral-500">
+                      {detail}
+                    </p>
+                  ))}
+                {stringValue(item.status_label) ? (
+                  <div className="mt-4">
+                    <Badge variant="success">{stringValue(item.status_label)}</Badge>
+                  </div>
+                ) : null}
+                {stringValue(item.document_label) && stringValue(item.document_url) ? (
+                  <div className="mt-6">
+                    <DocumentDownload
+                      label={stringValue(item.document_label)}
+                      fileUrl={stringValue(item.document_url)}
+                      size="sm"
+                      variant="outline"
+                    />
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function TentangKamiContactSection({
+  headline,
+  description,
+  globalConfig,
+  whatsappHref,
+}: {
+  headline: string;
+  description: string;
+  globalConfig: Record<string, PublicJson>;
+  whatsappHref: string;
+}) {
+  const whatsappContact = record(globalConfig.whatsapp_contact);
+  const contact = record(whatsappContact.contact);
+  const socialLinks = record(whatsappContact.social_links);
+
+  return (
+    <ContactInfo
+      headline={headline || "Hubungi Kami"}
+      description={description}
+      phone={stringValue(contact.phone_label)}
+      email={stringValue(contact.email)}
+      address={stringValue(contact.address)}
+      mapUrl={stringValue(contact.map_url)}
+      operationalHours={stringValue(contact.operational_hours)}
+      socialLinks={{
+        instagram: stringValue(socialLinks.instagram),
+        youtube: stringValue(socialLinks.youtube),
+        tiktok: stringValue(socialLinks.tiktok),
+        facebook: stringValue(socialLinks.facebook),
+        line: stringValue(socialLinks.line),
+      }}
+      ctaLabel="Chat WhatsApp"
+      ctaHref={whatsappHref}
+      ctaVariant="whatsapp"
+    />
+  );
+}
+
+async function resolveTeamMemberCards(items: PublicJson[]) {
+  return Promise.all(
+    items.map(async (item, index) => ({
+      name: stringValue(item.name),
+      role: stringValue(item.role),
+      organizationName: stringValue(item.organization_name),
+      credentials: stringValue(item.credentials),
+      responsibility: stringValue(item.responsibility),
+      bio: stringValue(item.bio),
+      imageSrc: mediaProxySrc(stringValue(item.image_id)),
+      sortOrder: numberValue(item.sort_order) ?? index,
+      isEnabled: booleanValue(item.is_enabled, true),
+    })),
+  );
+}
+
+export async function generatePublicMetadata({
+  pageKey,
+  path,
+  titleFallback,
+  searchParams,
+}: {
+  pageKey: string;
+  path: string;
+  titleFallback: string;
+  searchParams?: PageSearchParams;
+}): Promise<Metadata> {
+  const context = await getOkContext();
+  const params = searchParams ? await searchParams : {};
+  const isPreview = readParam(params.preview) === "true";
+  const page = await resolvePageData(context.variantId, pageKey);
+  const data = page?.dataJson ?? {};
+  const hero = record(data.hero);
+  const heroImageId =
+    stringValue(hero.image_id) ||
+    stringValue(hero.media_id) ||
+    firstString(hero.slider_media_ids);
+  const imageUrl = mediaProxySrc(heroImageId) ?? null;
+  const fallbackImageUrl = await resolveDefaultOgImage(context.globalConfig);
+
+  return buildMetadata({
+    title: `${stringValue(hero.headline) || page?.title || titleFallback} | ${getLpkName(
+      context.globalConfig,
+      context.tenant.name,
+    )}`,
+    description: stringValue(hero.subheadline),
+    imageUrl: imageUrl || fallbackImageUrl,
+    path,
+    robots: isPreview ? "noindex" : "index, follow",
+  });
+}
+
+export async function generateItemMetadata({
+  collectionKey,
+  slug,
+  path,
+  searchParams,
+}: {
+  collectionKey: string;
+  slug: string;
+  path: string;
+  searchParams?: PageSearchParams;
+}): Promise<Metadata> {
+  const context = await getOkContext();
+  const params = searchParams ? await searchParams : {};
+  const isPreview = readParam(params.preview) === "true";
+  const item = await resolveCollectionItem(context.variantId, collectionKey, slug);
+  const fallbackImageUrl = await resolveDefaultOgImage(context.globalConfig);
+
+  return buildMetadata({
+    title: `${item?.title || formatLabel(collectionKey)} | ${getLpkName(
+      context.globalConfig,
+      context.tenant.name,
+    )}`,
+    description: item?.excerpt,
+    imageUrl: item?.heroSrc || item?.thumbnailSrc || fallbackImageUrl,
+    path,
+    robots: isPreview ? "noindex" : "index, follow",
+  });
+}
+
+async function getOkContext() {
+  const context = await getSiteContext();
+
+  if (context.result.type !== "ok") {
+    notFound();
+  }
+
+  return {
+    ...context,
+    tenant: context.result.tenant,
+    variant: context.result.variant,
+    variantId: context.result.variant.id,
+    variantKey: context.result.variant.variantKey,
+    globalConfig: context.globalConfig ?? {},
+  };
+}
+
+async function getPreviewState(
+  params: PublicPageSearchParams,
+  tenantId: string,
+  normalPath: string,
+) {
+  const token = readParam(params.token);
+  const isPreview = readParam(params.preview) === "true" && Boolean(token);
+
+  if (!isPreview || !token) {
+    return { isPreview: false, token: undefined };
+  }
+
+  const valid = await resolvePreviewToken(token, tenantId);
+
+  if (!valid.valid) {
+    redirect(normalPath);
+  }
+
+  return { isPreview: true, token };
+}
+
+async function buildMetadata({
+  title,
+  description,
+  imageUrl,
+  path,
+  robots,
+}: {
+  title: string;
+  description?: string;
+  imageUrl?: string | null;
+  path: string;
+  robots: "index, follow" | "noindex";
+}): Promise<Metadata> {
+  const host = (await headers()).get("host") || "";
+  const canonical = host ? `https://${host}${path}` : path;
+  const defaultOgImage = host ? `https://${host}/opengraph-image` : "/opengraph-image";
+
+  return {
+    title,
+    description: truncate(description || "", 160),
+    openGraph: { images: [{ url: imageUrl || defaultOgImage }] },
+    robots,
+    alternates: { canonical },
+  };
+}
+
+async function resolveDefaultOgImage(globalConfig: Record<string, PublicJson>) {
+  const brandHeader = record(globalConfig.brand_header);
+  const footer = record(globalConfig.footer);
+  const candidateIds = [
+    stringValue(record(brandHeader.brand).logo_image_id),
+    stringValue(record(brandHeader.brand).logo_light_image_id),
+    stringValue(record(footer.brand).logo_image_id),
+  ].filter(Boolean);
+
+  for (const mediaId of candidateIds) {
+    const mediaUrl = mediaProxySrc(mediaId) ?? null;
+
+    if (mediaUrl) {
+      return mediaUrl;
+    }
+  }
+
+  return null;
+}
+
+function DetailMain({
+  item,
+  collectionKey,
+  showHeading = true,
+}: {
+  item: PublicCollectionItem;
+  collectionKey: string;
+  showHeading?: boolean;
+}) {
+  const blocks = arrayOfRecords(item.dataJson.blocks);
+
+  return (
+    <article>
+      {showHeading ? (
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+      ) : null}
+      {item.isExpired ? <ExpiredBadge type={collectionKey === "job" ? "job" : "offer"} /> : null}
+      {showHeading && item.excerpt ? (
+        <p className="mt-4 text-lg leading-8 text-neutral-600">{item.excerpt}</p>
+      ) : null}
+      {blocks.length > 0 ? (
+        <div className={showHeading ? "mt-8" : undefined}>
+          <ContentBlocks
+            variant="indonesia"
+            blocks={blocks.map((block, index) => ({
+              type: stringValue(block.type) as never,
+              sortOrder: numberValue(block.sort_order) ?? numberValue(block.sortOrder) ?? index,
+              data: record(block.data),
+            }))}
+          />
+        </div>
+      ) : (
+        <FallbackDataView data={item.dataJson} />
+      )}
+    </article>
+  );
+}
+
+function GenericDetailHero({ item }: { item: PublicCollectionItem }) {
+  const imageSrc = getDetailHeroSrc(item);
+
+  if (!imageSrc) {
+    return null;
+  }
+
+  return (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={item.excerpt}
+      priority
+    />
+  );
+}
+
+function DetailSidebar({
+  item,
+  globalConfig,
+  tenantName,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  tenantName: string;
+}) {
+  const whatsappHref = getWhatsappHref(globalConfig, tenantName, {
+    program_name: item.title,
+    job_title: item.title,
+  });
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {item.publishedAt ? <MetaRow label="Publish" value={formatDate(item.publishedAt)} /> : null}
+          {item.expiredAt ? <MetaRow label="Berlaku sampai" value={formatDate(item.expiredAt)} /> : null}
+          <MetaRow label="Status" value={item.isExpired ? "Expired" : item.status} />
+        </dl>
+        <Button
+          render={<a href={item.isExpired ? "#" : whatsappHref} />}
+          disabled={item.isExpired}
+          variant="whatsapp"
+          className="mt-6 w-full"
+        >
+          {item.isExpired ? "Pendaftaran ditutup" : "Daftar via WhatsApp"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+async function RelatedForBlog({
+  variantId,
+  currentSlug,
+}: {
+  variantId: string;
+  currentSlug: string;
+}) {
+  const related = await resolveCollectionList(variantId, "blog", {
+    source: "latest_published",
+    pageSize: 4,
+  });
+
+  return (
+    <RelatedItems
+      items={related.items
+        .filter((item) => item.slug !== currentSlug)
+        .slice(0, 3)
+        .map((item) => ({
+          title: item.title,
+          excerpt: item.excerpt,
+          slug: item.slug,
+          thumbnailSrc: item.thumbnailSrc,
+          publishedAt: item.publishedAt ? formatDate(item.publishedAt) : undefined,
+          detailPath: `/blog/${item.slug}`,
+        }))}
+    />
+  );
+}
+
+function ContactSection({
+  headline = "Hubungi Kami",
+  description,
+  globalConfig,
+  whatsappHref,
+  showGlobalContact = true,
+}: {
+  headline?: string;
+  description?: string;
+  globalConfig: Record<string, PublicJson>;
+  whatsappHref: string;
+  showGlobalContact?: boolean;
+}) {
+  const whatsappContact = record(globalConfig.whatsapp_contact);
+  const contact = record(whatsappContact.contact);
+  const socialLinks = record(whatsappContact.social_links);
+
+  return (
+    <ContactInfo
+      headline={headline}
+      description={description}
+      phone={showGlobalContact ? stringValue(contact.phone_label) : undefined}
+      email={showGlobalContact ? stringValue(contact.email) : undefined}
+      address={showGlobalContact ? stringValue(contact.address) : undefined}
+      mapUrl={showGlobalContact ? stringValue(contact.map_url) : undefined}
+      operationalHours={showGlobalContact ? stringValue(contact.operational_hours) : undefined}
+      socialLinks={showGlobalContact
+        ? {
+            instagram: stringValue(socialLinks.instagram),
+            youtube: stringValue(socialLinks.youtube),
+            tiktok: stringValue(socialLinks.tiktok),
+            facebook: stringValue(socialLinks.facebook),
+            line: stringValue(socialLinks.line),
+          }
+        : undefined}
+      ctaLabel="Chat WhatsApp"
+      ctaHref={whatsappHref}
+      ctaVariant="whatsapp"
+    />
+  );
+}
+
+function HomepageFoundationSection({
+  isEnabled,
+  eyebrowLabel,
+  headline,
+  description,
+  bulletItems,
+  ctaLabel,
+  ctaHref,
+}: {
+  isEnabled: boolean;
+  eyebrowLabel?: string;
+  headline?: string;
+  description?: string;
+  bulletItems: string[];
+  ctaLabel?: string;
+  ctaHref?: string;
+}) {
+  if (!isEnabled || (!headline && !description && bulletItems.length === 0)) {
+    return null;
+  }
+
+  return (
+    <section className="bg-neutral-50 py-16 md:py-20 lg:py-24">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+          <div>
+            {eyebrowLabel ? (
+              <p className="text-sm font-semibold uppercase text-primary-600">
+                {eyebrowLabel}
+              </p>
+            ) : null}
+            {headline ? (
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-neutral-900 md:text-4xl">
+                {headline}
+              </h2>
+            ) : null}
+            {description ? (
+              <p className="mt-5 whitespace-pre-line text-base leading-8 text-neutral-600">
+                {description}
+              </p>
+            ) : null}
+            {ctaLabel && ctaHref ? (
+              <Button render={<a href={ctaHref} />} size="lg" className="mt-7">
+                {ctaLabel}
+              </Button>
+            ) : null}
+          </div>
+          {bulletItems.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {bulletItems.map((item) => (
+                <div
+                  key={item}
+                  className="flex gap-3 rounded-lg border border-neutral-200 bg-white p-5"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                    <Check aria-hidden="true" className="size-4" />
+                  </span>
+                  <p className="text-sm font-medium leading-6 text-neutral-700">{item}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function PlainHero({
+  title,
+  subtitle,
+  eyebrowLabel,
+  primaryCTA,
+  secondaryCTA,
+}: {
+  title: string;
+  subtitle?: string;
+  eyebrowLabel?: string;
+  primaryCTA?: { label: string; href: string; variant: "whatsapp" | "line" | "default" };
+  secondaryCTA?: { label: string; href: string };
+}) {
+  return (
+    <section className="bg-neutral-950 py-20 text-white md:py-24">
+      <Container>
+        {eyebrowLabel ? (
+          <p className="mb-4 text-sm font-semibold uppercase text-white/70">
+            {eyebrowLabel}
+          </p>
+        ) : null}
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{title}</h1>
+        {subtitle ? <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p> : null}
+        {primaryCTA || secondaryCTA ? (
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            {primaryCTA ? (
+              <Button
+                render={<a href={primaryCTA.href} />}
+                size="lg"
+                variant={primaryCTA.variant}
+                className="w-full sm:w-auto"
+              >
+                {primaryCTA.label}
+              </Button>
+            ) : null}
+            {secondaryCTA ? (
+              <Button
+                render={<a href={secondaryCTA.href} />}
+                size="lg"
+                variant="outline"
+                className="w-full border-white/70 bg-white/10 text-white hover:bg-white hover:text-neutral-900 sm:w-auto"
+              >
+                {secondaryCTA.label}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+function PreviewBanner({ isPreview }: { isPreview: boolean }) {
+  return isPreview ? (
+    <div className="sticky top-0 z-50 bg-amber-100 px-4 py-3 text-center text-sm font-semibold text-amber-950">
+      Preview mode - konten draft, tidak di-cache
+    </div>
+  ) : null;
+}
+
+type NormalizedItem = { title: string; description: string };
+
+function NormalizedCardSet({
+  title,
+  items,
+}: {
+  title: string;
+  items: NormalizedItem[];
+}) {
+  const visible = items.filter((item) => item.title || item.description);
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        {visible.map((item, index) => (
+          <Card key={`${title}-${index}`} className="p-5">
+            <CardContent className="p-0">
+              <h3 className="font-semibold text-neutral-900">{item.title}</h3>
+              {item.description ? (
+                <p className="mt-2 whitespace-pre-line text-sm leading-6 text-neutral-600">
+                  {item.description}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function renderCheckedCardSet(title: string, ...values: unknown[]) {
+  const visible = values
+    .flatMap((value) => normalizeMixedList(value))
+    .filter((item) => item.title || item.description);
+
+  if (visible.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        {visible.map((item, index) => {
+          const heading = item.title || item.description;
+          const description = item.title ? item.description : "";
+
+          return (
+            <Card key={`${title}-${index}`}>
+              <CardContent className="p-5">
+                <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                  <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                  {heading}
+                </h3>
+                {description ? (
+                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-neutral-600">
+                    {description}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+async function ProgramDetailMain({
+  item,
+  globalConfig,
+  lpkName,
+  variantId,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+  variantId: string;
+}) {
+  const data = item.dataJson;
+
+  const optionRequests = [
+    { id: stringValue(data.program_type_option_id), optionSetKey: "program_type" },
+    { id: stringValue(data.gender_option_id), optionSetKey: "gender" },
+    { id: stringValue(data.education_level_option_id), optionSetKey: "education_level" },
+    { id: stringValue(data.language_level_option_id), optionSetKey: "language_level" },
+  ].filter((option) => option.id);
+
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
+  const optLabel = (id: string) => {
+    const index = optionRequests.findIndex((option) => option.id === id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+  const ageLabel = minAge && maxAge
+    ? `${minAge} - ${maxAge} tahun`
+    : minAge
+      ? `Min ${minAge} tahun`
+      : maxAge
+        ? `Max ${maxAge} tahun`
+        : "";
+
+  const classificationLabels = [
+    optLabel(stringValue(data.program_type_option_id)),
+    optLabel(stringValue(data.gender_option_id)),
+    optLabel(stringValue(data.education_level_option_id)),
+    optLabel(stringValue(data.language_level_option_id)),
+    stringValue(data.highlight_label),
+  ].filter(Boolean);
+
+  const programDecisionItems = [
+    { label: "Durasi", value: stringValue(data.duration_label) },
+    { label: "Usia", value: ageLabel },
+    { label: "Target bahasa", value: stringValue(data.target_language_label) },
+    { label: "Jalur visa", value: stringValue(data.visa_path_label) },
+    { label: "Estimasi gaji", value: stringValue(data.salary_range_label) },
+    { label: "Pendidikan awal", value: optLabel(stringValue(data.education_level_option_id)) },
+  ].filter((entry) => entry.value);
+
+  const whatsappHref = getProgramWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h1 className="sr-only">{item.title}</h1>
+        {stringValue(data.subtitle) ? (
+          <p className="text-lg font-medium text-primary-500">{stringValue(data.subtitle)}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {programDecisionItems.length > 0 ? (
+          <dl className="mt-6 grid gap-3 rounded-lg border border-primary-100 bg-primary-50/50 p-4 sm:grid-cols-2">
+            {programDecisionItems.map((entry) => (
+              <div key={entry.label}>
+                <dt className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+                  {entry.label}
+                </dt>
+                <dd className="mt-1 text-sm font-semibold leading-6 text-neutral-950">
+                  {entry.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {stringValue(data.overview) ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">
+            {stringValue(data.overview)}
+          </div>
+        ) : null}
+        {whatsappHref !== "#" ? (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button render={<a href={whatsappHref} />}>
+              {stringValue(data.primary_cta_label) || "Konsultasi Program Ini"}
+            </Button>
+            <Button render={<a href="/job" />} variant="outline">
+              Lihat Lowongan Terkait
+            </Button>
+          </div>
+        ) : null}
+      </section>
+
+      <NormalizedCardSet
+        title="Mengapa Memilih Program Ini"
+        items={normalizeMixedList(data.why_choose_items)}
+      />
+      <NormalizedCardSet
+        title="Kurikulum"
+        items={normalizeMixedList(data.curriculum_items)}
+      />
+
+      {(() => {
+        const timelineItems = parseTimelineItems(data.timeline_items);
+        if (timelineItems.length === 0) {
+          return null;
+        }
+        return (
+          <StepFlow
+            title="Alur Program"
+            items={timelineItems.map((step) => ({
+              iconKey: step.iconKey || "check",
+              title: step.title,
+              description: step.description,
+              sortOrder: step.sortOrder,
+              isEnabled: step.isEnabled,
+            }))}
+          />
+        );
+      })()}
+
+      {renderRequirementList(data.requirements)}
+
+      {renderCheckedCardSet("Manfaat", data.benefits)}
+
+      {(() => {
+        const costItems = parseCostItems(data.cost_items);
+        if (costItems.length === 0) {
+          return null;
+        }
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Biaya</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {costItems.map((cost, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="font-semibold text-neutral-900">{cost.title}</h3>
+                    {cost.amount ? (
+                      <p className="mt-2 text-xl font-bold text-primary-500">{cost.amount}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      <NormalizedCardSet
+        title="Peluang Karir"
+        items={normalizeMixedList(data.career_opportunity_items)}
+      />
+      <NormalizedCardSet
+        title="Legalitas & Partner"
+        items={normalizeMixedList(data.legality_partner_items)}
+      />
+
+      {sortedRecords(data.testimonials).length > 0 ? (
+        <TestimonialCarousel
+          title="Testimoni"
+          items={sortedRecords(data.testimonials).map((t) => ({
+            name: stringValue(t.name),
+            roleOrProgram: stringValue(t.role_or_program),
+            quote: stringValue(t.quote),
+            isEnabled: booleanValue(t.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {whatsappHref !== "#" ? (
+        <CTABanner
+          headline={stringValue(data.primary_cta_label) || "Tertarik dengan program ini?"}
+          description="Hubungi kami untuk informasi lebih lanjut dan pendaftaran."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
+            href: whatsappHref,
+            variant: "default",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function ProgramDetailSidebar({
+  item,
+  brochureUrl,
+}: {
+  item: PublicCollectionItem;
+  brochureUrl?: string | null;
+}) {
+  const data = item.dataJson;
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+  const ageLabel = minAge && maxAge
+    ? `${minAge} - ${maxAge} tahun`
+    : minAge
+      ? `Min ${minAge} tahun`
+      : maxAge
+        ? `Max ${maxAge} tahun`
+        : "";
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Program</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.duration_label) ? (
+            <MetaRow label="Durasi" value={stringValue(data.duration_label)} />
+          ) : null}
+          {stringValue(data.capacity_label) ? (
+            <MetaRow label="Kapasitas" value={stringValue(data.capacity_label)} />
+          ) : null}
+          {ageLabel ? <MetaRow label="Usia" value={ageLabel} /> : null}
+          {stringValue(data.contract_label) ? (
+            <MetaRow label="Kontrak" value={stringValue(data.contract_label)} />
+          ) : null}
+          {stringValue(data.salary_range_label) ? (
+            <MetaRow label="Gaji" value={stringValue(data.salary_range_label)} />
+          ) : null}
+          {stringValue(data.target_language_label) ? (
+            <MetaRow label="Bahasa" value={stringValue(data.target_language_label)} />
+          ) : null}
+          {stringValue(data.visa_path_label) ? (
+            <MetaRow label="Jalur Visa" value={stringValue(data.visa_path_label)} />
+          ) : null}
+          {stringValue(data.highlight_label) ? (
+            <MetaRow label="Highlight" value={stringValue(data.highlight_label)} />
+          ) : null}
+        </dl>
+        {brochureUrl ? (
+          <div className="mt-6">
+            <DocumentDownload
+              label="Unduh Brosur"
+              fileUrl={brochureUrl}
+              size="md"
+              variant="outline"
+            />
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProgramDetailHero({
+  item,
+  fallbackImageSrc,
+}: {
+  item: PublicCollectionItem;
+  fallbackImageSrc?: string;
+}) {
+  const imageSrc = getDetailHeroSrc(item, fallbackImageSrc);
+  const data = item.dataJson;
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={
+        item.excerpt ||
+        stringValue(data.subtitle) ||
+        stringValue(data.short_description)
+      }
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {(item.excerpt ||
+          stringValue(data.subtitle) ||
+          stringValue(data.short_description)) ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">
+            {item.excerpt ||
+              stringValue(data.subtitle) ||
+              stringValue(data.short_description)}
+          </p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function JobDetailMain({
+  item,
+  globalConfig,
+  lpkName,
+  variantId,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+  variantId: string;
+}) {
+  const data = item.dataJson;
+
+  const optionRequests = [
+    { id: stringValue(data.job_type_option_id), optionSetKey: "job_type" },
+    { id: stringValue(data.job_field_option_id), optionSetKey: "job_field" },
+    { id: stringValue(data.gender_option_id), optionSetKey: "gender" },
+    { id: stringValue(data.language_level_option_id), optionSetKey: "language_level" },
+    { id: stringValue(data.education_level_option_id), optionSetKey: "education_level" },
+  ].filter((option) => option.id);
+
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
+  const optLabel = (id: string) => {
+    const index = optionRequests.findIndex((option) => option.id === id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+  const jobTypeLabel = optLabel(stringValue(data.job_type_option_id));
+  const jobFieldLabel = optLabel(stringValue(data.job_field_option_id));
+  const genderLabel = optLabel(stringValue(data.gender_option_id));
+  const languageLabel = optLabel(stringValue(data.language_level_option_id));
+  const educationLabel = optLabel(stringValue(data.education_level_option_id));
+  const salaryLabel = stringValue(data.salary_range_label) || stringValue(data.salary_label);
+  const isSampleListing = booleanValue(data.is_sample_listing, false);
+
+  const classificationLabels = [
+    jobTypeLabel,
+    jobFieldLabel,
+    genderLabel,
+    languageLabel,
+    educationLabel,
+  ].filter(Boolean);
+
+  const subtitle = stringValue(data.subtitle);
+  const shortDescription = stringValue(data.short_description);
+  const overview = stringValue(data.overview);
+  const jobDescription = stringValue(data.job_description);
+  const listingNoticeTitle = stringValue(data.listing_notice_title);
+  const listingNoticeDescription = stringValue(data.listing_notice_description);
+  const primaryCtaLabel = stringValue(data.primary_cta_label) ||
+    (isSampleListing ? "Kirim Profil untuk Peluang Sejenis" : "Ajukan Screening");
+  const preparationCtaLabel = stringValue(data.preparation_cta_label);
+  const preparationCtaHref = stringValue(data.preparation_cta_href) || "/program";
+
+  const whatsappHref = getJobWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  const decisionItems = [
+    { label: "Status informasi", value: listingNoticeTitle },
+    { label: "Jalur visa", value: stringValue(data.visa_path_label) },
+    { label: "Lokasi", value: stringValue(data.location_label) },
+    { label: "Gaji", value: salaryLabel, detail: stringValue(data.salary_basis_label) },
+    { label: "Bahasa minimum", value: languageLabel },
+    { label: "Pendidikan", value: educationLabel },
+    { label: "Batas pengajuan", value: stringValue(data.deadline_label) },
+    { label: "Verifikasi", value: stringValue(data.verification_label) },
+  ].filter((entry) => entry.value);
+
+  const galleryMediaIds = flatStringList(data.gallery_media_ids);
+  const galleryUrls = galleryMediaIds.length > 0
+    ? await resolveMediaUrls(galleryMediaIds)
+    : new Map<string, string>();
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">Ringkasan Keputusan</h2>
+        {subtitle ? (
+          <p className="mt-2 text-lg font-medium text-primary-500">{subtitle}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {item.isExpired ? (
+          <ExpiredBadge type="job" ctaLabel={primaryCtaLabel} />
+        ) : null}
+        {listingNoticeTitle || listingNoticeDescription ? (
+          <div className="mt-6 border-l-4 border-amber-500 bg-amber-50 px-5 py-4">
+            {listingNoticeTitle ? (
+              <p className="font-semibold text-amber-950">{listingNoticeTitle}</p>
+            ) : null}
+            {listingNoticeDescription ? (
+              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-amber-950/80">
+                {listingNoticeDescription}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+        {decisionItems.length > 0 ? (
+          <dl className="mt-6 grid gap-3 rounded-lg border border-primary-100 bg-primary-50/50 p-4 sm:grid-cols-2">
+            {decisionItems.map((entry) => (
+              <div key={entry.label}>
+                <dt className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+                  {entry.label}
+                </dt>
+                <dd className="mt-1 text-sm font-semibold leading-6 text-neutral-950">{entry.value}</dd>
+                {entry.detail ? (
+                  <dd className="mt-1 text-xs leading-5 text-neutral-600">{entry.detail}</dd>
+                ) : null}
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {!item.isExpired && whatsappHref !== "#" ? (
+          <div className="mt-8 border-y border-neutral-200 py-6">
+            <h3 className="text-xl font-semibold text-neutral-900">
+              {isSampleListing ? "Sudah memiliki kualifikasi untuk bidang ini?" : "Memenuhi syarat utama?"}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
+              {isSampleListing
+                ? "Entri ini tidak menerima lamaran. Kamu dapat mengirim profil untuk pemeriksaan awal dan peluang aktif yang sejenis. Pengiriman profil tidak menjamin lolos seleksi atau penempatan."
+                : "Kirim profil untuk pemeriksaan awal. Tim HIT akan menjelaskan pihak yang terlibat, tahapan, dan biaya sebelum kamu menyetujui proses berikutnya."}
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button render={<a href={whatsappHref} />}>
+                {primaryCtaLabel}
+              </Button>
+              {preparationCtaLabel ? (
+                <Button render={<a href={preparationCtaHref} />} variant="outline">
+                  {preparationCtaLabel}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+        {shortDescription || overview ? (
+          <div className="mt-8 space-y-5 border-t border-neutral-200 pt-6">
+            {shortDescription ? (
+              <p className="text-lg leading-8 text-neutral-600">{shortDescription}</p>
+            ) : null}
+            {overview ? (
+              <div className="whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+            ) : null}
+          </div>
+        ) : null}
+      </section>
+
+      {renderRequirementList(data.candidate_fit_items, "Cek Kecocokan Awal")}
+
+      <NormalizedCardSet
+        title="Hal Penting Sebelum Melamar"
+        items={normalizeMixedList(data.overview_items)}
+      />
+
+      <NormalizedCardSet
+        title="Kondisi Kerja"
+        items={normalizeMixedList(data.work_condition_items)}
+      />
+
+      {jobDescription ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Deskripsi Pekerjaan</h2>
+          <div className="mt-5 whitespace-pre-line leading-7 text-neutral-700">{jobDescription}</div>
+        </section>
+      ) : null}
+
+      {renderRequirementList(data.responsibilities, "Tanggung Jawab")}
+
+      <NormalizedCardSet
+        title="Penghasilan dan Potongan"
+        items={normalizeMixedList(data.compensation_items)}
+      />
+
+      <NormalizedCardSet
+        title="Benefit dari Pemberi Kerja"
+        items={normalizeMixedList(data.employer_benefit_items)}
+      />
+
+      <NormalizedCardSet
+        title="Siapa Melakukan Apa"
+        items={normalizeMixedList(data.process_role_items)}
+      />
+
+      {renderRequirementList(data.requirements)}
+
+      <NormalizedCardSet
+        title="Kualifikasi"
+        items={normalizeMixedList(data.qualification_items)}
+      />
+
+      <NormalizedCardSet
+        title="Biaya dan Komitmen Kandidat"
+        items={normalizeMixedList(data.cost_transparency_items)}
+      />
+
+      {(() => {
+        const steps = parseTimelineItems(data.recruitment_steps);
+        if (steps.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Alur Rekrutmen</h2>
+            <p className="mt-3 text-sm leading-6 text-neutral-600">
+              Tahap aktual dapat berbeda pada setiap perusahaan. Kandidat harus menerima penjelasan sebelum proses berlanjut.
+            </p>
+            <ol className="mt-6 grid gap-x-8 md:grid-cols-2">
+              {steps
+                .filter((step) => step.isEnabled)
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((step, index) => (
+                  <li key={`${step.sortOrder}-${step.title}`} className="flex gap-4 border-t border-neutral-200 py-5">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-500 text-sm font-bold text-white">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-neutral-900">{step.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{step.description}</p>
+                    </div>
+                  </li>
+                ))}
+            </ol>
+          </section>
+        );
+      })()}
+
+      {renderCheckedCardSet("Pendampingan dari HIT", data.benefits, data.benefit_items)}
+
+      {galleryMediaIds.length > 0 ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Galeri</h2>
+          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3">
+            {galleryMediaIds.map((mediaId) => {
+              const src = galleryUrls.get(mediaId);
+              return src ? (
+                <div key={mediaId} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                  <CmsImage
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 33vw, 50vw"
+                    className="object-cover"
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {!item.isExpired && whatsappHref !== "#" ? (
+        <CTABanner
+          headline={isSampleListing ? "Kirim profil untuk peluang aktif yang sejenis" : "Ajukan pemeriksaan awal"}
+          description={isSampleListing
+            ? "Contoh informasi ini tidak menerima lamaran. Tim HIT dapat memeriksa profilmu dan menghubungi jika ada peluang aktif yang relevan."
+            : "Pengajuan profil bukan jaminan diterima. Pastikan kamu menerima penjelasan tertulis mengenai pihak, kondisi kerja, tahapan, dan biaya sebelum melanjutkan."}
+          primaryCTA={{
+            label: primaryCtaLabel,
+            href: whatsappHref,
+            variant: "default",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function JobDetailSidebar({
+  item,
+}: {
+  item: PublicCollectionItem;
+}) {
+  const data = item.dataJson;
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+  const ageLabel = minAge && maxAge ? `${minAge} - ${maxAge} tahun` : minAge ? `Min ${minAge} tahun` : maxAge ? `Max ${maxAge} tahun` : "";
+  const salaryLabel = stringValue(data.salary_range_label) || stringValue(data.salary_label);
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Lowongan</h2>
+        {booleanValue(data.is_sample_listing, false) ? (
+          <p className="mt-3 border-l-4 border-amber-500 bg-amber-50 px-3 py-2 text-sm font-medium leading-6 text-amber-950">
+            Contoh informasi, bukan lowongan aktif
+          </p>
+        ) : null}
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.visa_path_label) ? (
+            <MetaRow label="Jalur Visa" value={stringValue(data.visa_path_label)} />
+          ) : null}
+          {stringValue(data.location_label) ? (
+            <MetaRow label="Lokasi" value={stringValue(data.location_label)} />
+          ) : null}
+          {salaryLabel ? (
+            <MetaRow label="Gaji" value={salaryLabel} />
+          ) : null}
+          {stringValue(data.salary_basis_label) ? (
+            <MetaRow label="Dasar Gaji" value={stringValue(data.salary_basis_label)} />
+          ) : null}
+          {stringValue(data.estimated_take_home_label) ? (
+            <MetaRow label="Take-home Pay" value={stringValue(data.estimated_take_home_label)} />
+          ) : null}
+          {stringValue(data.contract_label) ? (
+            <MetaRow label="Jenis Kontrak" value={stringValue(data.contract_label)} />
+          ) : null}
+          {stringValue(data.deadline_label) ? (
+            <MetaRow label="Batas Pendaftaran" value={stringValue(data.deadline_label)} />
+          ) : null}
+          {item.expiredAt ? (
+            <MetaRow label="Berlaku Sampai" value={formatDate(item.expiredAt)} />
+          ) : null}
+          {stringValue(data.quota_label) ? (
+            <MetaRow label="Kuota" value={stringValue(data.quota_label)} />
+          ) : null}
+          {ageLabel ? <MetaRow label="Usia" value={ageLabel} /> : null}
+          {stringValue(data.certificate_required_label) ? (
+            <MetaRow label="Sertifikat" value={stringValue(data.certificate_required_label)} />
+          ) : null}
+          {stringValue(data.experience_required_label) ? (
+            <MetaRow label="Pengalaman" value={stringValue(data.experience_required_label)} />
+          ) : null}
+          {booleanValue(data.ex_japan_required, false) ? (
+            <MetaRow label="Eks Jepang" value="Diutamakan" />
+          ) : null}
+          {item.publishedAt ? (
+            <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
+          ) : null}
+          {stringValue(data.verification_label) ? (
+            <MetaRow label="Verifikasi" value={stringValue(data.verification_label)} />
+          ) : null}
+        </dl>
+
+        {stringValue(data.employer_disclosure_label) || stringValue(data.hit_role_label) ? (
+          <div className="mt-4 border-t border-neutral-200 pt-4 text-sm leading-6 text-neutral-600">
+            {stringValue(data.employer_disclosure_label) ? (
+              <p><strong className="text-neutral-900">Pemberi kerja:</strong> {stringValue(data.employer_disclosure_label)}</p>
+            ) : null}
+            {stringValue(data.hit_role_label) ? (
+              <p className="mt-2"><strong className="text-neutral-900">Peran HIT:</strong> {stringValue(data.hit_role_label)}</p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {flatStringList(data.required_documents).length > 0 ? (
+          <div className="mt-4 border-t border-neutral-200 pt-4">
+            <h3 className="text-sm font-semibold text-neutral-900">Dokumen Diperlukan</h3>
+            <ul className="mt-2 space-y-1 text-sm text-neutral-600">
+              {flatStringList(data.required_documents).map((doc, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary-500" />
+                  {doc}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function JobDetailHero({
+  item,
+  fallbackImageSrc,
+}: {
+  item: PublicCollectionItem;
+  fallbackImageSrc?: string;
+}) {
+  const imageSrc = getDetailHeroSrc(item, fallbackImageSrc);
+  const data = item.dataJson;
+  const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={subtitle}
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+function getJobWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  jobTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const jobTemplate = stringValue(data.whatsapp_message_template);
+  const globalTemplate =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+  const template = jobTemplate || globalTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    job_title: jobTitle,
+  });
+}
+
+function getKarirWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  karirTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const karirTemplate = stringValue(data.whatsapp_message_template);
+  const globalTemplate =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+  const template = karirTemplate || globalTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    karir_title: karirTitle,
+  });
+}
+
+function KarirDetailHero({
+  item,
+  fallbackImageSrc,
+}: {
+  item: PublicCollectionItem;
+  fallbackImageSrc?: string;
+}) {
+  const imageSrc = getDetailHeroSrc(item, fallbackImageSrc);
+  const data = item.dataJson;
+  const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={subtitle}
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function KarirDetailMain({
+  item,
+  globalConfig,
+  lpkName,
+  variantId,
+}: {
+  item: PublicCollectionItem;
+  globalConfig: Record<string, PublicJson>;
+  lpkName: string;
+  variantId: string;
+}) {
+  const data = item.dataJson;
+
+  const optionRequests = [
+    { id: stringValue(data.department_option_id), optionSetKey: "career_department" },
+    { id: stringValue(data.employment_type_option_id), optionSetKey: "career_employment_type" },
+    { id: stringValue(data.work_arrangement_option_id), optionSetKey: "career_work_arrangement" },
+  ].filter((option) => option.id);
+
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
+  const optLabel = (id: string) => {
+    const index = optionRequests.findIndex((option) => option.id === id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+
+  const classificationLabels = [
+    optLabel(stringValue(data.department_option_id)),
+    optLabel(stringValue(data.employment_type_option_id)),
+    optLabel(stringValue(data.work_arrangement_option_id)),
+  ].filter(Boolean);
+
+  const subtitle = stringValue(data.subtitle);
+  const shortDescription = stringValue(data.short_description);
+  const overview = stringValue(data.overview);
+  const roleDescription = stringValue(data.role_description);
+
+  const whatsappHref = getKarirWhatsappHref(data, globalConfig, lpkName, item.title);
+
+  return (
+    <article className="space-y-12">
+      <section>
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-2 text-lg font-medium text-primary-500">{subtitle}</p>
+        ) : null}
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {item.isExpired ? (
+          <ExpiredBadge type="karir" ctaLabel={stringValue(data.primary_cta_label)} />
+        ) : null}
+        {shortDescription ? (
+          <p className="mt-4 text-lg leading-8 text-neutral-600">{shortDescription}</p>
+        ) : null}
+        {overview ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+        ) : null}
+      </section>
+
+      {arrayOfRecords(data.overview_items).filter((v) => stringValue(v.title) || stringValue(v.description)).length >
+      0 ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Sekilas Posisi</h2>
+          <dl className="mt-5 grid gap-4 md:grid-cols-2">
+            {sortedRecords(data.overview_items)
+              .filter((v) => stringValue(v.title) || stringValue(v.description))
+              .map((ov, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <dt className="font-semibold text-neutral-900">{stringValue(ov.title)}</dt>
+                    {stringValue(ov.description) ? (
+                      <dd className="mt-1 text-sm leading-6 text-neutral-600">
+                        {stringValue(ov.description)}
+                      </dd>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+          </dl>
+        </section>
+      ) : null}
+
+      {roleDescription ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Deskripsi Peran</h2>
+          <div className="mt-5 whitespace-pre-line leading-7 text-neutral-700">{roleDescription}</div>
+        </section>
+      ) : null}
+
+      {(() => {
+        const items = flatStringList(data.responsibilities);
+        const recordItems = arrayOfRecords(data.responsibilities);
+        const allItems = [
+          ...items,
+          ...recordItems.map((rec) => stringValue(rec.text) || stringValue(rec.title)),
+        ].filter(Boolean);
+        if (allItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Tanggung Jawab</h2>
+            <ul className="mt-5 grid gap-3 md:grid-cols-2">
+              {allItems.map((text, index) => (
+                <li key={index} className="flex gap-3 rounded-xl border border-neutral-200 p-4">
+                  <Check aria-hidden="true" className="mt-1 size-5 shrink-0 text-primary-500" />
+                  <span className="text-sm leading-6 text-neutral-700">{text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })()}
+
+      {renderRequirementList(data.requirements)}
+
+      {renderCheckedCardSet("Benefit", data.benefits)}
+
+      {(() => {
+        const steps = parseTimelineItems(data.recruitment_steps);
+        if (steps.length === 0) return null;
+        return (
+          <StepFlow
+            title="Alur Rekrutmen"
+            items={steps.map((step) => ({
+              iconKey: step.iconKey || "check",
+              title: step.title,
+              description: step.description,
+              sortOrder: step.sortOrder,
+              isEnabled: step.isEnabled,
+            }))}
+          />
+        );
+      })()}
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {!item.isExpired && whatsappHref !== "#" ? (
+        <CTABanner
+          headline={stringValue(data.primary_cta_label) || "Tertarik dengan posisi ini?"}
+          description="Hubungi kami untuk informasi lebih lanjut dan pendaftaran."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Chat WhatsApp",
+            href: whatsappHref,
+            variant: "whatsapp",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function KarirDetailSidebar({
+  item,
+}: {
+  item: PublicCollectionItem;
+}) {
+  const data = item.dataJson;
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Informasi Posisi</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.location_label) ? (
+            <MetaRow label="Lokasi" value={stringValue(data.location_label)} />
+          ) : null}
+          {stringValue(data.salary_label) ? (
+            <MetaRow label="Gaji" value={stringValue(data.salary_label)} />
+          ) : null}
+          {stringValue(data.experience_label) ? (
+            <MetaRow label="Pengalaman" value={stringValue(data.experience_label)} />
+          ) : null}
+          {stringValue(data.education_label) ? (
+            <MetaRow label="Pendidikan" value={stringValue(data.education_label)} />
+          ) : null}
+          {stringValue(data.deadline_label) ? (
+            <MetaRow label="Batas Pendaftaran" value={stringValue(data.deadline_label)} />
+          ) : null}
+          {item.expiredAt ? (
+            <MetaRow label="Berlaku Sampai" value={formatDate(item.expiredAt)} />
+          ) : null}
+          {item.publishedAt ? (
+            <MetaRow label="Dipublikasi" value={formatDate(item.publishedAt)} />
+          ) : null}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
+function OfferDetailHero({
+  item,
+  whatsappHref,
+}: {
+  item: PublicCollectionItem;
+  whatsappHref: string;
+}) {
+  const imageSrc = getOfferCmsImageSrc(item);
+  const data = item.dataJson;
+  const subtitle = stringValue(data.subtitle) || stringValue(data.short_description);
+  const ctaLabel = stringValue(data.primary_cta_label) || "Daftar Gratis via WhatsApp";
+  const canRegister = !item.isExpired && whatsappHref !== "#";
+
+  return imageSrc ? (
+    <HeroSection
+      mediaType="image"
+      mediaSrc={imageSrc}
+      mediaAlt={item.title}
+      headline={item.title}
+      subheadline={subtitle}
+      eyebrowLabel={stringValue(data.hero_eyebrow_label)}
+      primaryCTA={canRegister ? { label: ctaLabel, href: whatsappHref, variant: "default" } : undefined}
+      priority
+    />
+  ) : (
+    <section className="bg-neutral-950 py-16 text-white md:py-20">
+      <Container>
+        <h1 className="max-w-4xl text-4xl font-bold md:text-5xl">{item.title}</h1>
+        {subtitle ? (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/80">{subtitle}</p>
+        ) : null}
+        {canRegister ? (
+          <Button render={<a href={whatsappHref} />} size="lg" className="mt-8">
+            {ctaLabel}
+          </Button>
+        ) : null}
+      </Container>
+    </section>
+  );
+}
+
+async function OfferDetailMain({
+  item,
+  variantId,
+  whatsappHref,
+}: {
+  item: PublicCollectionItem;
+  variantId: string;
+  whatsappHref: string;
+}) {
+  const data = item.dataJson;
+
+  const optionRequests = [
+    { id: stringValue(data.offer_type_option_id), optionSetKey: "offer_type" },
+    { id: stringValue(data.target_audience_option_id), optionSetKey: "target_audience" },
+  ].filter((option) => option.id);
+
+  const options = await Promise.all(
+    optionRequests.map((option) =>
+      resolveOptionLabel(option.id, {
+        variantId,
+        optionSetKey: option.optionSetKey,
+      }),
+    ),
+  );
+  const optLabel = (id: string) => {
+    const index = optionRequests.findIndex((option) => option.id === id);
+    return index >= 0 ? options[index]?.label ?? "" : "";
+  };
+
+  const classificationLabels = [
+    optLabel(stringValue(data.offer_type_option_id)),
+    optLabel(stringValue(data.target_audience_option_id)),
+  ].filter(Boolean);
+
+  const overview = stringValue(data.overview);
+  const detailDescription = stringValue(data.detail_description);
+  const termsConditions = stringValue(data.terms_conditions);
+  const agendaItems = sortedRecords(data.agenda_items).filter(
+    (agenda) => stringValue(agenda.title) || stringValue(agenda.description),
+  );
+  const instructorImageId = stringValue(data.instructor_image_id);
+  const instructorImageSrc = instructorImageId
+    ? getMediaProxyUrl(instructorImageId)
+    : null;
+  const instructorName = stringValue(data.instructor_name);
+  const hasInstructor = Boolean(
+    instructorName ||
+      stringValue(data.instructor_role) ||
+      stringValue(data.instructor_qualification) ||
+      stringValue(data.instructor_description),
+  );
+
+  return (
+    <article className="space-y-12">
+      <section id="offer-detail" className="scroll-mt-24">
+        <h2 className="text-3xl font-bold text-neutral-900 md:text-4xl">
+          {stringValue(data.intro_heading) || "Mulai dengan Arah yang Lebih Jelas"}
+        </h2>
+        {classificationLabels.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {classificationLabels.map((label) => (
+              <Badge key={label} variant="outline">{label}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {item.isExpired ? <ExpiredBadge type="offer" /> : null}
+        {stringValue(data.short_description) ? (
+          <p className="mt-4 text-lg leading-8 text-neutral-600">{stringValue(data.short_description)}</p>
+        ) : null}
+        {overview ? (
+          <div className="mt-6 whitespace-pre-line leading-8 text-neutral-700">{overview}</div>
+        ) : null}
+      </section>
+
+      {renderCheckedCardSet("Hasil yang Kamu Bawa Setelah Kelas", data.benefit_items)}
+
+      {agendaItems.length > 0 ? (
+        <section>
+          <div className="flex items-center gap-3">
+            <CalendarClock aria-hidden="true" className="size-6 text-primary-500" />
+            <h2 className="text-2xl font-bold text-neutral-900">Agenda Kelas 2 Jam</h2>
+          </div>
+          <ol className="mt-6 border-y border-neutral-200">
+            {agendaItems.map((agenda, index) => (
+              <li
+                key={`${stringValue(agenda.title)}-${index}`}
+                className="grid gap-2 border-b border-neutral-200 py-5 last:border-b-0 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-6"
+              >
+                <p className="font-semibold text-primary-600">{stringValue(agenda.title)}</p>
+                <p className="text-sm leading-6 text-neutral-600">{stringValue(agenda.description)}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
+      {hasInstructor ? (
+        <section className="overflow-hidden rounded-lg bg-primary-700 text-white">
+          <div
+            className={
+              instructorImageSrc
+                ? "grid lg:grid-cols-[280px_minmax(0,1fr)]"
+                : "grid"
+            }
+          >
+            {instructorImageSrc ? (
+              <div className="relative min-h-72 bg-primary-800 lg:min-h-full">
+                <CmsImage
+                  src={instructorImageSrc}
+                  alt={instructorName || "Pengajar kelas HIT"}
+                  fill
+                  sizes="(min-width: 1024px) 280px, 100vw"
+                  className="object-cover"
+                  fallbackLabel={instructorName || "Pengajar kelas HIT"}
+                />
+              </div>
+            ) : null}
+            <div className="p-6 md:p-8">
+              <div className="flex items-center gap-3 text-primary-100">
+                <GraduationCap aria-hidden="true" className="size-6" />
+                <p className="text-sm font-semibold uppercase">Pengarah Materi Kelas</p>
+              </div>
+              {instructorName ? <h2 className="mt-4 text-3xl font-bold">{instructorName}</h2> : null}
+              {stringValue(data.instructor_role) ? (
+                <p className="mt-2 font-medium text-white/80">{stringValue(data.instructor_role)}</p>
+              ) : null}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {[stringValue(data.instructor_qualification), stringValue(data.instructor_experience)]
+                  .filter(Boolean)
+                  .map((label) => (
+                    <span key={label} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm">
+                      {label}
+                    </span>
+                  ))}
+              </div>
+              {stringValue(data.instructor_description) ? (
+                <p className="mt-6 leading-7 text-white/80">{stringValue(data.instructor_description)}</p>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {renderRequirementList(
+        data.detail_checklist,
+        stringValue(data.detail_checklist_title) || "Sebelum Kelas, Siapkan Ini",
+      )}
+
+      {detailDescription ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Deskripsi Penawaran</h2>
+          <div className="mt-5 whitespace-pre-line leading-7 text-neutral-700">{detailDescription}</div>
+        </section>
+      ) : null}
+
+      {(() => {
+        const bonusRecords = sortedRecords(data.bonus_items).filter((v) => stringValue(v.title));
+        const stringBonuses = flatStringList(data.bonus_items);
+        const bonusItems: NormalizedItem[] =
+          bonusRecords.length > 0
+            ? bonusRecords.map((b) => ({ title: stringValue(b.title), description: stringValue(b.description) }))
+            : stringBonuses.map((s) => ({ title: s, description: "" }));
+        if (bonusItems.length === 0) return null;
+        return (
+          <section>
+            <h2 className="text-2xl font-bold text-neutral-900">Bonus</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {bonusItems.map((bonus, index) => (
+                <Card key={index}>
+                  <CardContent className="p-5">
+                    <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
+                      <Check aria-hidden="true" className="size-5 shrink-0 text-primary-500" />
+                      {bonus.title}
+                    </h3>
+                    {bonus.description ? (
+                      <p className="mt-2 text-sm leading-6 text-neutral-600">{bonus.description}</p>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      <NormalizedCardSet
+        title="Cocok Untuk"
+        items={normalizeMixedList(data.suitable_for_items)}
+      />
+
+      {sortedRecords(data.faqs).length > 0 ? (
+        <FAQ
+          title="Pertanyaan Umum"
+          items={sortedRecords(data.faqs).map((faq, index) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+            sortOrder: numberValue(faq.sort_order) ?? index,
+            isEnabled: booleanValue(faq.is_enabled, true),
+          }))}
+        />
+      ) : null}
+
+      {termsConditions ? (
+        <section>
+          <h2 className="text-2xl font-bold text-neutral-900">Syarat &amp; Ketentuan</h2>
+          <div className="mt-5 whitespace-pre-line text-sm leading-6 text-neutral-600">{termsConditions}</div>
+        </section>
+      ) : null}
+
+      {!item.isExpired && whatsappHref !== "#" ? (
+        <CTABanner
+          headline="Siap Menentukan Langkah Pertamamu?"
+          description="Pilih batch yang tersedia melalui WhatsApp. Tim HIT akan mengirimkan konfirmasi jadwal dan petunjuk mengikuti kelas Zoom."
+          primaryCTA={{
+            label: stringValue(data.primary_cta_label) || "Pilih Batch & Daftar Gratis",
+            href: whatsappHref,
+            variant: "default",
+          }}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function OfferDetailSidebar({
+  item,
+  whatsappHref,
+}: {
+  item: PublicCollectionItem;
+  whatsappHref: string;
+}) {
+  const data = item.dataJson;
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <h2 className="text-lg font-semibold text-neutral-900">Jadwal dan Pendaftaran</h2>
+        <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+          {stringValue(data.price_label) ? (
+            <MetaRow label="Harga" value={stringValue(data.price_label)} />
+          ) : null}
+          {stringValue(data.original_price_label) ? (
+            <MetaRow label="Harga Asli" value={stringValue(data.original_price_label)} />
+          ) : null}
+          {stringValue(data.urgency_label) ? (
+            <MetaRow label="Ketersediaan" value={stringValue(data.urgency_label)} />
+          ) : null}
+          {stringValue(data.batch_label) ? (
+            <MetaRow label="Pilihan Batch" value={stringValue(data.batch_label)} />
+          ) : null}
+          {stringValue(data.schedule_label) ? (
+            <MetaRow label="Jadwal" value={stringValue(data.schedule_label)} />
+          ) : null}
+          {stringValue(data.duration_label) ? (
+            <MetaRow label="Durasi" value={stringValue(data.duration_label)} />
+          ) : null}
+          {stringValue(data.format_label) ? (
+            <MetaRow label="Format" value={stringValue(data.format_label)} />
+          ) : null}
+          {stringValue(data.quota_label) ? (
+            <MetaRow label="Kuota" value={stringValue(data.quota_label)} />
+          ) : null}
+          {item.expiredAt ? (
+            <MetaRow label="Berlaku Sampai" value={formatDate(item.expiredAt)} />
+          ) : null}
+          {item.startAt ? (
+            <MetaRow label="Mulai" value={formatDate(item.startAt)} />
+          ) : null}
+        </dl>
+        <Button
+          render={<a href={item.isExpired ? "#" : whatsappHref} />}
+          disabled={item.isExpired}
+          className="mt-6 w-full"
+          title={item.isExpired ? "Penawaran ini sudah tidak tersedia" : undefined}
+        >
+          {item.isExpired ? "Penawaran Berakhir" : stringValue(data.primary_cta_label) || "Daftar via WhatsApp"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getOfferWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  offerTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const offerTemplate = stringValue(data.whatsapp_message_template);
+  const fallbackTemplate = `Halo {lpk_name}, saya tertarik dengan penawaran {offer_title}.`;
+  const template = offerTemplate || fallbackTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    offer_title: offerTitle,
+  });
+}
+
+function getProgramWhatsappHref(
+  data: PublicJson,
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  programTitle: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  const programTemplate = stringValue(data.whatsapp_message_template);
+  const globalTemplate =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+  const template = programTemplate || globalTemplate;
+
+  return buildWhatsAppUrl(number, template, {
+    lpk_name: lpkName,
+    program_name: programTitle,
+  });
+}
+
+function FallbackDataView({ data }: { data: PublicJson }) {
+  const entries = Object.entries(data).filter(([, value]) => Boolean(value));
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8 space-y-4 text-neutral-700">
+      {entries.map(([key, value]) => (
+        <section key={key}>
+          <h2 className="text-xl font-semibold text-neutral-900">{formatLabel(key)}</h2>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6">
+            {typeof value === "string" || typeof value === "number"
+              ? String(value)
+              : JSON.stringify(value, null, 2)}
+          </p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <dt>{label}</dt>
+      <dd className="font-medium text-neutral-900">{value}</dd>
+    </div>
+  );
+}
+
+type ListItemOptions = {
+  labelKeys?: string[];
+  labels?: string[];
+  metaKeys?: string[];
+  badge?: string | null;
+  usePublishedAtFallback?: boolean;
+};
+
+async function toCollectionListItem(
+  item: PublicCollectionItem,
+  collectionKey: string,
+  variantId: string,
+  options: ListItemOptions = {},
+) {
+  if (collectionKey === "program") {
+    return toListItem(item, {
+      labels: await resolveProgramLabels(item, variantId),
+      badge: null,
+      usePublishedAtFallback: false,
+    });
+  }
+
+  if (collectionKey === "job") {
+    return toListItem(item, {
+      labels: await resolveJobLabels(item, variantId),
+      metaKeys: ["location_label", "salary_range_label", "deadline_label"],
+      badge: booleanValue(item.dataJson.is_sample_listing, false) ? "Contoh informasi" : null,
+      usePublishedAtFallback: false,
+    });
+  }
+
+  if (collectionKey === "karir") {
+    return toListItem(item, {
+      labels: await resolveKarirLabels(item, variantId),
+      metaKeys: ["location_label", "salary_label", "experience_label", "deadline_label"],
+      badge: null,
+      usePublishedAtFallback: false,
+    });
+  }
+
+  const labels = options.labels ?? (
+    options.labelKeys?.length
+      ? await resolveItemLabels(item, options.labelKeys, variantId)
+      : undefined
+  );
+
+  return toListItem(item, {
+    labels,
+    metaKeys: options.metaKeys,
+    usePublishedAtFallback: true,
+  });
+}
+
+function toListItem(item: PublicCollectionItem, options: ListItemOptions = {}) {
+  const labels = options.labels;
+  const metaKeys = options.metaKeys;
+  let meta: string | undefined;
+  if (metaKeys?.length) {
+    const values = metaKeys
+      .map((key) => stringValue(item.dataJson[key]))
+      .filter((v) => v !== "");
+    meta = values.length > 0 ? values.join(" / ") : undefined;
+  }
+  if (!meta && options.usePublishedAtFallback !== false) {
+    meta = item.publishedAt ? formatDate(item.publishedAt) : undefined;
+  }
+  const badge =
+    options.badge === null
+      ? undefined
+      : options.badge ?? stringValue(item.dataJson.highlight_label);
+
+  return {
+    id: item.id,
+    title: item.title,
+    subtitle: item.excerpt,
+    slug: item.slug,
+    thumbnailSrc: item.thumbnailSrc,
+    status: item.status,
+    meta,
+    expiredAt: item.expiredAt ? `Berakhir ${formatDate(item.expiredAt)}` : undefined,
+    isExpired: item.isExpired,
+    isFeatured: item.isFeatured,
+    badge,
+    labels,
+  };
+}
+
+async function resolveItemLabels(
+  item: PublicCollectionItem,
+  optionKeys: string[],
+  variantId: string,
+): Promise<string[]> {
+  const requests = optionKeys
+    .map((key) => ({
+      id:
+        stringValue(item.dataJson[`${key}_option_id`]) ||
+        stringValue(item.dataJson[key]),
+      optionSetKey: getPublicOptionSetKey(key),
+    }))
+    .filter((request) => request.id && request.optionSetKey);
+
+  if (requests.length === 0) return [];
+
+  const resolved = await Promise.all(
+    requests.map((request) =>
+      resolveOptionLabel(request.id, {
+        variantId,
+        optionSetKey: request.optionSetKey,
+      }),
+    ),
+  );
+  return resolved.map((r) => r?.label ?? "").filter(Boolean);
+}
+
+async function resolveItemLabel(
+  item: PublicCollectionItem,
+  key: string,
+  variantId: string,
+) {
+  const labels = await resolveItemLabels(item, [key], variantId);
+  return labels[0] ?? "";
+}
+
+async function resolveProgramLabels(item: PublicCollectionItem, variantId: string) {
+  const [programType, gender, education, language] = await Promise.all([
+    resolveItemLabel(item, "program_type", variantId),
+    resolveItemLabel(item, "gender", variantId),
+    resolveItemLabel(item, "education_level", variantId),
+    resolveItemLabel(item, "language_level", variantId),
+  ]);
+
+  return compactStrings([
+    programType,
+    gender,
+    formatAgeRangeLabel(item.dataJson),
+    education,
+    language,
+  ]);
+}
+
+async function resolveJobLabels(item: PublicCollectionItem, variantId: string) {
+  const [jobField, jobType, gender, language, education] = await Promise.all([
+    resolveItemLabel(item, "job_field", variantId),
+    resolveItemLabel(item, "job_type", variantId),
+    resolveItemLabel(item, "gender", variantId),
+    resolveItemLabel(item, "language_level", variantId),
+    resolveItemLabel(item, "education_level", variantId),
+  ]);
+
+  return compactStrings([jobField, jobType, gender, language, education]);
+}
+
+async function resolveKarirLabels(item: PublicCollectionItem, variantId: string) {
+  return resolveItemLabels(item, ["department", "employment_type", "work_arrangement"], variantId);
+}
+
+function formatAgeRangeLabel(data: PublicJson) {
+  const minAge = numberValue(data.min_age);
+  const maxAge = numberValue(data.max_age);
+
+  if (minAge && maxAge) {
+    return `Usia ${minAge}-${maxAge}`;
+  }
+
+  if (minAge) {
+    return `Usia min ${minAge}`;
+  }
+
+  if (maxAge) {
+    return `Usia max ${maxAge}`;
+  }
+
+  return "";
+}
+
+async function collectionCard(
+  item: PublicCollectionItem,
+  pathPrefix: string,
+  optionKeys?: string[],
+  variantId?: string,
+) {
+  const labels =
+    optionKeys?.length && variantId
+      ? await resolveItemLabels(item, optionKeys, variantId)
+      : [];
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.excerpt,
+    href: `${pathPrefix}/${item.slug}`,
+    imageSrc: item.thumbnailSrc,
+    badge: stringValue(item.dataJson.highlight_label),
+    labels,
+    isEnabled: true,
+  };
+}
+
+async function programCollectionCard(item: PublicCollectionItem, variantId: string) {
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.excerpt,
+    href: `/program/${item.slug}`,
+    imageSrc: item.thumbnailSrc,
+    labels: await resolveProgramLabels(item, variantId),
+    isEnabled: true,
+  };
+}
+
+async function resolveOfferBannerBadge(item: PublicCollectionItem, variantId: string) {
+  const [offerType, targetAudience] = await Promise.all([
+    resolveItemLabel(item, "offer_type", variantId),
+    resolveItemLabel(item, "target_audience", variantId),
+  ]);
+
+  return compactStrings([
+    stringValue(item.dataJson.price_label),
+    stringValue(item.dataJson.urgency_label),
+    offerType,
+    targetAudience,
+  ])[0] ?? "";
+}
+
+function compactStrings(values: string[]) {
+  return values.map((value) => value.trim()).filter((value) => value !== "");
+}
+
+function getPublicOptionSetKey(key: string) {
+  const optionSetKeys: Record<string, string> = {
+    category: "blog_category",
+    department: "career_department",
+    employment_type: "career_employment_type",
+    work_arrangement: "career_work_arrangement",
+  };
+
+  return optionSetKeys[key] ?? key;
+}
+
+function getDetailHeroSrc(item: PublicCollectionItem, fallbackImageSrc?: string) {
+  return item.heroSrc || item.thumbnailSrc || fallbackImageSrc;
+}
+
+function getOfferCmsImageSrc(item?: PublicCollectionItem | null) {
+  if (!item) {
+    return undefined;
+  }
+
+  const mediaId = item.heroImageId || item.thumbnailImageId;
+  return mediaId ? getMediaProxyUrl(mediaId) : item.heroSrc || item.thumbnailSrc;
+}
+
+function getListPageFallbackHeroImage(pageKey: string, items: PublicCollectionItem[]) {
+  if (pageKey !== "program_page" && pageKey !== "blog_page") {
+    return null;
+  }
+
+  const fallbackItem = items.find((item) => item.heroSrc || item.thumbnailSrc);
+
+  return fallbackItem?.heroSrc || fallbackItem?.thumbnailSrc || null;
+}
+
+async function resolveDetailPageHeroSrc(variantId: string, pageKey: string) {
+  const page = await resolvePageData(variantId, pageKey);
+  const hero = record(page?.dataJson.hero);
+  const mediaId = stringValue(hero.media_id) || stringValue(hero.image_id);
+
+  return Promise.resolve(mediaProxySrc(mediaId) ?? null);
+}
+
+async function resolveFeaturedPrograms(variantId: string, config: PublicJson) {
+  const pageSize = numberValue(config.max_items) || 3;
+  const source = stringValue(config.source) || "featured";
+
+  if (source !== "manual") {
+    return resolveCachedCollectionList(
+      variantId,
+      "program",
+      {
+        source: "featured",
+        pageSize,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (id) => [`page:${id}:homepage`, `collection:${id}:program`],
+    );
+  }
+
+  const manualIds = flatStringList(config.manual_program_ids).slice(0, pageSize);
+
+  if (manualIds.length === 0) {
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize,
+      totalPages: 1,
+    };
+  }
+
+  const result = await resolveCachedCollectionList(
+    variantId,
+    "program",
+    {
+      source: "manual",
+      manualIds,
+      pageSize,
+    },
+    PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+    (id) => [`page:${id}:homepage`, `collection:${id}:program`],
+  );
+  const byId = new Map(result.items.map((item) => [item.id, item]));
+
+  return {
+    ...result,
+    items: manualIds.map((id) => byId.get(id)).filter((item): item is PublicCollectionItem => Boolean(item)),
+  };
+}
+
+async function resolveOfferSectionPayload(variantId: string, config: PublicJson) {
+  const source = stringValue(config.source) || "active_featured_offer";
+  const fallbackImageSrc = mediaProxySrc(stringValue(config.fallback_image_id)) ?? null;
+
+  if (source === "disabled") {
+    return { item: null, fallbackImageSrc, isDisabled: true };
+  }
+
+  if (source === "manual") {
+    const manualOfferId = stringValue(config.manual_offer_id);
+
+    if (!manualOfferId) {
+      return { item: null, fallbackImageSrc, isDisabled: false };
+    }
+
+    const result = await resolveCachedCollectionList(
+      variantId,
+      "offer",
+      {
+        source: "manual",
+        manualIds: [manualOfferId],
+        pageSize: 1,
+        activeOnly: true,
+      },
+      PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      (id) => [`page:${id}:homepage`, `collection:${id}:offer`],
+    );
+
+    return { item: result.items[0] ?? null, fallbackImageSrc, isDisabled: false };
+  }
+
+  return {
+    item: await resolveCachedActiveOffer(variantId),
+    fallbackImageSrc,
+    isDisabled: false,
+  };
+}
+
+function resolveCachedActiveOffer(variantId: string) {
+  return unstable_cache(
+    () => resolveActiveOffer(variantId),
+    ["public-active-offer", PUBLIC_CONTENT_CACHE_VERSION, variantId],
+    {
+      revalidate: PUBLIC_DYNAMIC_SECTION_CACHE_SECONDS,
+      tags: resolveTags((id) => [`collection:${id}:offer`], variantId),
+    },
+  )();
+}
+
+function resolveCachedCollectionList(
+  variantId: string,
+  collectionKey: string,
+  opts: PublicCollectionListOptions,
+  revalidate: number,
+  cacheTags: string[] | ((variantId: string) => string[]),
+) {
+  return unstable_cache(
+    () => resolveCollectionList(variantId, collectionKey, opts),
+    [
+      "public-cached-collection",
+      PUBLIC_CONTENT_CACHE_VERSION,
+      variantId,
+      collectionKey,
+      stableCollectionOptionsKey(opts),
+    ],
+    {
+      revalidate,
+      tags: resolveTags(cacheTags, variantId),
+    },
+  )();
+}
+
+function stableCollectionOptionsKey(opts: PublicCollectionListOptions) {
+  return JSON.stringify({
+    activeOnly: opts.activeOnly ?? null,
+    filters: stableFilterRecord(opts.filters),
+    manualIds: opts.manualIds ?? [],
+    max: opts.max ?? null,
+    page: opts.page ?? null,
+    pageSize: opts.pageSize ?? null,
+    source: opts.source ?? null,
+  });
+}
+
+function stableFilterRecord(filters: PublicCollectionListOptions["filters"]) {
+  if (!filters) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(filters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => [
+        key,
+        Array.isArray(value) ? [...value].sort() : value,
+      ]),
+  );
+}
+
+function buildAudiencePathCards(data: PublicJson) {
+  const cards = sortedRecords(data.audience_paths).map((item, index) => ({
+    id: `audience-path-${index}`,
+    title: stringValue(item.title),
+    description: stringValue(item.description),
+    href: stringValue(item.href),
+    meta: stringValue(item.cta_label),
+    iconKey: stringValue(item.icon_key),
+    isEnabled: booleanValue(item.is_enabled, true),
+  }));
+  const hasFamilyPath = cards.some((item) => {
+    const text = `${item.title} ${item.description}`.toLowerCase();
+    return text.includes("orang tua") || text.includes("keluarga") || text.includes("legal");
+  });
+
+  if (!hasFamilyPath) {
+    cards.push({
+      id: "audience-path-family",
+      title: "Orang Tua atau Keluarga",
+      description:
+        "Cek legalitas, biaya, tahapan, dan risiko sebelum mendukung keputusan anak atau anggota keluarga.",
+      href: "/tentang-kami#profil-lembaga",
+      meta: "Cek Legalitas dan Biaya",
+      iconKey: "shield_check",
+      isEnabled: true,
+    });
+  }
+
+  return cards;
+}
+
+function toStatItem(item: PublicJson) {
+  return {
+    iconKey: stringValue(item.icon_key) || "check",
+    value: stringValue(item.value),
+    label: stringValue(item.label),
+    isEnabled: booleanValue(item.is_enabled, true),
+  };
+}
+
+function toFaqItem(item: PublicJson, index: number) {
+  return {
+    question: stringValue(item.question),
+    answer: stringValue(item.answer),
+    sortOrder: numberValue(item.sort_order) ?? index,
+    isEnabled: booleanValue(item.is_enabled, true),
+  };
+}
+
+function getWhatsappHref(
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  replacements: Record<string, string> = {},
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+  const template =
+    stringValue(whatsapp.default_message_template) ||
+    "Halo, saya ingin konsultasi dengan {lpk_name}.";
+
+  return number
+    ? buildWhatsAppUrl(number, template, { lpk_name: lpkName, ...replacements })
+    : "#";
+}
+
+function buildHeroWhatsappHref(
+  globalConfig: Record<string, PublicJson>,
+  lpkName: string,
+  messageTemplate: string,
+) {
+  const whatsapp = record(record(globalConfig.whatsapp_contact).whatsapp);
+  const number = stringValue(whatsapp.number);
+
+  if (!number) {
+    return "#";
+  }
+
+  return buildWhatsAppUrl(number, messageTemplate, { lpk_name: lpkName });
+}
+
+function getLpkName(globalConfig: Record<string, PublicJson>, fallback: string) {
+  const brand = record(record(globalConfig.brand_header).brand);
+
+  return stringValue(brand.lpk_name) || fallback;
+}
+
+function getJapanFilterConfigs(kind: JapanListPageKind, data: PublicJson) {
+  const filterConfig = record(data.filter_config);
+
+  if (kind === "sector") {
+    return booleanValue(filterConfig.enable_sector_category_filter, true)
+      ? [
+          {
+            key: "sector_category",
+            label: "分野カテゴリー",
+            optionSetKey: "japan_sector_category",
+          },
+        ]
+      : [];
+  }
+
+  return [
+    booleanValue(filterConfig.enable_content_type_filter, true)
+      ? {
+          key: "content_type",
+          label: "記事タイプ",
+          optionSetKey: "japan_news_content_type",
+        }
+      : null,
+    booleanValue(filterConfig.enable_category_filter, true)
+      ? {
+          key: "category",
+          label: "カテゴリー",
+          optionSetKey: "japan_news_category",
+        }
+      : null,
+    booleanValue(filterConfig.enable_tag_filter, true)
+      ? {
+          key: "tag",
+          label: "タグ",
+          optionSetKey: "japan_news_tag",
+        }
+      : null,
+  ].filter(
+    (
+      config,
+    ): config is {
+      key: string;
+      label: string;
+      optionSetKey: string;
+    } => Boolean(config),
+  );
+}
+
+function resolveTags(
+  tags: string[] | ((variantId: string) => string[]),
+  variantId: string,
+) {
+  return Array.from(
+    new Set([
+      `variant:${variantId}`,
+      ...(typeof tags === "function" ? tags(variantId) : tags),
+    ]),
+  );
+}
+
+function readFilters(params: PublicPageSearchParams) {
+  const ignoredKeys = new Set(["page", "preview", "token"]);
+
+  return Object.entries(params).reduce<Record<string, string>>((filters, [key, value]) => {
+    const param = readParam(value);
+
+    if (param && !ignoredKeys.has(key)) {
+      filters[key] = param;
+    }
+
+    return filters;
+  }, {});
+}
+
+function pickFilters(filters: Record<string, string>, enabledKeys: string[]) {
+  const allowedKeys = new Set(enabledKeys);
+
+  return Object.entries(filters).reduce<Record<string, string>>((picked, [key, value]) => {
+    if (allowedKeys.has(key)) {
+      picked[key] = value;
+    }
+
+    return picked;
+  }, {});
+}
+
+function getEnabledIndonesiaFilterKeys(data: PublicJson, optionSetKeys: string[]) {
+  const filterConfig = record(data.filter_config);
+
+  return optionSetKeys.filter((key) =>
+    booleanValue(filterConfig[getIndonesiaFilterConfigField(key)], true),
+  );
+}
+
+function getIndonesiaFilterConfigField(key: string) {
+  const filterConfigFields: Record<string, string> = {
+    education_level: "enable_education_filter",
+    language_level: "enable_language_filter",
+  };
+
+  return filterConfigFields[key] ?? `enable_${key}_filter`;
+}
+
+function readParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function numberFromParam(value: string | string[] | undefined) {
+  const number = Number(readParam(value));
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : undefined;
+}
+
+function firstString(value: unknown) {
+  return Array.isArray(value)
+    ? stringValue(value.find((item) => typeof item === "string"))
+    : "";
+}
+
+function record(value: unknown): PublicJson {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as PublicJson)
+    : {};
+}
+
+function arrayOfRecords(value: unknown) {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function isRecord(value: unknown): value is PublicJson {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function mediaPositionPreset(
+  value: unknown,
+  fallback: MediaPositionPreset = "center",
+): MediaPositionPreset {
+  return isMediaPositionPreset(value) ? value : fallback;
+}
+
+function heroMediaProps(
+  hero: PublicJson,
+  mobileFallback: MediaPositionPreset = "center",
+) {
+  const mobileMediaId = stringValue(hero.mobile_media_id);
+
+  return {
+    mediaPosition: mediaPositionPreset(hero.media_position),
+    mobileMediaType:
+      stringValue(hero.mobile_media_type) === "video" ? ("video" as const) : ("image" as const),
+    mobileMediaSrc: mediaProxySrc(mobileMediaId),
+    mobileMediaPosition: mediaPositionPreset(
+      hero.mobile_media_position,
+      mobileFallback,
+    ),
+  };
+}
+
+function stringValueWithMissingFallback(recordValue: PublicJson, key: string, fallback: string) {
+  return Object.prototype.hasOwnProperty.call(recordValue, key)
+    ? stringValue(recordValue[key])
+    : fallback;
+}
+
+function flatStringListWithMissingFallback(
+  recordValue: PublicJson,
+  key: string,
+  fallback: string[],
+) {
+  return Object.prototype.hasOwnProperty.call(recordValue, key)
+    ? flatStringList(recordValue[key])
+    : fallback;
+}
+
+function booleanValue(value: unknown, fallback: boolean) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function numberValue(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function truncate(value: string, maxLength: number) {
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
+}
+
+function formatLabel(value: string) {
+  const labels: Record<string, string> = {
+    program_type: "Jenis Program",
+    gender: "Gender",
+    education_level: "Pendidikan",
+    language_level: "Level Bahasa Awal",
+    job_type: "Jenis Lowongan",
+    job_field: "Bidang Kerja",
+  };
+
+  if (labels[value]) {
+    return labels[value];
+  }
+
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("id-ID", { dateStyle: "medium" });
+}
+
+function sortedRecords(value: unknown) {
+  return arrayOfRecords(value).sort(
+    (a, b) => (numberValue(a.sort_order) ?? 0) - (numberValue(b.sort_order) ?? 0),
+  );
+}
+
+function flatStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => item.trim());
+  }
+
+  return [];
+}
+
+function normalizeMixedList(value: unknown): NormalizedItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item): NormalizedItem | null => {
+      if (typeof item === "string" && item.trim().length > 0) {
+        return { title: item.trim(), description: "" };
+      }
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        const title = stringValue(item.title);
+        const description = stringValue(item.description);
+        if (title || description) {
+          return { title, description };
+        }
+      }
+      return null;
+    })
+    .filter((item): item is NormalizedItem => item !== null);
+}
+
+type TimelineItem = {
+  iconKey: string;
+  title: string;
+  description: string;
+  sortOrder: number;
+  isEnabled: boolean;
+};
+
+function parseTimelineItems(value: unknown): TimelineItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item, index): TimelineItem | null => {
+      if (typeof item === "string" && item.trim().length > 0) {
+        const separatorMatch = item.match(/[:→]|->/);
+        if (separatorMatch && separatorMatch.index !== undefined && separatorMatch.index > 0) {
+          const sepIndex = separatorMatch.index;
+          const sepLen = separatorMatch[0].length;
+          return {
+            iconKey: "check",
+            title: item.slice(0, sepIndex).trim(),
+            description: item.slice(sepIndex + sepLen).trim(),
+            sortOrder: index,
+            isEnabled: true,
+          };
+        }
+        return { iconKey: "check", title: item.trim(), description: "", sortOrder: index, isEnabled: true };
+      }
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        const title = stringValue(item.title);
+        const description = stringValue(item.description);
+        if (title || description) {
+          return {
+            iconKey: stringValue(item.icon_key) || "check",
+            title,
+            description,
+            sortOrder: numberValue(item.sort_order) ?? index,
+            isEnabled: booleanValue(item.is_enabled, true),
+          };
+        }
+      }
+      return null;
+    })
+    .filter((item): item is TimelineItem => item !== null);
+}
+
+type CostItem = { title: string; amount: string };
+
+function parseCostItems(value: unknown): CostItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item): CostItem | null => {
+      if (typeof item === "string" && item.trim().length > 0) {
+        const colonIndex = item.indexOf(":");
+        if (colonIndex > 0) {
+          return {
+            title: item.slice(0, colonIndex).trim(),
+            amount: item.slice(colonIndex + 1).trim(),
+          };
+        }
+        return { title: item.trim(), amount: "" };
+      }
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+        const title = stringValue(item.title);
+        const amount =
+          stringValue(item.amount_label) ||
+          stringValue(item.amount) ||
+          stringValue(item.detail);
+        if (title || amount) {
+          return { title, amount };
+        }
+      }
+      return null;
+    })
+    .filter((item): item is CostItem => item !== null);
+}
+
+function getMediaProxyUrl(mediaId: string) {
+  return `/api/media/${encodeURIComponent(mediaId)}`;
+}
+
+function mediaProxySrc(mediaId: string) {
+  return mediaId ? getMediaProxyUrl(mediaId) : undefined;
+}
+
+function renderRequirementList(value: unknown, title = "Persyaratan") {
+  const items = flatStringList(value);
+  const recordItems = arrayOfRecords(value);
+
+  const allItems = [
+    ...items,
+    ...recordItems.map((rec) => stringValue(rec.text) || stringValue(rec.title) || stringValue(rec.requirement)),
+  ].filter(Boolean);
+
+  if (allItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
+      <ul className="mt-5 grid gap-3 md:grid-cols-2">
+        {allItems.map((text, index) => (
+          <li key={index} className="flex gap-3 rounded-xl border border-neutral-200 p-4">
+            <Check aria-hidden="true" className="mt-1 size-5 shrink-0 text-primary-500" />
+            <span className="text-sm leading-6 text-neutral-700">{text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}

@@ -78,6 +78,11 @@ web_modules/
 .next
 out
 
+# Project runtime
+.env.local
+node_modules
+prisma/*.db
+
 # Nuxt.js build / generate output
 .nuxt
 dist
@@ -141,3 +146,13 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+/src/generated/prisma
+
+# Codex/local QA artifacts
+.codex-qa-screenshots/
+.codex-screenshots/
+test-results/
+
+# Local dummy media used for manual CMS testing
+dummy image/
