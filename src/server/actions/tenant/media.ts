@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { Prisma } from "@/generated/prisma/client";
 import { AppError, AuthError, ForbiddenError, ValidationError } from "@/lib/errors";
+import { isMediaCropPreset, type MediaCropPreset } from "@/lib/media-crop";
 import { tenantDb } from "@/server/db/tenant-scoped";
 import { createAuditLog } from "@/server/services/audit";
 import {
@@ -73,9 +74,14 @@ const generateUploadUrlSchema = z.object({
   fileSize: z.number().int().positive(),
 });
 
+const mediaCropPresetSchema = z.custom<MediaCropPreset>(
+  (value) => isMediaCropPreset(value),
+  { message: "Preset crop tidak valid." },
+);
+
 const cropImageSchema = z.object({
   mediaId: z.string().trim().min(1).max(128),
-  cropPreset: z.enum(["thumbnail", "hero", "square", "portrait"]),
+  cropPreset: mediaCropPresetSchema,
   crop: z.object({
     x: z.number().min(0).max(1),
     y: z.number().min(0).max(1),
