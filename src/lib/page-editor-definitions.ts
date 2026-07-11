@@ -2473,7 +2473,12 @@ export const PAGE_EDITOR_DEFINITIONS = {
             label: "Jenis media",
             options: japanBasicMediaTypeOptions,
           },
-          { kind: "media", path: "why_indonesia_section.image_id", label: "Media" },
+          {
+            kind: "media",
+            path: "why_indonesia_section.image_id",
+            label: "Media",
+            cropPreset: "split_4_3",
+          },
           { kind: "text", path: "why_indonesia_section.eyebrow_label", label: "Label kecil" },
           { kind: "text", path: "why_indonesia_section.headline", label: "Judul utama" },
           { kind: "textarea", path: "why_indonesia_section.description", label: "Deskripsi" },

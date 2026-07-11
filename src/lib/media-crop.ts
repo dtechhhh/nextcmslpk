@@ -3,7 +3,8 @@ export type MediaCropPreset =
   | "hero"
   | "square"
   | "portrait"
-  | "offer";
+  | "offer"
+  | "split_4_3";
 
 export type MediaCropRect = {
   x: number;
@@ -56,6 +57,13 @@ export const MEDIA_CROP_PRESETS: Record<MediaCropPreset, MediaCropConfig> = {
     outputWidth: 1600,
     outputHeight: 1000,
   },
+  split_4_3: {
+    preset: "split_4_3",
+    label: "Split section 4:3 image",
+    aspectRatio: 4 / 3,
+    outputWidth: 1600,
+    outputHeight: 1200,
+  },
 };
 
 export function getMediaCropConfig(preset: MediaCropPreset) {
@@ -68,6 +76,7 @@ export function isMediaCropPreset(value: unknown): value is MediaCropPreset {
     value === "hero" ||
     value === "square" ||
     value === "portrait" ||
-    value === "offer"
+    value === "offer" ||
+    value === "split_4_3"
   );
 }
