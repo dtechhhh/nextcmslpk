@@ -1397,7 +1397,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
               { kind: "icon", path: "icon_key", label: "Ikon" },
               { kind: "text", path: "title", label: "Nama bidang" },
               { kind: "textarea", path: "description", label: "Deskripsi persiapan" },
-              { kind: "media", path: "image_id", label: "Gambar bidang" },
+              { kind: "media", path: "image_id", label: "Gambar bidang", cropPreset: "thumbnail" },
               ...sortableFields,
             ],
           },
@@ -1906,7 +1906,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
           { kind: "text", path: "story.badge_label", label: "Label kecil" },
           { kind: "text", path: "story.headline", label: "Judul utama" },
           { kind: "textarea", path: "story.body", label: "Cerita pendirian" },
-          { kind: "media", path: "story.image_id", label: "Gambar" },
+          { kind: "media", path: "story.image_id", label: "Gambar", cropPreset: "split_4_3" },
         ],
       },
       {
@@ -1961,7 +1961,12 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Penanggung jawab dan mutu pendidikan",
         classification: "required",
         fields: [
-          { kind: "media", path: "education_quality.image_id", label: "Foto penanggung jawab" },
+          {
+            kind: "media",
+            path: "education_quality.image_id",
+            label: "Foto penanggung jawab",
+            cropPreset: "portrait",
+          },
           { kind: "text", path: "education_quality.eyebrow_label", label: "Label kecil" },
           { kind: "text", path: "education_quality.qualification_label", label: "Kualifikasi utama" },
           { kind: "text", path: "education_quality.headline", label: "Judul utama" },
@@ -2764,7 +2769,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Cerita",
         classification: "required",
         fields: [
-          { kind: "media", path: "story.image_id", label: "Gambar" },
+          { kind: "media", path: "story.image_id", label: "Gambar", cropPreset: "split_4_3" },
           { kind: "text", path: "story.eyebrow_label", label: "Label kecil" },
           { kind: "text", path: "story.headline", label: "Judul utama" },
           { kind: "textarea", path: "story.body", label: "Isi cerita" },
@@ -2831,7 +2836,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         title: "Sorotan mutu pendidikan",
         classification: "required",
         fields: [
-          { kind: "media", path: "education_quality.image_id", label: "Foto" },
+          { kind: "media", path: "education_quality.image_id", label: "Foto", cropPreset: "portrait" },
           {
             kind: "text",
             path: "education_quality.eyebrow_label",
@@ -2923,7 +2928,12 @@ export const PAGE_EDITOR_DEFINITIONS = {
           { kind: "textarea", path: "leadership_quote.quote", label: "Kutipan" },
           { kind: "text", path: "leadership_quote.attribution_name", label: "Nama atribusi" },
           { kind: "text", path: "leadership_quote.attribution_role", label: "Jabatan atribusi" },
-          { kind: "media", path: "leadership_quote.photo_image_id", label: "Foto opsional" },
+          {
+            kind: "media",
+            path: "leadership_quote.photo_image_id",
+            label: "Foto opsional",
+            cropPreset: "portrait",
+          },
         ],
       },
       {
@@ -2993,7 +3003,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
             fields: [
               { kind: "text", path: "title", label: "Judul" },
               { kind: "textarea", path: "description", label: "Deskripsi" },
-              { kind: "media", path: "image_id", label: "Gambar" },
+              { kind: "media", path: "image_id", label: "Gambar", cropPreset: "thumbnail" },
               ...japanSortableFields,
             ],
           },
@@ -3417,7 +3427,12 @@ export const PAGE_EDITOR_DEFINITIONS = {
           { kind: "text", path: "partner_report.eyebrow_label", label: "Label kecil" },
           { kind: "text", path: "partner_report.headline", label: "Judul utama" },
           { kind: "textarea", path: "partner_report.description", label: "Deskripsi" },
-          { kind: "media", path: "partner_report.image_id", label: "Preview laporan" },
+          {
+            kind: "media",
+            path: "partner_report.image_id",
+            label: "Preview laporan",
+            cropPreset: "split_4_3",
+          },
           {
             kind: "string-array",
             path: "partner_report.deliverables",
@@ -3468,7 +3483,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
             defaultItem: japanEmptyGalleryItem,
             sortOrderField: "sort_order",
             fields: [
-              { kind: "media", path: "media_id", label: "Media" },
+              { kind: "media", path: "media_id", label: "Media", cropPreset: "thumbnail" },
               { kind: "text", path: "title", label: "Judul" },
               { kind: "textarea", path: "description", label: "Deskripsi" },
               ...japanSortableFields,
@@ -3650,7 +3665,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
               { kind: "text", path: "japanese_level_label", label: "Level bahasa Jepang" },
               { kind: "text", path: "readiness_label", label: "Status kesiapan" },
               { kind: "text", path: "availability_label", label: "Perkiraan ketersediaan" },
-              { kind: "media", path: "image_id", label: "Foto kandidat" },
+              { kind: "media", path: "image_id", label: "Foto kandidat", cropPreset: "square" },
               ...japanSortableFields,
             ],
           },
@@ -3685,7 +3700,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
             label: "Jenis media",
             options: japanBasicMediaTypeOptions,
           },
-          { kind: "media", path: "why_indonesia.image_id", label: "Media" },
+          { kind: "media", path: "why_indonesia.image_id", label: "Media", cropPreset: "split_4_3" },
           { kind: "text", path: "why_indonesia.headline", label: "Judul utama" },
           { kind: "textarea", path: "why_indonesia.description", label: "Deskripsi" },
           {
@@ -3804,7 +3819,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
               { kind: "textarea", path: "availability_text", label: "Ketersediaan" },
               { kind: "switch", path: "readiness_is_enabled", label: "Tampilkan status siap seleksi" },
               { kind: "text", path: "readiness_label", label: "Label status siap seleksi" },
-              { kind: "media", path: "image_id", label: "Gambar" },
+              { kind: "media", path: "image_id", label: "Gambar", cropPreset: "square" },
               ...japanSortableFields,
             ],
           },
@@ -4072,7 +4087,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
               { kind: "text", path: "region_label", label: "Label wilayah" },
               { kind: "text", path: "title", label: "Judul" },
               { kind: "textarea", path: "description", label: "Deskripsi" },
-              { kind: "media", path: "image_id", label: "Gambar" },
+              { kind: "media", path: "image_id", label: "Gambar", cropPreset: "thumbnail" },
               ...japanSortableFields,
             ],
           },
@@ -4366,7 +4381,7 @@ export const PAGE_EDITOR_DEFINITIONS = {
         fields: [
           { kind: "text", path: "partnership_pic.name", label: "Nama" },
           { kind: "text", path: "partnership_pic.role", label: "Peran" },
-          { kind: "media", path: "partnership_pic.photo_image_id", label: "Foto" },
+          { kind: "media", path: "partnership_pic.photo_image_id", label: "Foto", cropPreset: "square" },
           { kind: "textarea", path: "partnership_pic.description", label: "Deskripsi" },
         ],
       },
