@@ -57,7 +57,6 @@ function HeroSlider({
   locale = "ja",
 }: HeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
   const hasSlides = slides.length > 0
   const mediaPositionStyle = responsiveMediaPositionStyle(
     mediaPosition,
@@ -65,7 +64,7 @@ function HeroSlider({
   )
 
   useEffect(() => {
-    if (isPaused || slides.length <= 1) {
+    if (slides.length <= 1) {
       return
     }
 
@@ -74,7 +73,7 @@ function HeroSlider({
     }, autoPlayMs)
 
     return () => window.clearInterval(timer)
-  }, [autoPlayMs, isPaused, slides.length])
+  }, [autoPlayMs, slides.length])
 
   function goToPrevious() {
     setActiveIndex((current) => (current - 1 + slides.length) % slides.length)
@@ -131,8 +130,6 @@ function HeroSlider({
   return (
     <section
       className="relative flex min-h-[460px] items-center overflow-hidden bg-neutral-900 sm:min-h-[540px] md:min-h-[620px] lg:min-h-[650px]"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       onKeyDown={(event) => {
         if (event.key === "ArrowLeft") {
           goToPrevious()

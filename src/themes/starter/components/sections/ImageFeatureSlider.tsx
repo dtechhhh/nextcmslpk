@@ -23,12 +23,11 @@ function ImageFeatureSlider({
   autoPlayMs = 4500,
 }: ImageFeatureSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const hasMultipleSlides = slides.length > 1;
 
   useEffect(() => {
-    if (!hasMultipleSlides || isPaused) {
+    if (!hasMultipleSlides) {
       return;
     }
 
@@ -37,7 +36,7 @@ function ImageFeatureSlider({
     }, autoPlayMs);
 
     return () => window.clearInterval(timer);
-  }, [autoPlayMs, hasMultipleSlides, isPaused, slides.length]);
+  }, [autoPlayMs, hasMultipleSlides, slides.length]);
 
   function goToPrevious() {
     setActiveIndex((current) => (current - 1 + slides.length) % slides.length);
@@ -73,10 +72,6 @@ function ImageFeatureSlider({
   return (
     <div
       className="relative mt-10 aspect-[16/9] overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocus={() => setIsPaused(true)}
-      onBlur={() => setIsPaused(false)}
       onTouchStart={(event) => {
         touchStartX.current = event.touches[0]?.clientX ?? null;
       }}
